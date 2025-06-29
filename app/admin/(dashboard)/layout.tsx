@@ -12,7 +12,7 @@ export default async function AdminLayout({
 
   // Check if user is authenticated and has admin/moderator role
   if (!user || (user.role !== 'ADMIN' && user.role !== 'MODERATOR')) {
-    redirect('/admin/login')
+    redirect('/')
   }
 
   return (
