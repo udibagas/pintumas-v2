@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageCircle, Share2, BookmarkPlus, ThumbsUp, ThumbsDown, Facebook, Twitter, Linkedin, Instagram, Copy, Check } from 'lucide-react';
+import { MessageCircle, Share2, BookmarkPlus, ThumbsUp, ThumbsDown, Facebook, Twitter, Linkedin, Instagram, Copy, Check, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 
 interface Comment {
@@ -250,7 +249,7 @@ export default function PostInteractions({
 
       {/* Social Share */}
       <div className="bg-gray-50 rounded-2xl p-6 my-8">
-        <h3 className="font-semibold text-gray-900 mb-4">Share this article</h3>
+        <h3 className="font-semibold text-gray-900 mb-4">Bagikan artikel ini</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <Button
             onClick={shareToFacebook}
@@ -316,84 +315,90 @@ export default function PostInteractions({
 
       {/* Comments Section */}
       <section className="my-12">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Comments ({localComments.length})</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Komentar ({localComments.length})</h3>
 
         {/* Comment Form */}
-        <form onSubmit={handleCommentSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 mb-8">
-          <div className="flex items-start space-x-4">
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <form onSubmit={handleCommentSubmit} className="flex items-start space-x-3">
             <Image
               src="/images/default-avatar.png"
               alt="Your avatar"
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-full object-cover"
+              width={36}
+              height={36}
+              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
             />
             <div className="flex-1">
-              <Textarea
-                placeholder="Join the discussion..."
+              <Input
+                placeholder="Tulis komentar..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="mb-4 border-gray-300 focus:border-yellow-500"
-                rows={3}
+                className="text-sm"
               />
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                  disabled={!comment.trim() || isSubmittingComment}
-                >
-                  {isSubmittingComment ? 'Posting...' : 'Post Comment'}
-                </Button>
-              </div>
+              {comment.trim() && (
+                <div className="mt-2">
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="bg-black hover:bg-gray-900 text-white font-medium px-4 rounded-md"
+                    disabled={isSubmittingComment}
+                  >
+                    <Send />
+                    {isSubmittingComment ? 'Mengirim...' : 'Kirim'}
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
 
         {/* Comments List */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {localComments.length > 0 ? (
             localComments.map((commentItem) => (
-              <div key={commentItem.id} className="bg-white border border-gray-200 rounded-2xl p-6">
-                <div className="flex items-start space-x-4">
-                  <Image
-                    src={commentItem.author.avatar || '/images/default-avatar.png'}
-                    alt={commentItem.author.name}
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h4 className="font-semibold text-gray-900">{commentItem.author.name}</h4>
-                      <span className="text-sm text-gray-500">
-                        {formatTimeAgo(commentItem.createdAt)}
-                      </span>
+              <div key={commentItem.id} className="flex items-start space-x-3">
+                <Image
+                  src={commentItem.author.avatar || '/images/default-avatar.png'}
+                  alt={commentItem.author.name}
+                  width={36}
+                  height={36}
+                  className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                    <div className="font-semibold text-sm text-gray-900 mb-1">
+                      {commentItem.author.name}
                       {commentItem.status === 'PENDING' && (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                          Pending moderation
+                        <span className="ml-2 text-xs text-yellow-600 font-normal">
+                          • Menunggu persetujuan
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-700 mb-3">
+                    <p className="text-sm text-gray-800 leading-relaxed">
                       {commentItem.content}
                     </p>
-                    <div className="flex items-center space-x-4 text-sm">
-                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-green-600 p-0">
-                        <ThumbsUp className="h-4 w-4 mr-1" />
-                        0
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600 p-0">
-                        Reply
-                      </Button>
-                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4 mt-1 px-2">
+                    <span className="text-xs text-gray-500">
+                      {formatTimeAgo(commentItem.createdAt)}
+                    </span>
+                    <button className="text-xs text-gray-600 hover:text-blue-600 font-semibold">
+                      Suka
+                    </button>
+                    <button className="text-xs text-gray-600 hover:text-blue-600 font-semibold">
+                      Balas
+                    </button>
+                    <button className="text-xs text-gray-600 hover:text-blue-600 font-semibold">
+                      Bagikan
+                    </button>
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-8">
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
               <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
+              <p className="text-gray-500 font-medium">Belum ada komentar</p>
+              <p className="text-gray-400 text-sm">Jadilah yang pertama memberikan komentar</p>
             </div>
           )}
         </div>
