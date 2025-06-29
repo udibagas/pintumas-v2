@@ -210,7 +210,7 @@ export default async function SinglePost({ params }: { params: { slug: string } 
       {/* Back Button */}
       <Link href="/" className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-6 transition-colors duration-200">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Home
+        Kembali ke Beranda
       </Link>
 
       {/* Article Header */}
@@ -316,7 +316,7 @@ export default async function SinglePost({ params }: { params: { slug: string } 
       {/* Author Bio */}
       {post.author.bio && (
         <div className="bg-gray-50 rounded-2xl p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">About the Author</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tentang Penulis</h3>
           <div className="flex items-start space-x-4">
             <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
               <Image
