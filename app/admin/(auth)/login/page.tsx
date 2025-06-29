@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LoginSchema } from '@/lib/validations'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
+import axios from 'axios'
 
 export default function AdminLoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' })
@@ -26,22 +27,15 @@ export default function AdminLoginPage() {
       // Validate form data
       const validatedData = LoginSchema.parse(formData)
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validatedData),
+      const response = await axios.post('/api/auth/login', validatedData, {
+        withCredentials: true,
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
-      }
 
       // Redirect to admin dashboard
       router.push('/admin')
     } catch (error: any) {
-      setError(error.message || 'An error occurred during login')
+      const errorMessage = error.response?.data?.error || error.message || 'An error occurred during login'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
