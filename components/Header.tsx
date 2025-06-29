@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { RegisterSchema, LoginSchema, type RegisterData, type LoginData } from '@/lib/validations';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -55,20 +58,37 @@ export default function Header() {
     role: string;
   } | null>(null);
   const [authError, setAuthError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Form states
-  const [signInForm, setSignInForm] = useState({
-    email: '',
-    password: ''
+  // React Hook Form for signin
+  const {
+    register: registerSignIn,
+    handleSubmit: handleSignInSubmit,
+    formState: { errors: signInErrors, isSubmitting: isSignInSubmitting },
+    reset: resetSignInForm,
+  } = useForm<LoginData>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   });
-  const [signUpForm, setSignUpForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+
+  // React Hook Form for signup
+  const {
+    register,
+    handleSubmit: handleSignUpSubmit,
+    formState: { errors, isSubmitting },
+    reset: resetSignUpForm,
+  } = useForm<RegisterData>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   });
 
   // Mock data for search suggestions and trending topics
@@ -183,15 +203,13 @@ export default function Header() {
   };
 
   // Authentication functions
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleSignIn = async (data: LoginData) => {
     setAuthError('');
 
     try {
       const response = await axios.post('/api/auth/login', {
-        email: signInForm.email,
-        password: signInForm.password,
+        email: data.email,
+        password: data.password,
       });
 
       if (response.data.success) {
@@ -200,40 +218,24 @@ export default function Header() {
         setIsAuthModalOpen(false);
 
         // Reset form
-        setSignInForm({ email: '', password: '' });
+        resetSignInForm();
       } else {
         setAuthError('Login failed. Please try again.');
       }
     } catch (error: any) {
       setAuthError(error.response?.data?.error || 'Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleSignUp = async (data: RegisterData) => {
     setAuthError('');
-
-    // Validate form
-    if (signUpForm.password !== signUpForm.confirmPassword) {
-      setAuthError('Passwords do not match');
-      setIsLoading(false);
-      return;
-    }
-
-    if (signUpForm.password.length < 6) {
-      setAuthError('Password must be at least 6 characters');
-      setIsLoading(false);
-      return;
-    }
 
     try {
       const response = await axios.post('/api/auth/register', {
-        name: signUpForm.name,
-        email: signUpForm.email,
-        password: signUpForm.password,
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
       });
 
       if (response.data.success) {
@@ -242,14 +244,12 @@ export default function Header() {
         setIsAuthModalOpen(false);
 
         // Reset form
-        setSignUpForm({ name: '', email: '', password: '', confirmPassword: '' });
+        resetSignUpForm();
       } else {
         setAuthError('Registration failed. Please try again.');
       }
     } catch (error: any) {
       setAuthError(error.response?.data?.error || 'Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -754,7 +754,18 @@ export default function Header() {
       </div>
 
       {/* Authentication Modal */}
-      <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
+      <Dialog
+        open={isAuthModalOpen}
+        onOpenChange={(open) => {
+          setIsAuthModalOpen(open);
+          if (!open) {
+            // Reset forms when modal closes
+            resetSignInForm();
+            resetSignUpForm();
+            setAuthError('');
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Selamat Datang di PintuMas</DialogTitle>
@@ -771,17 +782,22 @@ export default function Header() {
 
             {/* Sign In Tab */}
             <TabsContent value="signin" className="space-y-4">
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <form onSubmit={handleSignInSubmit(handleSignIn)} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="Masukkan Email Anda"
-                    value={signInForm.email}
-                    onChange={(e) => setSignInForm({ ...signInForm, email: e.target.value })}
-                    required
+                    className={signInErrors.email ? 'border-red-300 focus:border-red-500' : ''}
+                    {...registerSignIn('email')}
                   />
+                  {signInErrors.email && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="text-red-500">⚠</span>
+                      {signInErrors.email.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
@@ -789,14 +805,20 @@ export default function Header() {
                     id="password"
                     type="password"
                     placeholder="Masukkan Password Anda"
-                    value={signInForm.password}
-                    onChange={(e) => setSignInForm({ ...signInForm, password: e.target.value })}
-                    required
+                    className={signInErrors.password ? 'border-red-300 focus:border-red-500' : ''}
+                    {...registerSignIn('password')}
                   />
+                  {signInErrors.password && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="text-red-500">⚠</span>
+                      {signInErrors.password.message}
+                    </p>
+                  )}
                 </div>
 
                 {authError && (
-                  <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                  <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 flex items-center gap-2">
+                    <span className="text-red-500">⚠</span>
                     {authError}
                   </div>
                 )}
@@ -804,9 +826,9 @@ export default function Header() {
                 <Button
                   type="submit"
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
-                  disabled={isLoading}
+                  disabled={isSignInSubmitting}
                 >
-                  {isLoading ? 'Signing In...' : 'Masuk'}
+                  {isSignInSubmitting ? 'Masuk...' : 'Masuk'}
                 </Button>
               </form>
 
@@ -817,54 +839,75 @@ export default function Header() {
 
             {/* Sign Up Tab */}
             <TabsContent value="signup" className="space-y-4">
-              <form onSubmit={handleSignUp} className="space-y-4">
+              <form onSubmit={handleSignUpSubmit(handleSignUp)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Nama Lengkap</Label>
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Enter your full name"
-                    value={signUpForm.name}
-                    onChange={(e) => setSignUpForm({ ...signUpForm, name: e.target.value })}
-                    required
+                    placeholder="Masukkan nama lengkap Anda"
+                    className={errors.name ? 'border-red-300 focus:border-red-500' : ''}
+                    {...register('name')}
                   />
+                  {errors.name && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="text-red-500">⚠</span>
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="Enter your email"
-                    value={signUpForm.email}
-                    onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })}
-                    required
+                    placeholder="Masukkan alamat email Anda"
+                    className={errors.email ? 'border-red-300 focus:border-red-500' : ''}
+                    {...register('email')}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="text-red-500">⚠</span>
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="Create a password"
-                    value={signUpForm.password}
-                    onChange={(e) => setSignUpForm({ ...signUpForm, password: e.target.value })}
-                    required
+                    placeholder="Buat password (minimal 6 karakter)"
+                    className={errors.password ? 'border-red-300 focus:border-red-500' : ''}
+                    {...register('password')}
                   />
+                  {errors.password && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="text-red-500">⚠</span>
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Label htmlFor="confirm-password">Konfirmasi Password</Label>
                   <Input
                     id="confirm-password"
                     type="password"
-                    placeholder="Confirm your password"
-                    value={signUpForm.confirmPassword}
-                    onChange={(e) => setSignUpForm({ ...signUpForm, confirmPassword: e.target.value })}
-                    required
+                    placeholder="Konfirmasi password Anda"
+                    className={errors.confirmPassword ? 'border-red-300 focus:border-red-500' : ''}
+                    {...register('confirmPassword')}
                   />
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="text-red-500">⚠</span>
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
                 </div>
 
                 {authError && (
-                  <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                  <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 flex items-center gap-2">
+                    <span className="text-red-500">⚠</span>
                     {authError}
                   </div>
                 )}
@@ -872,11 +915,15 @@ export default function Header() {
                 <Button
                   type="submit"
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                  {isSubmitting ? 'Membuat Akun...' : 'Daftar'}
                 </Button>
               </form>
+
+              <div className="text-center text-sm text-gray-500">
+                <p>Dengan mendaftar, Anda menyetujui syarat dan ketentuan kami</p>
+              </div>
             </TabsContent>
           </Tabs>
         </DialogContent>
