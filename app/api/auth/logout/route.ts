@@ -1,19 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    cookieStore.delete('auth-token')
+    const cookieStore = cookies();
+    cookieStore.delete("auth-token");
 
     return NextResponse.json({
       success: true,
-      message: 'Logout successful'
-    })
+      message: "Logout successful",
+    });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Logout failed' },
+      { error: error.message || "Logout failed" },
       { status: 500 }
-    )
+    );
   }
 }
