@@ -417,7 +417,7 @@ export default function Header() {
                           className="w-12 h-12 rounded-full object-cover"
                         />
                         <div>
-                          <h3 className="font-semibold text-gray-900">{userProfile.name}</h3>
+                          <h3 className="font-semibold text-gray-900 line-clamp-1">{userProfile.name}</h3>
                           <p className="text-sm text-gray-500">{userProfile.email}</p>
                         </div>
                       </div>
@@ -635,7 +635,7 @@ export default function Header() {
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
-                      <h3 className="font-semibold text-gray-200">{userProfile.name}</h3>
+                      <h3 className="font-semibold text-gray-200 line-clamp-1">{userProfile.name}</h3>
                       <p className="text-sm text-gray-400">{userProfile.email}</p>
                     </div>
                   </div>

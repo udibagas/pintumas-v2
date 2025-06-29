@@ -1,147 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Search, TrendingUp, Clock, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import axios from 'axios';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  color: string;
+  articles: number;
+  trending: boolean;
+  recentArticles: string[];
+}
 
 export default function AllCategoriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const categories = [
-    {
-      name: 'Business',
-      slug: 'business',
-      description: 'Corporate news, market trends, finance, startups, and economic developments from around the world.',
-      color: 'bg-blue-500',
-      articles: 1247,
-      trending: true,
-      recentArticles: [
-        'Global Markets Surge as Trade Agreements Reach Final Negotiations',
-        'Tech Giants Report Record Q4 Earnings Despite Market Volatility',
-        'Cryptocurrency Adoption Accelerates in Emerging Markets'
-      ]
-    },
-    {
-      name: 'Technology',
-      slug: 'technology',
-      description: 'Latest developments in AI, software, hardware, cybersecurity, and digital innovation.',
-      color: 'bg-purple-500',
-      articles: 892,
-      trending: true,
-      recentArticles: [
-        'Revolutionary AI Algorithm Predicts Weather Patterns with 95% Accuracy',
-        'Quantum Computing Reaches New Milestone in Processing Power',
-        'Breakthrough in Sustainable Battery Technology'
-      ]
-    },
-    {
-      name: 'Health',
-      slug: 'health',
-      description: 'Medical breakthroughs, wellness trends, healthcare policy, and public health updates.',
-      color: 'bg-green-500',
-      articles: 634,
-      trending: false,
-      recentArticles: [
-        'Breakthrough Gene Therapy Shows Promise for Treating Rare Diseases',
-        'New Study Reveals Benefits of Mediterranean Diet',
-        'Mental Health Awareness Campaigns Show Positive Results'
-      ]
-    },
-    {
-      name: 'World',
-      slug: 'world',
-      description: 'International news, politics, diplomacy, conflicts, and global affairs coverage.',
-      color: 'bg-indigo-500',
-      articles: 1156,
-      trending: true,
-      recentArticles: [
-        'Global Climate Summit Reaches Historic Agreement',
-        'International Trade Relations Show Signs of Improvement',
-        'Humanitarian Crisis Response Efforts Intensify'
-      ]
-    },
-    {
-      name: 'Sports',
-      slug: 'sports',
-      description: 'Sports news, athlete profiles, game results, and major sporting events coverage.',
-      color: 'bg-orange-500',
-      articles: 743,
-      trending: false,
-      recentArticles: [
-        'Olympic Champions Prepare for World Athletics Championships',
-        'Football Transfer Window Sees Record-Breaking Deals',
-        'Tennis Grand Slam Tournament Delivers Thrilling Matches'
-      ]
-    },
-    {
-      name: 'Science',
-      slug: 'science',
-      description: 'Scientific discoveries, research findings, space exploration, and environmental studies.',
-      color: 'bg-teal-500',
-      articles: 521,
-      trending: false,
-      recentArticles: [
-        'Archaeological Discovery Reveals Ancient Civilization Secrets',
-        'Space Technology Advances Enable Mars Mission Preparations',
-        'Climate Research Shows Accelerating Environmental Changes'
-      ]
-    },
-    {
-      name: 'Politics',
-      slug: 'politics',
-      description: 'Political developments, elections, policy changes, and government affairs.',
-      color: 'bg-red-500',
-      articles: 934,
-      trending: true,
-      recentArticles: [
-        'Election Results Shape Future Policy Directions',
-        'Legislative Changes Impact Healthcare and Education',
-        'International Diplomatic Relations Undergo Significant Shifts'
-      ]
-    },
-    {
-      name: 'Culture',
-      slug: 'culture',
-      description: 'Arts, entertainment, lifestyle, social trends, and cultural developments.',
-      color: 'bg-pink-500',
-      articles: 412,
-      trending: false,
-      recentArticles: [
-        'Film Festival Showcases Emerging International Talent',
-        'Cultural Heritage Sites Receive UNESCO Recognition',
-        'Social Media Trends Influence Modern Art Movements'
-      ]
-    },
-    {
-      name: 'Environment',
-      slug: 'environment',
-      description: 'Climate change, sustainability, conservation, renewable energy, and environmental policy.',
-      color: 'bg-green-600',
-      articles: 387,
-      trending: true,
-      recentArticles: [
-        'Renewable Energy Initiative Powers Entire City for First Time',
-        'Ocean Conservation Efforts Show Promising Results',
-        'Sustainable Agriculture Practices Gain Global Adoption'
-      ]
-    },
-    {
-      name: 'Education',
-      slug: 'education',
-      description: 'Educational innovations, academic research, student life, and learning technologies.',
-      color: 'bg-yellow-600',
-      articles: 298,
-      trending: false,
-      recentArticles: [
-        'Online Learning Platforms Transform Higher Education',
-        'STEM Education Programs Show Increased Student Engagement',
-        'Educational Technology Bridges Learning Gaps'
-      ]
-    }
-  ];
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/categories?detailed=true');
+        if (response.data.success) {
+          setCategories(response.data.data);
+        } else {
+          setError('Failed to fetch categories');
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError('Failed to load categories. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -150,6 +54,38 @@ export default function AllCategoriesPage() {
 
   const trendingCategories = categories.filter(cat => cat.trending);
   const totalArticles = categories.reduce((sum, cat) => sum + cat.articles, 0);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-600 mx-auto mb-4"></div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading Categories</h3>
+          <p className="text-gray-600">Please wait while we fetch the latest categories...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-red-400 mb-4">
+            <Search className="h-16 w-16 mx-auto" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Categories</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black"
+          >
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -286,13 +222,17 @@ export default function AllCategoriesPage() {
 
                     <div>
                       <h4 className="text-sm font-semibold text-gray-900 mb-3">Recent Articles:</h4>
-                      <ul className="space-y-2">
-                        {category.recentArticles.slice(0, 3).map((article, articleIndex) => (
-                          <li key={articleIndex} className="text-sm text-gray-600 hover:text-yellow-600 transition-colors duration-200 line-clamp-1">
-                            • {article}
-                          </li>
-                        ))}
-                      </ul>
+                      {category.recentArticles && category.recentArticles.length > 0 ? (
+                        <ul className="space-y-2">
+                          {category.recentArticles.slice(0, 3).map((article, articleIndex) => (
+                            <li key={articleIndex} className="text-sm text-gray-600 hover:text-yellow-600 transition-colors duration-200 line-clamp-1">
+                              • {article}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">No recent articles available</p>
+                      )}
                     </div>
 
                     <div className="mt-6 pt-4 border-t border-gray-100">
