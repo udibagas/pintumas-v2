@@ -6,128 +6,110 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
 import Image from 'next/image';
+import axios from 'axios';
 
 interface Article {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   summary: string;
   image: string;
   author: string;
-  publishedAt: string;
+  publishedAt: string | Date;
   readTime: string;
-  views: string;
+  views: number;
   comments: number;
   featured: boolean;
 }
 
 interface CategoryPageClientProps {
-  articles: Article[];
+  initialPosts: Article[];
+  categorySlug: string;
 }
 
-export default function CategoryPageClient({ articles }: CategoryPageClientProps) {
+export default function CategoryPageClient({ initialPosts, categorySlug }: CategoryPageClientProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('latest');
-  const [visibleArticles, setVisibleArticles] = useState(6);
+  const [articles, setArticles] = useState<Article[]>(initialPosts.filter(p => !p.featured));
   const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [visibleArticles, setVisibleArticles] = useState(6);
 
-  // Extended articles dataset for load more functionality
-  const allAdditionalArticles: Article[] = [
-    {
-      id: 7,
-      title: "Advanced Neural Networks Transform Computer Vision",
-      slug: "advanced-neural-networks-transform-computer-vision",
-      summary: "Deep learning breakthroughs enable unprecedented accuracy in image recognition and automated visual analysis systems.",
-      image: "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Rachel Kim",
-      publishedAt: "2 days ago",
-      readTime: "6 min read",
-      views: "7.5K",
-      comments: 41,
-      featured: false
-    },
-    {
-      id: 8,
-      title: "Cybersecurity Innovation Protects Critical Infrastructure",
-      slug: "cybersecurity-innovation-protects-critical-infrastructure",
-      summary: "Next-generation security protocols and AI-driven threat detection systems safeguard essential digital networks.",
-      image: "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Prof. David Wilson",
-      publishedAt: "3 days ago",
-      readTime: "8 min read",
-      views: "12.1K",
-      comments: 63,
-      featured: false
-    },
-    {
-      id: 9,
-      title: "Biotechnology Advances Enable Personalized Medicine",
-      slug: "biotechnology-advances-enable-personalized-medicine",
-      summary: "Genetic profiling and targeted therapies revolutionize treatment approaches for complex medical conditions.",
-      image: "https://images.pexels.com/photos/2280568/pexels-photo-2280568.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Maria Gonzalez",
-      publishedAt: "3 days ago",
-      readTime: "7 min read",
-      views: "9.8K",
-      comments: 37,
-      featured: false
-    },
-    {
-      id: 10,
-      title: "Smart City Technologies Improve Urban Living",
-      slug: "smart-city-technologies-improve-urban-living",
-      summary: "IoT sensors, data analytics, and automated systems optimize traffic flow, energy usage, and public services.",
-      image: "https://images.pexels.com/photos/936722/pexels-photo-936722.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Jennifer Lee",
-      publishedAt: "4 days ago",
-      readTime: "5 min read",
-      views: "8.7K",
-      comments: 29,
-      featured: false
-    },
-    {
-      id: 11,
-      title: "Virtual Reality Applications Expand Beyond Gaming",
-      slug: "virtual-reality-applications-expand-beyond-gaming",
-      summary: "VR technology finds new applications in education, healthcare, training, and professional collaboration.",
-      image: "https://images.pexels.com/photos/123335/pexels-photo-123335.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Alex Turner",
-      publishedAt: "4 days ago",
-      readTime: "6 min read",
-      views: "11.4K",
-      comments: 58,
-      featured: false
-    },
-    {
-      id: 12,
-      title: "Autonomous Vehicle Technology Reaches New Milestones",
-      slug: "autonomous-vehicle-technology-reaches-new-milestones",
-      summary: "Self-driving cars demonstrate improved safety features and navigation capabilities in comprehensive testing programs.",
-      image: "https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Thomas Chen",
-      publishedAt: "5 days ago",
-      readTime: "7 min read",
-      views: "13.2K",
-      comments: 72,
-      featured: false
+  // Helper function to format time ago
+  const formatTimeAgo = (date: string | Date) => {
+    const now = new Date();
+    const postDate = new Date(date);
+    const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    return postDate.toLocaleDateString('id-ID');
+  };
+
+  // Helper function to format views
+  const formatViews = (views: number) => {
+    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+    return views.toString();
+  };
+
+  const handleSortChange = async (newSortBy: string) => {
+    setSortBy(newSortBy);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get(`/api/categories/${categorySlug}/posts?limit=12&offset=0&sortBy=${newSortBy}`);
+
+      if (response.data.success) {
+        const newArticles = response.data.data.posts.filter((p: Article) => !p.featured);
+        setArticles(newArticles);
+        setHasMore(response.data.data.pagination.hasMore);
+        setVisibleArticles(6); // Reset visible articles
+      }
+    } catch (err: any) {
+      console.error('Error sorting articles:', err);
+      setError('Failed to sort articles');
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
   const regularArticles = articles.filter(article => !article.featured);
-  const allRegularArticles = [...regularArticles, ...allAdditionalArticles];
-  const displayedArticles = allRegularArticles.slice(0, visibleArticles);
-  const hasMoreArticles = visibleArticles < allRegularArticles.length;
+  const displayedArticles = regularArticles.slice(0, visibleArticles);
+  const hasMoreArticles = hasMore || visibleArticles < regularArticles.length;
 
   // Handle load more functionality
   const handleLoadMore = async () => {
+    if (isLoading || !hasMore) return;
+
     setIsLoading(true);
+    setError(null);
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // First try to load more from current articles
+      if (visibleArticles < regularArticles.length) {
+        setVisibleArticles(prev => Math.min(prev + 6, regularArticles.length));
+      } else {
+        // Load more from API
+        const response = await axios.get(`/api/categories/${categorySlug}/posts?limit=6&offset=${articles.length}&sortBy=${sortBy}`);
 
-    // Load 3 more articles each time
-    setVisibleArticles(prev => Math.min(prev + 3, allRegularArticles.length));
-    setIsLoading(false);
+        if (response.data.success) {
+          const newArticles = response.data.data.posts.filter((p: Article) => !p.featured);
+          setArticles(prev => [...prev, ...newArticles]);
+          setHasMore(response.data.data.pagination.hasMore);
+          setVisibleArticles(prev => prev + newArticles.length);
+        }
+      }
+    } catch (err: any) {
+      console.error('Error loading more articles:', err);
+      setError('Failed to load more articles');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -135,7 +117,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
       {/* Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 space-y-4 sm:space-y-0">
         <div className="flex items-center space-x-4">
-          <Select value={sortBy} onValueChange={setSortBy}>
+          <Select value={sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="w-40">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
@@ -168,6 +150,13 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
         </div>
       </div>
 
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+
       {/* Articles Grid/List */}
       <section>
         {viewMode === 'grid' ? (
@@ -191,7 +180,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
                     <div className="flex items-center text-sm text-gray-500 mb-3">
                       <span>By {article.author}</span>
                       <span className="mx-2">•</span>
-                      <span>{article.publishedAt}</span>
+                      <span>{formatTimeAgo(article.publishedAt)}</span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-yellow-700 transition-colors duration-200">
                       {article.title}
@@ -212,7 +201,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
                       </div>
                       <div className="flex items-center text-sm text-gray-500">
                         <Eye className="h-4 w-4 mr-1" />
-                        <span>{article.views}</span>
+                        <span>{formatViews(article.views)}</span>
                       </div>
                     </div>
                   </div>
@@ -242,7 +231,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
                       <div className="flex items-center text-sm text-gray-500 mb-3">
                         <span>By {article.author}</span>
                         <span className="mx-2">•</span>
-                        <span>{article.publishedAt}</span>
+                        <span>{formatTimeAgo(article.publishedAt)}</span>
                       </div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-yellow-700 transition-colors duration-200">
                         {article.title}
@@ -262,7 +251,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
                           </div>
                           <div className="flex items-center">
                             <Eye className="h-4 w-4 mr-1" />
-                            <span>{article.views}</span>
+                            <span>{formatViews(article.views)}</span>
                           </div>
                         </div>
                         <Button variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50">
@@ -283,7 +272,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
         <div className="flex items-center justify-center my-8">
           <div className="bg-white rounded-full px-4 py-2 shadow-md">
             <span className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-yellow-600">{visibleArticles}</span> of <span className="font-semibold">{allRegularArticles.length}</span> articles
+              Showing <span className="font-semibold text-yellow-600">{visibleArticles}</span> of <span className="font-semibold">{regularArticles.length}</span> articles
             </span>
           </div>
         </div>
@@ -306,7 +295,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
               <>
                 Load More Articles
                 <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
-                  {allRegularArticles.length - visibleArticles} more
+                  {regularArticles.length - visibleArticles} more
                 </span>
               </>
             )}
@@ -319,7 +308,7 @@ export default function CategoryPageClient({ articles }: CategoryPageClientProps
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">You&apos;ve explored everything!</h3>
               <p className="text-gray-600 mb-4">
-                You&apos;ve viewed all {allRegularArticles.length} articles in this category.
+                You&apos;ve viewed all {regularArticles.length} articles in this category.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

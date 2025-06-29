@@ -1,60 +1,48 @@
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { cookies } from 'next/headers'
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12)
+  return bcrypt.hash(password, 12);
 }
 
-export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  return bcrypt.compare(password, hashedPassword)
+export async function verifyPassword(
+  password: string,
+  hashedPassword: string
+): Promise<boolean> {
+  return bcrypt.compare(password, hashedPassword);
 }
 
 export function generateToken(payload: any): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 }
 
 export function verifyToken(token: string): any {
   try {
-    return jwt.verify(token, JWT_SECRET)
+    return jwt.verify(token, JWT_SECRET);
   } catch (error) {
-    return null
+    return null;
   }
 }
 
 export async function getCurrentUser() {
   try {
-    const cookieStore = cookies()
-    const token = cookieStore.get('auth-token')?.value
+    const cookieStore = cookies();
+    const token = cookieStore.get("auth-token")?.value;
 
     if (!token) {
-      return null
+      return null;
     }
 
-    const decoded = verifyToken(token)
+    const decoded = verifyToken(token);
     if (!decoded) {
-      return null
+      return null;
     }
 
-    return decoded
+    return decoded;
   } catch (error) {
-    return null
+    return null;
   }
-}
-
-export function generateSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w ]+/g, '')
-    .replace(/ +/g, '-')
-    .trim()
-}
-
-export function calculateReadTime(content: string): string {
-  const wordsPerMinute = 200
-  const words = content.split(/\s+/).length
-  const minutes = Math.ceil(words / wordsPerMinute)
-  return `${minutes} min read`
 }

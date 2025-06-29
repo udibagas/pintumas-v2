@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import Image from 'next/image'
+import Link from 'next/link'
 
 interface AdminHeaderProps {
   user: {
@@ -36,28 +38,25 @@ export default function AdminHeader({ user }: AdminHeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-[#011629] border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-gray-900">
-            PINTUMAS Admin
-          </h1>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-64"
+          <h1 className="text-xl font-bold text-white">
+            <Image
+              src="/images/pintumas.png"
+              alt="PINTUMAS Logo"
+              width={32}
+              height={32}
+              className="inline-block mr-2"
             />
-          </div>
+            PINTUMAS Admin Panel
+          </h1>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm">
+        <div className="flex items-center space-x-4 text-white">
+          {/* <Button variant="ghost" size="sm">
             <Bell className="h-4 w-4" />
-          </Button>
+          </Button> */}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -75,7 +74,7 @@ export default function AdminHeader({ user }: AdminHeaderProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
-                Profile
+                <Link href='/admin/profile'>Profile</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />

@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import PostForm from '@/components/admin/PostForm'
 
+// Force dynamic rendering for database queries
+export const dynamic = 'force-dynamic'
+
 export default async function NewPostPage() {
   const categories = await prisma.category.findMany({
     orderBy: { name: 'asc' }
@@ -17,7 +20,7 @@ export default async function NewPostPage() {
         <p className="text-gray-600">Write and publish a new article</p>
       </div>
 
-      <PostForm 
+      <PostForm
         categories={categories}
         tags={tags}
         mode="create"

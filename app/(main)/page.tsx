@@ -1,7 +1,6 @@
 import HeroSection from '@/components/HeroSection';
 import CategoriesSection from '@/components/CategoriesSection';
 import LatestNewsSection from '@/components/LatestNewsSection';
-import NewsletterSection from '@/components/NewsletterSection';
 
 export default function Home() {
   return (
@@ -9,7 +8,6 @@ export default function Home() {
       <HeroSection />
       <CategoriesSection />
       <LatestNewsSection />
-      <NewsletterSection />
     </>
   );
 }

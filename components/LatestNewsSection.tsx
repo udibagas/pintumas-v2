@@ -1,191 +1,145 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, MessageCircle, Share2, BookmarkPlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import Image from 'next/image';
+import axios from 'axios';
+
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  image: string;
+  category: string;
+  categorySlug: string;
+  categoryColor?: string;
+  readTime: string;
+  views: number;
+  author: string;
+  publishedAt: string | Date;
+  createdAt: string | Date;
+  comments: number;
+}
+
+interface PaginationInfo {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
 
 export default function LatestNewsSection() {
-  const [visibleArticles, setVisibleArticles] = useState(6);
+  const [articles, setArticles] = useState<Post[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Extended articles list with additional content
-  const allNewsArticles = [
-    {
-      id: 1,
-      title: "Revolutionary AI Algorithm Predicts Weather Patterns with 95% Accuracy",
-      slug: "revolutionary-ai-algorithm-predicts-weather-patterns",
-      summary: "Scientists develop groundbreaking machine learning model that could transform meteorological forecasting and climate research worldwide.",
-      image: "https://images.pexels.com/photos/1422286/pexels-photo-1422286.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Technology",
-      author: "Dr. Emily Chen",
-      publishedAt: "3 hours ago",
-      readTime: "7 min read",
-      comments: 45,
-      categoryColor: "bg-purple-500"
-    },
-    {
-      id: 2,
-      title: "Global Markets Surge as Trade Agreements Reach Final Negotiations",
-      slug: "global-markets-surge-trade-agreements-final-negotiations",
-      summary: "International trade talks show promising results as major economies prepare to sign comprehensive partnership agreements this quarter.",
-      image: "https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Business",
-      author: "Michael Rodriguez",
-      publishedAt: "5 hours ago",
-      readTime: "5 min read",
-      comments: 32,
-      categoryColor: "bg-blue-500"
-    },
-    {
-      id: 3,
-      title: "Breakthrough Gene Therapy Shows Promise for Treating Rare Diseases",
-      slug: "breakthrough-gene-therapy-shows-promise",
-      summary: "Clinical trials reveal significant improvements in patients with genetic disorders, offering hope for previously untreatable conditions.",
-      image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Health",
-      author: "Dr. Sarah Williams",
-      publishedAt: "8 hours ago",
-      readTime: "6 min read",
-      comments: 28,
-      categoryColor: "bg-green-500"
-    },
-    {
-      id: 4,
-      title: "Olympic Champions Prepare for World Athletics Championships",
-      slug: "olympic-champions-prepare-world-athletics-championships",
-      summary: "Elite athletes from around the globe gather as preparations intensify for what promises to be the most competitive championship in decades.",
-      image: "https://images.pexels.com/photos/209969/pexels-photo-209969.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Sports",
-      author: "James Thompson",
-      publishedAt: "12 hours ago",
-      readTime: "4 min read",
-      comments: 67,
-      categoryColor: "bg-orange-500"
-    },
-    {
-      id: 5,
-      title: "Archaeological Discovery Reveals Ancient Civilization Secrets",
-      slug: "archaeological-discovery-reveals-ancient-civilization-secrets",
-      summary: "Recent excavations uncover sophisticated urban planning and advanced technologies from a previously unknown ancient society.",
-      image: "https://images.pexels.com/photos/17486/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=600",
-      category: "Science",
-      author: "Prof. Anna Martinez",
-      publishedAt: "1 day ago",
-      readTime: "8 min read",
-      comments: 53,
-      categoryColor: "bg-teal-500"
-    },
-    {
-      id: 6,
-      title: "Renewable Energy Initiative Powers Entire City for First Time",
-      slug: "renewable-energy-initiative-powers-entire-city",
-      summary: "Landmark achievement in sustainable energy as solar and wind infrastructure successfully meets 100% of urban energy demands.",
-      image: "https://images.pexels.com/photos/371900/pexels-photo-371900.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Environment",
-      author: "David Park",
-      publishedAt: "1 day ago",
-      readTime: "5 min read",
-      comments: 89,
-      categoryColor: "bg-green-600"
-    },
-    // Additional articles for load more functionality
-    {
-      id: 7,
-      title: "Quantum Computing Breakthrough Accelerates Drug Discovery Process",
-      slug: "quantum-computing-breakthrough-accelerates-drug-discovery",
-      summary: "Pharmaceutical companies leverage quantum computing to reduce drug development timelines from decades to years.",
-      image: "https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Technology",
-      author: "Dr. Robert Kim",
-      publishedAt: "2 days ago",
-      readTime: "6 min read",
-      comments: 41,
-      categoryColor: "bg-purple-500"
-    },
-    {
-      id: 8,
-      title: "International Space Station Achieves Record-Breaking Research Milestone",
-      slug: "international-space-station-research-milestone",
-      summary: "Astronauts conduct groundbreaking experiments that could revolutionize materials science and medical treatments.",
-      image: "https://images.pexels.com/photos/796206/pexels-photo-796206.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Science",
-      author: "Commander Lisa Chen",
-      publishedAt: "2 days ago",
-      readTime: "7 min read",
-      comments: 76,
-      categoryColor: "bg-teal-500"
-    },
-    {
-      id: 9,
-      title: "Sustainable Agriculture Technology Increases Crop Yields by 40%",
-      slug: "sustainable-agriculture-technology-increases-crop-yields",
-      summary: "Innovative farming techniques combine AI, IoT sensors, and precision agriculture to boost food production sustainably.",
-      image: "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Environment",
-      author: "Prof. Maria Santos",
-      publishedAt: "3 days ago",
-      readTime: "5 min read",
-      comments: 62,
-      categoryColor: "bg-green-600"
-    },
-    {
-      id: 10,
-      title: "Central Banks Announce Digital Currency Implementation Timeline",
-      slug: "central-banks-digital-currency-implementation",
-      summary: "Major economies set concrete dates for rolling out central bank digital currencies, marking a historic shift in monetary systems.",
-      image: "https://images.pexels.com/photos/730564/pexels-photo-730564.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Business",
-      author: "Sarah Johnson",
-      publishedAt: "3 days ago",
-      readTime: "8 min read",
-      comments: 94,
-      categoryColor: "bg-blue-500"
-    },
-    {
-      id: 11,
-      title: "Mental Health Initiative Launches in Schools Nationwide",
-      slug: "mental-health-initiative-schools-nationwide",
-      summary: "Comprehensive mental wellness programs roll out across educational institutions, featuring counseling services and mindfulness training.",
-      image: "https://images.pexels.com/photos/8923943/pexels-photo-8923943.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Health",
-      author: "Dr. Jennifer Lee",
-      publishedAt: "4 days ago",
-      readTime: "6 min read",
-      comments: 38,
-      categoryColor: "bg-green-500"
-    },
-    {
-      id: 12,
-      title: "Professional Esports League Announces Record Prize Pool",
-      slug: "professional-esports-league-record-prize-pool",
-      summary: "Gaming industry reaches new heights as competitive tournaments offer unprecedented financial rewards for digital athletes.",
-      image: "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Sports",
-      author: "Alex Turner",
-      publishedAt: "4 days ago",
-      readTime: "4 min read",
-      comments: 125,
-      categoryColor: "bg-orange-500"
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const fetchInitialData = async () => {
+    try {
+      setIsInitialLoading(true);
+      setError(null);
+
+      const response = await axios.get('/api/posts/latest?limit=6&offset=0');
+
+      if (response.data.success) {
+        setArticles(response.data.data);
+        setPagination(response.data.pagination);
+      }
+    } catch (err: any) {
+      console.error('Error fetching latest posts:', err);
+      setError('Failed to load articles');
+    } finally {
+      setIsInitialLoading(false);
     }
-  ];
+  };
 
-  // Get articles to display based on current state
-  const displayedArticles = allNewsArticles.slice(0, visibleArticles);
-  const hasMoreArticles = visibleArticles < allNewsArticles.length;
+  // Helper function to format time ago
+  const formatTimeAgo = (date: string | Date) => {
+    const now = new Date();
+    const postDate = new Date(date);
+    const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    return postDate.toLocaleDateString('id-ID');
+  };
 
   // Handle load more functionality
   const handleLoadMore = async () => {
+    if (!pagination) return;
+
     setIsLoading(true);
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const response = await axios.get(`/api/posts/latest?limit=3&offset=${articles.length}`);
 
-    // Load 3 more articles each time
-    setVisibleArticles(prev => Math.min(prev + 3, allNewsArticles.length));
-    setIsLoading(false);
+      if (response.data.success) {
+        setArticles(prev => [...prev, ...response.data.data]);
+        setPagination(response.data.pagination);
+      }
+    } catch (err: any) {
+      console.error('Error loading more posts:', err);
+      setError('Failed to load more articles');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (isInitialLoading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-48 mb-4"></div>
+              <div className="h-6 bg-gray-200 rounded animate-pulse w-96"></div>
+            </div>
+            <div className="h-10 bg-gray-200 rounded animate-pulse w-32"></div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="h-48 bg-gray-200 animate-pulse"></div>
+                <div className="p-6">
+                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-3"></div>
+                  <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error && articles.length === 0) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={fetchInitialData} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -218,7 +172,7 @@ export default function LatestNewsSection() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayedArticles.map((article, index) => (
+          {articles.map((article, index) => (
             <Link
               key={article.id}
               href={`/post/${article.slug}`}
@@ -228,17 +182,21 @@ export default function LatestNewsSection() {
                 className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer hover:-translate-y-1"
                 style={{
                   animationDelay: `${(index % 3) * 100}ms`,
-                  animation: index >= visibleArticles - 3 && !isLoading ? 'fadeInUp 0.6s ease-out forwards' : 'none'
+                  animation: index >= articles.length - 3 && !isLoading ? 'fadeInUp 0.6s ease-out forwards' : 'none'
                 }}
               >
                 <div className="relative overflow-hidden">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                  <div className="w-full h-48 relative">
+                    <Image
+                      src={article.image}
+                      alt={article.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
                   <div className="absolute top-4 left-4">
-                    <Badge className={`${article.categoryColor} text-white font-semibold`}>
+                    <Badge className="text-white font-semibold"
+                      style={{ backgroundColor: article.categoryColor || '#3B82F6' }}>
                       {article.category}
                     </Badge>
                   </div>
@@ -248,7 +206,7 @@ export default function LatestNewsSection() {
                   <div className="flex items-center text-sm text-gray-500 mb-3">
                     <span>Oleh {article.author}</span>
                     <span className="mx-2">•</span>
-                    <span>{article.publishedAt}</span>
+                    <span>{formatTimeAgo(article.publishedAt)}</span>
                   </div>
 
                   <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-yellow-700 transition-colors duration-200">
@@ -313,18 +271,18 @@ export default function LatestNewsSection() {
         </div>
 
         {/* Progress Indicator */}
-        {visibleArticles > 6 && (
+        {pagination && articles.length > 6 && (
           <div className="flex items-center justify-center mb-8">
             <div className="bg-white rounded-full px-4 py-2 shadow-md">
               <span className="text-sm text-gray-600">
-                Menampilkan <span className="font-semibold text-yellow-600">{visibleArticles}</span> dari <span className="font-semibold">{allNewsArticles.length}</span> artikel
+                Menampilkan <span className="font-semibold text-yellow-600">{articles.length}</span> dari <span className="font-semibold">{pagination.total}</span> artikel
               </span>
             </div>
           </div>
         )}
 
         <div className="text-center mt-12">
-          {hasMoreArticles ? (
+          {pagination?.hasMore ? (
             <Button
               onClick={handleLoadMore}
               disabled={isLoading}
@@ -339,7 +297,7 @@ export default function LatestNewsSection() {
                 <>
                   Muat Lebih Banyak Artikel
                   <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
-                    {allNewsArticles.length - visibleArticles} lagi
+                    {pagination.total - articles.length} lagi
                   </span>
                 </>
               )}
@@ -348,7 +306,7 @@ export default function LatestNewsSection() {
             <div className="text-gray-500">
               <p className="text-lg font-medium mb-2">Anda telah mencapai akhir!</p>
               <p className="text-sm">
-                Menampilkan semua {allNewsArticles.length} artikel. Periksa kembali nanti untuk berita lebih lanjut.
+                Menampilkan semua {articles.length} artikel. Periksa kembali nanti untuk berita lebih lanjut.
               </p>
               <Link href="/news" className="inline-block mt-4">
                 <Button variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50">

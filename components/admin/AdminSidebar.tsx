@@ -12,6 +12,7 @@ import {
   Tags,
   Settings,
   BarChart3,
+  Megaphone,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -38,6 +39,12 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       name: 'Comments',
       href: '/admin/comments',
       icon: MessageSquare,
+      roles: ['ADMIN', 'MODERATOR'],
+    },
+    {
+      name: 'Announcements',
+      href: '/admin/announcements',
+      icon: Megaphone,
       roles: ['ADMIN', 'MODERATOR'],
     },
     {
@@ -72,7 +79,7 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
     },
   ]
 
-  const filteredNavigation = navigation.filter(item => 
+  const filteredNavigation = navigation.filter(item =>
     item.roles.includes(userRole)
   )
 

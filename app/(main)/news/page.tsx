@@ -3,135 +3,72 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
+import Image from 'next/image';
 import NewsGridClient from './NewsGridClient';
 
-export default function NewsPage() {
-  // Extended news articles list
-  const allNews = [
-    {
-      id: 1,
-      title: "Revolutionary AI Algorithm Predicts Weather Patterns with 95% Accuracy",
-      slug: "revolutionary-ai-algorithm-predicts-weather-patterns",
-      summary: "Scientists develop groundbreaking machine learning model that could transform meteorological forecasting and climate research worldwide.",
-      image: "https://images.pexels.com/photos/1422286/pexels-photo-1422286.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Technology",
-      author: "Dr. Emily Chen",
-      publishedAt: "3 hours ago",
-      readTime: "7 min read",
-      comments: 45,
-      views: "12.4K",
-      categoryColor: "bg-purple-500",
-      featured: true
-    },
-    {
-      id: 2,
-      title: "Global Markets Surge as Trade Agreements Reach Final Negotiations",
-      slug: "global-markets-surge-trade-agreements-final-negotiations",
-      summary: "International trade talks show promising results as major economies prepare to sign comprehensive partnership agreements this quarter.",
-      image: "https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Business",
-      author: "Michael Rodriguez",
-      publishedAt: "5 hours ago",
-      readTime: "5 min read",
-      comments: 32,
-      views: "8.7K",
-      categoryColor: "bg-blue-500",
-      featured: false
-    },
-    {
-      id: 3,
-      title: "Breakthrough Gene Therapy Shows Promise for Treating Rare Diseases",
-      slug: "breakthrough-gene-therapy-shows-promise",
-      summary: "Clinical trials reveal significant improvements in patients with genetic disorders, offering hope for previously untreatable conditions.",
-      image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Health",
-      author: "Dr. Sarah Williams",
-      publishedAt: "8 hours ago",
-      readTime: "6 min read",
-      comments: 28,
-      views: "6.3K",
-      categoryColor: "bg-green-500",
-      featured: false
-    },
-    {
-      id: 4,
-      title: "Olympic Champions Prepare for World Athletics Championships",
-      slug: "olympic-champions-prepare-world-athletics-championships",
-      summary: "Elite athletes from around the globe gather as preparations intensify for what promises to be the most competitive championship in decades.",
-      image: "https://images.pexels.com/photos/209969/pexels-photo-209969.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Sports",
-      author: "James Thompson",
-      publishedAt: "12 hours ago",
-      readTime: "4 min read",
-      comments: 67,
-      views: "15.2K",
-      categoryColor: "bg-orange-500",
-      featured: false
-    },
-    {
-      id: 5,
-      title: "Archaeological Discovery Reveals Ancient Civilization Secrets",
-      slug: "archaeological-discovery-reveals-ancient-civilization-secrets",
-      summary: "Recent excavations uncover sophisticated urban planning and advanced technologies from a previously unknown ancient society.",
-      image: "https://images.pexels.com/photos/17486/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=600",
-      category: "Science",
-      author: "Prof. Anna Martinez",
-      publishedAt: "1 day ago",
-      readTime: "8 min read",
-      comments: 53,
-      views: "9.8K",
-      categoryColor: "bg-teal-500",
-      featured: false
-    },
-    {
-      id: 6,
-      title: "Renewable Energy Initiative Powers Entire City for First Time",
-      slug: "renewable-energy-initiative-powers-entire-city",
-      summary: "Landmark achievement in sustainable energy as solar and wind infrastructure successfully meets 100% of urban energy demands.",
-      image: "https://images.pexels.com/photos/371900/pexels-photo-371900.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Environment",
-      author: "David Park",
-      publishedAt: "1 day ago",
-      readTime: "5 min read",
-      comments: 89,
-      views: "18.5K",
-      categoryColor: "bg-green-600",
-      featured: false
-    },
-    {
-      id: 7,
-      title: "Quantum Computing Breakthrough Promises Faster Drug Discovery",
-      slug: "quantum-computing-breakthrough-faster-drug-discovery",
-      summary: "Researchers harness quantum computing power to accelerate pharmaceutical research and development processes.",
-      image: "https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Technology",
-      author: "Dr. Robert Kim",
-      publishedAt: "2 days ago",
-      readTime: "6 min read",
-      comments: 41,
-      views: "7.9K",
-      categoryColor: "bg-purple-500",
-      featured: false
-    },
-    {
-      id: 8,
-      title: "Space Mission Successfully Deploys Advanced Satellite Network",
-      slug: "space-mission-deploys-advanced-satellite-network",
-      summary: "Latest space mission establishes global communication infrastructure with unprecedented coverage and reliability.",
-      image: "https://images.pexels.com/photos/796206/pexels-photo-796206.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: "Science",
-      author: "Commander Lisa Chen",
-      publishedAt: "2 days ago",
-      readTime: "7 min read",
-      comments: 76,
-      views: "22.1K",
-      categoryColor: "bg-teal-500",
-      featured: false
-    }
-  ];
+export const dynamic = 'force-dynamic';
 
-  const featuredNews = allNews.filter(article => article.featured);
-  const regularNews = allNews.filter(article => !article.featured);
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  image: string;
+  category: string;
+  categorySlug: string;
+  categoryColor?: string;
+  readTime: string;
+  views: number;
+  author: string;
+  publishedAt: string | Date;
+  createdAt: string | Date;
+  featured: boolean;
+  comments: number;
+}
+
+async function getPosts() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/posts?limit=20&sortBy=latest`, {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch posts');
+    }
+
+    const data = await response.json();
+    return data.success ? data.data : [];
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    return [];
+  }
+}
+
+// Helper function to format time ago
+const formatTimeAgo = (date: string | Date) => {
+  const now = new Date();
+  const postDate = new Date(date);
+  const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
+
+  if (diffInHours < 1) return 'Just now';
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  return postDate.toLocaleDateString('id-ID');
+};
+
+// Helper function to format views
+const formatViews = (views: number) => {
+  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+  if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+  return views.toString();
+};
+
+export default async function NewsPage() {
+  const allNews = await getPosts();
+  const featuredNews = allNews.filter((article: Post) => article.featured);
+  const regularNews = allNews.filter((article: Post) => !article.featured);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -155,19 +92,21 @@ export default function NewsPage() {
       {featuredNews.length > 0 && (
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Story</h2>
-          {featuredNews.map((article) => (
+          {featuredNews.map((article: Post) => (
             <Link key={article.id} href={`/post/${article.slug}`} className="block">
               <article className="bg-white rounded-2xl shadow-xl overflow-hidden group cursor-pointer hover:shadow-2xl transition-all duration-300">
                 <div className="lg:flex">
-                  <div className="lg:w-1/2">
-                    <img
+                  <div className="lg:w-1/2 relative h-64 lg:h-96">
+                    <Image
                       src={article.image}
                       alt={article.title}
-                      className="w-full h-64 lg:h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="lg:w-1/2 p-8 lg:p-12">
-                    <Badge className={`${article.categoryColor} text-white mb-4`}>
+                    <Badge className="text-white mb-4"
+                      style={{ backgroundColor: article.categoryColor || '#3B82F6' }}>
                       {article.category}
                     </Badge>
                     <h3 className="text-3xl font-bold text-gray-900 mb-4 group-hover:text-yellow-700 transition-colors duration-200">
@@ -180,7 +119,7 @@ export default function NewsPage() {
                       <div className="flex items-center text-sm text-gray-500">
                         <span>By {article.author}</span>
                         <span className="mx-2">•</span>
-                        <span>{article.publishedAt}</span>
+                        <span>{formatTimeAgo(article.publishedAt)}</span>
                       </div>
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <div className="flex items-center">
@@ -189,7 +128,7 @@ export default function NewsPage() {
                         </div>
                         <div className="flex items-center">
                           <Eye className="h-4 w-4 mr-1" />
-                          <span>{article.views}</span>
+                          <span>{formatViews(article.views)}</span>
                         </div>
                         <div className="flex items-center">
                           <MessageCircle className="h-4 w-4 mr-1" />
@@ -225,7 +164,7 @@ export default function NewsPage() {
       </div>
 
       {/* News Grid with Load More Functionality */}
-      <NewsGridClient initialArticles={allNews} />
+      <NewsGridClient initialArticles={regularNews} />
     </div>
   );
 }

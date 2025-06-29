@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has admin/moderator role
-    if (user.role !== "ADMIN" && user.role !== "MODERATOR") {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
+    // if (user.role !== "ADMIN" && user.role !== "MODERATOR") {
+    //   return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    // }
 
     // Generate JWT token
     const token = generateToken({

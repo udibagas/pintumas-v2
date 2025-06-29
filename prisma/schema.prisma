@@ -22,8 +22,9 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  posts     Post[]
-  comments  Comment[]
+  posts    Post[]
+  comments Comment[]
+  Media    Media[]
 
   @@map("users")
 }
@@ -50,24 +51,78 @@ model Post {
   slug        String    @unique
   summary     String?
   content     String
-  image       String?
+  imageUrl    String?
   status      Status    @default(DRAFT)
   featured    Boolean   @default(false)
   views       Int       @default(0)
   readTime    String?
   publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  // Announcement fields
+  isAnnouncement   Boolean           @default(false)
+  announcementType AnnouncementType? // Only used if isAnnouncement is true
+  priority         Int               @default(1) // 1=low, 2=medium, 3=high, 4=urgent
+  startDate        DateTime? // When to start showing (for announcements)
+  endDate          DateTime? // When to stop showing (for announcements)
+  linkUrl          String? // Optional external link for announcements
+  linkText         String? // Text for the link
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   authorId   String
-  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author     User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   comments   Comment[]
   tags       PostTag[]
+  PostMedia  PostMedia[]
 
   @@map("posts")
+}
+
+model Media {
+  id        String      @id @default(cuid())
+  url       String // Cloud URL (S3, Cloudinary, etc.)
+  filename  String // Original filename
+  caption   String? // Optional caption for media
+  type      MediaType
+  width     Int? // For images/videos
+  height    Int? // For images/videos
+  duration  Int? // For videos (in seconds)
+  format    String? // e.g., "jpg", "mp4", "pdf"
+  size      Int? // File size in bytes
+  author    User?       @relation(fields: [authorId], references: [id])
+  authorId  String?
+  createdAt DateTime    @default(now())
+  PostMedia PostMedia[]
+}
+
+model PostMedia {
+  id        String   @id @default(cuid())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  mediaId   String
+  createdAt DateTime @default(now())
+
+  @@unique([postId, mediaId]) // Prevent multiple attachments of same media to a post
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT // PDFs, Word files
+  AUDIO
+}
+
+enum AnnouncementType {
+  INFO // General information
+  BREAKING // Breaking news
+  ALERT // Important alerts
+  EVENT // Event announcements
+  MAINTENANCE // System maintenance
 }
 
 model Tag {
@@ -97,11 +152,11 @@ model PostTag {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   content   String
   status    CommentStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   // Relations
   authorId String

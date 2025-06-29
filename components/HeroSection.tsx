@@ -5,61 +5,85 @@ import { Clock, TrendingUp, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import Image from 'next/image';
+import axios from 'axios';
+
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  image: string;
+  category: string;
+  categorySlug: string;
+  categoryColor?: string;
+  readTime: string;
+  views: number;
+  author: string;
+  publishedAt: string | Date;
+  createdAt: string | Date;
+}
 
 export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [featuredStories, setFeaturedStories] = useState<Post[]>([]);
+  const [trendingStories, setTrendingStories] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const featuredStories = [
-    {
-      id: 1,
-      title: "Global Climate Summit Reaches Historic Agreement on Carbon Emissions",
-      slug: "global-climate-summit-historic-agreement-carbon-emissions",
-      summary: "World leaders unite in unprecedented commitment to reduce global carbon footprint by 60% over the next decade, marking a pivotal moment in environmental policy.",
-      image: "https://images.pexels.com/photos/1108701/pexels-photo-1108701.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      category: "Environment",
-      readTime: "8 min read",
-      views: "2.4K",
-      author: "Sarah Johnson",
-      publishedAt: "2 hours ago"
-    },
-    {
-      id: 2,
-      title: "Revolutionary AI Algorithm Predicts Weather Patterns with 95% Accuracy",
-      slug: "revolutionary-ai-algorithm-predicts-weather-patterns",
-      summary: "Scientists develop groundbreaking machine learning model that could transform meteorological forecasting and climate research worldwide.",
-      image: "https://images.pexels.com/photos/1422286/pexels-photo-1422286.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      category: "Technology",
-      readTime: "7 min read",
-      views: "12.4K",
-      author: "Dr. Emily Chen",
-      publishedAt: "3 hours ago"
-    },
-    {
-      id: 3,
-      title: "Breakthrough Gene Therapy Shows Promise for Treating Rare Diseases",
-      slug: "breakthrough-gene-therapy-shows-promise",
-      summary: "Clinical trials reveal significant improvements in patients with genetic disorders, offering hope for previously untreatable conditions.",
-      image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      category: "Health",
-      readTime: "6 min read",
-      views: "8.2K",
-      author: "Dr. Sarah Williams",
-      publishedAt: "5 hours ago"
-    },
-    {
-      id: 4,
-      title: "Space Mission Successfully Deploys Advanced Satellite Network",
-      slug: "space-mission-deploys-advanced-satellite-network",
-      summary: "Latest space mission establishes global communication infrastructure with unprecedented coverage and reliability.",
-      image: "https://images.pexels.com/photos/796206/pexels-photo-796206.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      category: "Science",
-      readTime: "7 min read",
-      views: "22.1K",
-      author: "Commander Lisa Chen",
-      publishedAt: "6 hours ago"
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [featuredResponse, trendingResponse] = await Promise.all([
+        axios.get('/api/posts/featured'),
+        axios.get('/api/posts/trending')
+      ]);
+
+      if (featuredResponse.data.success) {
+        setFeaturedStories(featuredResponse.data.data.slice(0, 4)); // Limit to 4 for carousel
+      }
+
+      if (trendingResponse.data.success) {
+        setTrendingStories(trendingResponse.data.data.slice(0, 3)); // Limit to 3 for sidebar
+      }
+    } catch (err: any) {
+      console.error('Error fetching posts:', err);
+      setError('Failed to load posts');
+
+      // Fallback data
+      setFeaturedStories([]);
+      setTrendingStories([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Helper function to format time ago
+  const formatTimeAgo = (date: string | Date) => {
+    const now = new Date();
+    const postDate = new Date(date);
+    const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    return postDate.toLocaleDateString('id-ID');
+  };
+
+  // Helper function to format views
+  const formatViews = (views: number) => {
+    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+    return views.toString();
+  };
 
   // Auto-advance carousel
   useEffect(() => {
@@ -87,32 +111,48 @@ export default function HeroSection() {
     setIsAutoPlaying(false);
   };
 
-  const trendingStories = [
-    {
-      title: "Tech Giants Report Record Q4 Earnings Despite Market Volatility",
-      slug: "tech-giants-report-record-q4-earnings-market-volatility",
-      image: "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: "Business",
-      readTime: "5 min",
-      publishedAt: "4 hours ago"
-    },
-    {
-      title: "Quantum Computing Reaches New Milestone in Processing Power",
-      slug: "quantum-computing-reaches-new-milestone",
-      image: "https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: "Technology",
-      readTime: "6 min",
-      publishedAt: "6 hours ago"
-    },
-    {
-      title: "International Space Station Welcomes New Research Crew",
-      slug: "international-space-station-research-milestone",
-      image: "https://images.pexels.com/photos/796206/pexels-photo-796206.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: "Science",
-      readTime: "4 min",
-      publishedAt: "8 hours ago"
-    }
-  ];
+  if (loading) {
+    return (
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Loading skeleton for carousel */}
+            <div className="lg:col-span-2">
+              <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-gray-200 animate-pulse aspect-[16/10]"></div>
+            </div>
+            {/* Loading skeleton for sidebar */}
+            <div className="space-y-6">
+              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex space-x-4 p-4">
+                  <div className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || featuredStories.length === 0) {
+    return (
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{error || 'No featured stories available'}</p>
+            <Button onClick={fetchData} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-gray-50 py-12">
@@ -130,16 +170,19 @@ export default function HeroSection() {
                   <div key={story.id} className="w-full flex-shrink-0 relative group">
                     <Link href={`/post/${story.slug}`} className="block">
                       <div className="aspect-[16/10] overflow-hidden">
-                        <img
+                        <Image
                           src={story.image}
                           alt={story.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          priority={currentSlide === 0} // Only prioritize the first slide
                         />
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                       <div className="absolute bottom-0 left-0 right-0 p-8">
                         <div className="flex items-center space-x-4 mb-4">
-                          <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
+                          <Badge className="text-white font-semibold"
+                            style={{ backgroundColor: story.categoryColor || '#EAB308' }}>
                             {story.category}
                           </Badge>
                           <div className="flex items-center text-yellow-300 text-sm">
@@ -161,10 +204,10 @@ export default function HeroSection() {
                             </div>
                             <div className="flex items-center">
                               <Eye className="h-4 w-4 mr-1" />
-                              <span>{story.views}</span>
+                              <span>{formatViews(story.views)}</span>
                             </div>
                             <span>Oleh {story.author}</span>
-                            <span>{story.publishedAt}</span>
+                            <span>{formatTimeAgo(story.publishedAt)}</span>
                           </div>
                           <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
                             Baca Selengkapnya
@@ -237,17 +280,17 @@ export default function HeroSection() {
                   onMouseEnter={() => setIsAutoPlaying(false)}
                   onMouseLeave={() => setIsAutoPlaying(true)}
                 >
-                  <img
-                    src={story.image}
-                    alt={story.title}
-                    className="w-20 h-12 object-cover"
-                  />
+                  <div className="w-20 h-12 relative">
+                    <Image
+                      src={story.image}
+                      alt={story.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                   <div className="absolute inset-0 bg-black/20"></div>
-                  <Badge className={`absolute bottom-1 left-1 text-xs py-0 px-1 ${story.category === 'Technology' ? 'bg-purple-500' :
-                    story.category === 'Health' ? 'bg-green-500' :
-                      story.category === 'Science' ? 'bg-teal-500' :
-                        'bg-blue-500'
-                    } text-white`}>
+                  <Badge className="absolute bottom-1 left-1 text-xs py-0 px-1 text-white"
+                    style={{ backgroundColor: story.categoryColor || '#3B82F6' }}>
                     {story.category}
                   </Badge>
                 </button>
@@ -267,18 +310,21 @@ export default function HeroSection() {
                 <div className="group cursor-pointer">
                   <div className="flex space-x-4 p-4 rounded-xl hover:bg-yellow-50 transition-colors duration-200">
                     <div className="flex-shrink-0">
-                      <img
-                        src={story.image}
-                        alt={story.title}
-                        className="w-20 h-20 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
-                      />
+                      <div className="w-20 h-20 relative rounded-lg overflow-hidden">
+                        <Image
+                          src={story.image}
+                          alt={story.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-2">
                         <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
                           {story.category}
                         </Badge>
-                        <span className="text-xs text-gray-500">{story.publishedAt}</span>
+                        <span className="text-xs text-gray-500">{formatTimeAgo(story.publishedAt)}</span>
                       </div>
                       <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-yellow-700 transition-colors duration-200 mb-2">
                         {story.title}

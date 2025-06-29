@@ -10,6 +10,26 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import axios from 'axios';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  articles: number;
+}
+
+interface Announcement {
+  id: string;
+  text: string;
+  content: string | null;
+  type: string;
+  priority: number;
+  linkUrl: string | null;
+  linkText: string | null;
+  createdAt: string;
+  author: string;
+}
 
 export default function Header() {
   const router = useRouter();
@@ -22,10 +42,17 @@ export default function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
+  const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
   const [userProfile, setUserProfile] = useState<{
+    id: string;
     name: string;
     email: string;
-    avatar: string;
+    avatar: string | null;
+    role: string;
   } | null>(null);
   const [authError, setAuthError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -71,14 +98,89 @@ export default function Header() {
       setRecentSearches(JSON.parse(saved));
     }
 
-    // Load user authentication state
-    const savedUser = localStorage.getItem('userProfile');
-    const savedAuth = localStorage.getItem('isAuthenticated');
-    if (savedUser && savedAuth === 'true') {
-      setUserProfile(JSON.parse(savedUser));
-      setIsAuthenticated(true);
-    }
+    // Check authentication status from backend
+    checkAuthStatus();
+
+    // Fetch categories from backend
+    fetchCategories();
+
+    // Fetch announcements from backend
+    fetchAnnouncements();
   }, []);
+
+  // Cycle through announcements
+  useEffect(() => {
+    if (announcements.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentAnnouncementIndex((prev) =>
+          (prev + 1) % announcements.length
+        );
+      }, 5000); // Change every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [announcements]);
+
+  // Check authentication status
+  const checkAuthStatus = async () => {
+    try {
+      const response = await axios.get('/api/auth/me');
+      if (response.data.success) {
+        setUserProfile(response.data.user);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      // User is not authenticated, clear local state
+      setIsAuthenticated(false);
+      setUserProfile(null);
+    }
+  };
+
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await axios.get('/api/categories');
+      if (response.data.success) {
+        setCategories(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      // Fallback to default categories
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  // Fetch announcements from API
+  const fetchAnnouncements = async () => {
+    try {
+      setAnnouncementsLoading(true);
+      const response = await axios.get('/api/announcements');
+      if (response.data.success) {
+        setAnnouncements(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch announcements:', error);
+      // Fallback to default announcements
+      setAnnouncements([
+        {
+          id: '1',
+          text: 'Welcome to PINTUMAS - Your trusted source for port information',
+          content: 'Stay updated with the latest news',
+          type: 'info',
+          priority: 1,
+          linkUrl: null,
+          linkText: null,
+          createdAt: new Date().toISOString(),
+          author: 'System'
+        }
+      ]);
+    } finally {
+      setAnnouncementsLoading(false);
+    }
+  };
 
   // Authentication functions
   const handleSignIn = async (e: React.FormEvent) => {
@@ -86,29 +188,27 @@ export default function Header() {
     setIsLoading(true);
     setAuthError('');
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Mock authentication - in real app, call your API
-    if (signInForm.email && signInForm.password) {
-      const mockUser = {
-        name: signInForm.email.split('@')[0],
+    try {
+      const response = await axios.post('/api/auth/login', {
         email: signInForm.email,
-        avatar: `https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=150`
-      };
+        password: signInForm.password,
+      });
 
-      setUserProfile(mockUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('userProfile', JSON.stringify(mockUser));
-      localStorage.setItem('isAuthenticated', 'true');
-      setIsAuthModalOpen(false);
+      if (response.data.success) {
+        setUserProfile(response.data.user);
+        setIsAuthenticated(true);
+        setIsAuthModalOpen(false);
 
-      // Reset form
-      setSignInForm({ email: '', password: '' });
-    } else {
-      setAuthError('Please fill in all fields');
+        // Reset form
+        setSignInForm({ email: '', password: '' });
+      } else {
+        setAuthError('Login failed. Please try again.');
+      }
+    } catch (error: any) {
+      setAuthError(error.response?.data?.error || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -129,37 +229,42 @@ export default function Header() {
       return;
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Mock registration
-    if (signUpForm.name && signUpForm.email && signUpForm.password) {
-      const mockUser = {
+    try {
+      const response = await axios.post('/api/auth/register', {
         name: signUpForm.name,
         email: signUpForm.email,
-        avatar: `https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=150`
-      };
+        password: signUpForm.password,
+      });
 
-      setUserProfile(mockUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('userProfile', JSON.stringify(mockUser));
-      localStorage.setItem('isAuthenticated', 'true');
-      setIsAuthModalOpen(false);
+      if (response.data.success) {
+        setUserProfile(response.data.user);
+        setIsAuthenticated(true);
+        setIsAuthModalOpen(false);
 
-      // Reset form
-      setSignUpForm({ name: '', email: '', password: '', confirmPassword: '' });
-    } else {
-      setAuthError('Please fill in all fields');
+        // Reset form
+        setSignUpForm({ name: '', email: '', password: '', confirmPassword: '' });
+      } else {
+        setAuthError('Registration failed. Please try again.');
+      }
+    } catch (error: any) {
+      setAuthError(error.response?.data?.error || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const handleSignOut = () => {
-    setIsAuthenticated(false);
-    setUserProfile(null);
-    localStorage.removeItem('userProfile');
-    localStorage.removeItem('isAuthenticated');
-    setIsUserMenuOpen(false);
+  const handleSignOut = async () => {
+    try {
+      await axios.post('/api/auth/logout');
+      setIsAuthenticated(false);
+      setUserProfile(null);
+      setIsUserMenuOpen(false);
+    } catch (error) {
+      // Even if logout fails on server, clear client state
+      setIsAuthenticated(false);
+      setUserProfile(null);
+      setIsUserMenuOpen(false);
+    }
   };
 
   // Handle search input changes
@@ -239,29 +344,52 @@ export default function Header() {
   }, []);
 
   const navLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'Politics', href: '/category/politics' },
-    { name: 'Business', href: '/category/business' },
-    { name: 'Technology', href: '/category/technology' },
-    { name: 'Sports', href: '/category/sports' },
-    { name: 'Health', href: '/category/health' },
-    { name: 'World', href: '/category/world' },
+    { name: 'Beranda', href: '/' },
+    ...categories.slice(0, 5).map(category => ({
+      name: category.name,
+      href: `/category/${category.slug}`
+    }))
   ];
 
   return (
     <header className="shadow-lg border-b-2 border-yellow-500" style={{ backgroundColor: '#011629' }}>
       {/* Breaking News Ticker */}
       <div className="bg-red-600 text-white py-2 overflow-hidden">
-        <div className="animate-pulse flex items-center">
-          <span className="bg-yellow-500 text-black px-3 py-1 text-sm font-bold mr-4">
-            INFORMASI
+        <div className="flex items-center">
+          <span className="bg-yellow-500 text-black px-3 py-1 text-sm font-bold mr-4 flex-shrink-0">
+            {announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'breaking' ? 'BERITA UTAMA' :
+              announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'alert' ? 'PERINGATAN' :
+                announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'event' ? 'EVENT' :
+                  announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'maintenance' ? 'MAINTENANCE' : 'INFORMASI'}
           </span>
-          <div className="animate-marquee whitespace-nowrap">
-            <span className="text-sm">
-              Major tech conference announces breakthrough in AI development •
-              Global markets show positive trends amid economic recovery •
-              Climate summit reaches historic agreement
-            </span>
+          <div className="flex-1 overflow-hidden">
+            <div className="animate-marquee whitespace-nowrap">
+              <span className="text-sm">
+                {announcementsLoading ? (
+                  'Loading latest news...'
+                ) : announcements.length > 0 ? (
+                  <span>
+                    {announcements[currentAnnouncementIndex].linkUrl ? (
+                      <Link
+                        href={announcements[currentAnnouncementIndex].linkUrl!}
+                        className="hover:text-yellow-300 transition-colors cursor-pointer"
+                      >
+                        {announcements[currentAnnouncementIndex].text}
+                      </Link>
+                    ) : (
+                      announcements[currentAnnouncementIndex].text
+                    )}
+                    {announcements.length > 1 && (
+                      <span className="ml-4 text-yellow-300">
+                        ({currentAnnouncementIndex + 1}/{announcements.length})
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  'Welcome to PINTUMAS - Your trusted source for port information and news'
+                )}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -281,16 +409,28 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200 relative group"
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-yellow-500 transition-all duration-200 group-hover:w-full"></span>
-              </Link>
-            ))}
+            {categoriesLoading ? (
+              // Loading skeleton
+              <>
+                <div className="h-4 w-12 bg-gray-600 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-gray-600 rounded animate-pulse"></div>
+                <div className="h-4 w-20 bg-gray-600 rounded animate-pulse"></div>
+                <div className="h-4 w-14 bg-gray-600 rounded animate-pulse"></div>
+                <div className="h-4 w-12 bg-gray-600 rounded animate-pulse"></div>
+                <div className="h-4 w-18 bg-gray-600 rounded animate-pulse"></div>
+              </>
+            ) : (
+              navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200 relative group"
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-yellow-500 transition-all duration-200 group-hover:w-full"></span>
+                </Link>
+              ))
+            )}
           </nav>
 
           {/* Right Side Actions */}
@@ -313,12 +453,12 @@ export default function Header() {
             </button>
 
             {/* Notifications */}
-            <button className="p-2 text-gray-300 hover:text-yellow-400 transition-colors duration-200 relative">
+            {/* <button className="p-2 text-gray-300 hover:text-yellow-400 transition-colors duration-200 relative">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                 3
               </span>
-            </button>
+            </button> */}
 
             {/* User Account */}
             {isAuthenticated && userProfile ? (
@@ -327,9 +467,11 @@ export default function Header() {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-700 transition-colors duration-200"
                 >
-                  <img
-                    src={userProfile.avatar}
+                  <Image
+                    src={userProfile.avatar || '/images/default-avatar.png'}
                     alt={userProfile.name}
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full object-cover"
                   />
                   <span className="hidden sm:block text-sm font-medium text-gray-300">
@@ -342,9 +484,11 @@ export default function Header() {
                   <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
                     <div className="p-4 border-b border-gray-100">
                       <div className="flex items-center space-x-3">
-                        <img
-                          src={userProfile.avatar}
+                        <Image
+                          src={userProfile.avatar || '/images/default-avatar.png'}
                           alt={userProfile.name}
+                          width={48}
+                          height={48}
                           className="w-12 h-12 rounded-full object-cover"
                         />
                         <div>
@@ -379,7 +523,7 @@ export default function Header() {
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-3"
                       >
                         <LogOut className="h-4 w-4" />
-                        <span>Sign Out</span>
+                        <span>Keluar</span>
                       </button>
                     </div>
                   </div>
@@ -393,7 +537,7 @@ export default function Header() {
                 className="hidden sm:flex border-yellow-500 text-yellow-600 hover:bg-yellow-50"
               >
                 <User className="h-4 w-4 mr-2" />
-                Sign In
+                Masuk
               </Button>
             )}
 
@@ -531,24 +675,38 @@ export default function Header() {
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t">
             <nav className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {categoriesLoading ? (
+                // Loading skeleton for mobile
+                <>
+                  <div className="h-4 w-20 bg-gray-600 rounded animate-pulse"></div>
+                  <div className="h-4 w-24 bg-gray-600 rounded animate-pulse"></div>
+                  <div className="h-4 w-28 bg-gray-600 rounded animate-pulse"></div>
+                  <div className="h-4 w-18 bg-gray-600 rounded animate-pulse"></div>
+                  <div className="h-4 w-16 bg-gray-600 rounded animate-pulse"></div>
+                  <div className="h-4 w-22 bg-gray-600 rounded animate-pulse"></div>
+                </>
+              ) : (
+                navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ))
+              )}
 
               {/* Mobile Auth Section */}
               {isAuthenticated && userProfile ? (
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center space-x-3 mb-4">
-                    <img
-                      src={userProfile.avatar}
+                    <Image
+                      src={userProfile.avatar || '/images/default-avatar.png'}
                       alt={userProfile.name}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
@@ -599,16 +757,16 @@ export default function Header() {
       <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Welcome to NewsHub</DialogTitle>
+            <DialogTitle>Selamat Datang di PintuMas</DialogTitle>
             <DialogDescription>
-              Sign in to your account or create a new one to get started.
+              Silakan masuk atau daftar untuk melanjutkan.
             </DialogDescription>
           </DialogHeader>
 
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">Masuk</TabsTrigger>
+              <TabsTrigger value="signup">Daftar</TabsTrigger>
             </TabsList>
 
             {/* Sign In Tab */}
@@ -619,7 +777,7 @@ export default function Header() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Masukkan Email Anda"
                     value={signInForm.email}
                     onChange={(e) => setSignInForm({ ...signInForm, email: e.target.value })}
                     required
@@ -630,7 +788,7 @@ export default function Header() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Masukkan Password Anda"
                     value={signInForm.password}
                     onChange={(e) => setSignInForm({ ...signInForm, password: e.target.value })}
                     required
@@ -648,12 +806,12 @@ export default function Header() {
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Signing In...' : 'Sign In'}
+                  {isLoading ? 'Signing In...' : 'Masuk'}
                 </Button>
               </form>
 
               <div className="text-center text-sm text-gray-500">
-                <p>Demo credentials: any email and password</p>
+                <p>Masukkan email dan password yang valid untuk masuk</p>
               </div>
             </TabsContent>
 

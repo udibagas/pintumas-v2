@@ -1,74 +1,138 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 // User schemas
 export const UserSchema = z.object({
   id: z.string().optional(),
-  email: z.string().email('Invalid email address'),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['USER', 'ADMIN', 'MODERATOR']).default('USER'),
-  avatar: z.string().url().optional().or(z.literal('')),
-  bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
-})
+  email: z.string().email("Invalid email address"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role: z.enum(["USER", "ADMIN", "MODERATOR"]).default("USER"),
+  avatar: z.string().url().optional().or(z.literal("")),
+  bio: z.string().max(500, "Bio must be less than 500 characters").optional(),
+});
 
 export const LoginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-})
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const RegisterSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z
+      .string()
+      .min(6, "Confirm password must be at least 6 characters"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export const UpdateUserSchema = UserSchema.omit({ password: true }).extend({
-  password: z.string().min(6, 'Password must be at least 6 characters').optional(),
-})
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .optional(),
+});
 
 // Category schemas
 export const CategorySchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(2, 'Category name must be at least 2 characters'),
-  slug: z.string().min(2, 'Slug must be at least 2 characters'),
-  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
-  color: z.string().regex(/^bg-\w+-\d{3}$/, 'Invalid color format (e.g., bg-blue-500)').optional(),
-})
+  name: z.string().min(2, "Category name must be at least 2 characters"),
+  slug: z.string().min(2, "Slug must be at least 2 characters"),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional(),
+  color: z
+    .string()
+    .regex(/^bg-\w+-\d{3}$/, "Invalid color format (e.g., bg-blue-500)")
+    .optional(),
+});
 
 // Post schemas
 export const PostSchema = z.object({
   id: z.string().optional(),
-  title: z.string().min(5, 'Title must be at least 5 characters'),
-  slug: z.string().min(5, 'Slug must be at least 5 characters'),
-  summary: z.string().max(300, 'Summary must be less than 300 characters').optional(),
-  content: z.string().min(50, 'Content must be at least 50 characters'),
-  image: z.string().url().optional().or(z.literal('')),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
+  title: z
+    .string()
+    .min(5, "Title must be at least 5 characters")
+    .max(255, "Title must be less than 255 characters"),
+  slug: z
+    .string()
+    .min(5, "Slug must be at least 5 characters")
+    .max(255, "Slug must be less than 255 characters"),
+  summary: z
+    .string()
+    .max(500, "Summary must be less than 500 characters")
+    .optional()
+    .or(z.literal("")),
+  content: z.string().min(50, "Content must be at least 50 characters"),
+  imageUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
   featured: z.boolean().default(false),
   readTime: z.string().optional(),
-  publishedAt: z.string().datetime().optional(),
-  authorId: z.string(),
-  categoryId: z.string(),
-  tags: z.array(z.string()).optional(),
-})
+  publishedAt: z.string().datetime().optional().nullable(),
+  authorId: z.string().min(1, "Author is required"),
+  categoryId: z.string().min(1, "Category is required"),
+  tagIds: z.array(z.string()).optional(),
+  mediaUrls: z.array(z.string().url()).optional(),
+});
+
+// Form schema for creating/editing posts (without server-only fields)
+export const PostFormSchema = z.object({
+  title: z
+    .string()
+    .min(5, "Title must be at least 5 characters")
+    .max(255, "Title must be less than 255 characters"),
+  slug: z
+    .string()
+    .min(5, "Slug must be at least 5 characters")
+    .max(255, "Slug must be less than 255 characters"),
+  summary: z
+    .string()
+    .max(500, "Summary must be less than 500 characters")
+    .optional(),
+  content: z.string().min(50, "Content must be at least 50 characters"),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
+  featured: z.boolean().default(false),
+  categoryId: z.string().min(1, "Please select a category"),
+  tagIds: z.array(z.string()).optional(),
+  imageUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+});
 
 export const UpdatePostSchema = PostSchema.partial().extend({
   id: z.string(),
-})
+});
 
 // Comment schemas
 export const CommentSchema = z.object({
   id: z.string().optional(),
-  content: z.string().min(5, 'Comment must be at least 5 characters'),
-  status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).default('PENDING'),
+  content: z.string().min(5, "Comment must be at least 5 characters"),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED"]).default("PENDING"),
   authorId: z.string(),
   postId: z.string(),
-})
+});
 
 export const UpdateCommentSchema = CommentSchema.partial().extend({
   id: z.string(),
-})
+});
 
 // Tag schemas
 export const TagSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(2, 'Tag name must be at least 2 characters'),
-  slug: z.string().min(2, 'Slug must be at least 2 characters'),
-})
+  name: z.string().min(2, "Tag name must be at least 2 characters"),
+  slug: z.string().min(2, "Slug must be at least 2 characters"),
+});
 
 // API Response schemas
 export const ApiResponseSchema = z.object({
@@ -76,15 +140,54 @@ export const ApiResponseSchema = z.object({
   message: z.string(),
   data: z.any().optional(),
   error: z.string().optional(),
-})
+});
 
-export type User = z.infer<typeof UserSchema>
-export type LoginData = z.infer<typeof LoginSchema>
-export type UpdateUser = z.infer<typeof UpdateUserSchema>
-export type Category = z.infer<typeof CategorySchema>
-export type Post = z.infer<typeof PostSchema>
-export type UpdatePost = z.infer<typeof UpdatePostSchema>
-export type Comment = z.infer<typeof CommentSchema>
-export type UpdateComment = z.infer<typeof UpdateCommentSchema>
-export type Tag = z.infer<typeof TagSchema>
-export type ApiResponse = z.infer<typeof ApiResponseSchema>
+// Announcement Post schemas (posts with isAnnouncement: true)
+export const AnnouncementPostSchema = z.object({
+  id: z.string().optional(),
+  title: z
+    .string()
+    .min(5, "Title must be at least 5 characters")
+    .max(255, "Title must be less than 255 characters"),
+  summary: z
+    .string()
+    .max(500, "Summary must be less than 500 characters")
+    .optional(),
+  content: z.string().min(10, "Content must be at least 10 characters"),
+  announcementType: z
+    .enum(["INFO", "BREAKING", "ALERT", "EVENT", "MAINTENANCE"])
+    .default("INFO"),
+  priority: z
+    .number()
+    .min(1, "Priority must be at least 1")
+    .max(4, "Priority must be at most 4")
+    .default(1),
+  status: z.enum(["DRAFT", "PUBLISHED"]).default("PUBLISHED"),
+  startDate: z.string().optional().or(z.date().optional()),
+  endDate: z.string().optional().or(z.date().optional()),
+  linkUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  linkText: z
+    .string()
+    .max(50, "Link text must be less than 50 characters")
+    .optional(),
+  categoryId: z.string().min(1, "Category is required"),
+});
+
+export const UpdateAnnouncementPostSchema = AnnouncementPostSchema.partial();
+
+export type User = z.infer<typeof UserSchema>;
+export type LoginData = z.infer<typeof LoginSchema>;
+export type RegisterData = z.infer<typeof RegisterSchema>;
+export type UpdateUser = z.infer<typeof UpdateUserSchema>;
+export type Category = z.infer<typeof CategorySchema>;
+export type Post = z.infer<typeof PostSchema>;
+export type PostForm = z.infer<typeof PostFormSchema>;
+export type UpdatePost = z.infer<typeof UpdatePostSchema>;
+export type Comment = z.infer<typeof CommentSchema>;
+export type UpdateComment = z.infer<typeof UpdateCommentSchema>;
+export type Tag = z.infer<typeof TagSchema>;
+export type AnnouncementPost = z.infer<typeof AnnouncementPostSchema>;
+export type UpdateAnnouncementPost = z.infer<
+  typeof UpdateAnnouncementPostSchema
+>;
+export type ApiResponse = z.infer<typeof ApiResponseSchema>;

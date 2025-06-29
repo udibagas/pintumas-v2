@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Globe,
@@ -14,38 +15,53 @@ import {
   ArrowUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
+import Image from 'next/image';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  articles: number;
+}
 
 export default function Footer() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const response = await axios.get('/api/categories');
+        if (response.data.success) {
+          // Take only first 6 categories for footer
+          setCategories(response.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        // Fallback to default categories if API fails
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const footerLinks = {
-    news: [
-      { name: 'Breaking News', href: '#' },
-      { name: 'Politics', href: '#' },
-      { name: 'Business', href: '#' },
-      { name: 'Technology', href: '#' },
-      { name: 'Sports', href: '#' },
-      { name: 'Health', href: '#' }
-    ],
     company: [
-      { name: 'About Us', href: '#' },
-      { name: 'Our Team', href: '#' },
-      { name: 'Careers', href: '#' },
-      { name: 'Press', href: '#' },
-      { name: 'Awards', href: '#' },
-      { name: 'Contact', href: '#' }
+      { name: 'About Us', href: '/about' },
+      { name: 'Contact', href: '/contact' },
+      { name: 'Careers', href: '/careers' },
+      { name: 'Press', href: '/press' },
     ],
-    resources: [
-      { name: 'Help Center', href: '#' },
-      { name: 'Privacy Policy', href: '/privacy-policy' },
-      { name: 'Terms of Service', href: '/terms-of-service' },
-      { name: 'Cookie Policy', href: '/cookie-policy' },
-      { name: 'Advertise', href: '#' },
-      { name: 'RSS Feeds', href: '#' },
-      { name: 'Mobile App', href: '#' }
-    ]
   };
 
   const socialLinks = [
@@ -60,116 +76,70 @@ export default function Footer() {
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-2 mb-6">
-              <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 p-2 rounded-lg">
-                <Globe className="h-8 w-8 text-white" />
-              </div>
+              <Image src={"/images/pintumas.png"} alt="Pintumas Logo" width={40} height={40} />
               <div>
                 <h1 className="text-2xl font-bold">PINTUMAS</h1>
                 <p className="text-sm text-gray-400">Pusat Informasi Terpadu Pelabuhan Tanjung Mas</p>
               </div>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              Delivering trusted, comprehensive news coverage from around the globe.
-              Stay informed with our award-winning journalism and in-depth analysis.
+              Media berita terpercaya yang menyajikan informasi terkini dan terlengkap tentang Pelabuhan Tanjung Mas.
             </p>
-
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center text-sm text-gray-300">
-                <Phone className="h-4 w-4 mr-3 text-yellow-500" />
-                <span>+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-300">
-                <Mail className="h-4 w-4 mr-3 text-yellow-500" />
-                <span>contact@newshub.com</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-300">
-                <MapPin className="h-4 w-4 mr-3 text-yellow-500" />
-                <span>New York, NY 10001</span>
-              </div>
-            </div>
           </div>
 
           {/* News Categories */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">News Categories</h3>
+            <h3 className="text-lg font-semibold mb-6">Kategori Berita</h3>
             <ul className="space-y-3">
-              {footerLinks.news.map((link) => (
-                <li key={link.name}>
-                  {link.href.startsWith('/') ? (
+              {categoriesLoading ? (
+                // Loading skeleton
+                <>
+                  <li><div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div></li>
+                  <li><div className="h-4 w-24 bg-gray-700 rounded animate-pulse"></div></li>
+                  <li><div className="h-4 w-18 bg-gray-700 rounded animate-pulse"></div></li>
+                  <li><div className="h-4 w-22 bg-gray-700 rounded animate-pulse"></div></li>
+                  <li><div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div></li>
+                  <li><div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div></li>
+                </>
+              ) : (
+                categories.map((category) => (
+                  <li key={category.id}>
                     <Link
-                      href={link.href}
-                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm"
+                      href={`/category/${category.slug}`}
+                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm flex items-center justify-between"
                     >
-                      {link.name}
+                      <span>{category.name}</span>
+                      {category.articles > 0 && (
+                        <span className="text-xs text-gray-500">({category.articles})</span>
+                      )}
                     </Link>
-                  ) : (
-                    <a
-                      href={link.href}
-                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </a>
-                  )}
-                </li>
-              ))}
+                  </li>
+                ))
+              )}
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">Company</h3>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  {link.href.startsWith('/') ? (
-                    <Link
-                      href={link.href}
-                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </Link>
-                  ) : (
-                    <a
-                      href={link.href}
-                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6">Resources</h3>
-            <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
-                <li key={link.name}>
-                  {link.href.startsWith('/') ? (
-                    <Link
-                      href={link.href}
-                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </Link>
-                  ) : (
-                    <a
-                      href={link.href}
-                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <h3 className="text-lg font-semibold mb-6">Hubungi Kami</h3>
+            <div className="space-y-3">
+              <div className="flex items-center text-sm text-gray-300">
+                <Phone className="h-4 w-4 mr-3 text-yellow-500" />
+                <span>+62 (24) xxx-xxx</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-300">
+                <Mail className="h-4 w-4 mr-3 text-yellow-500" />
+                <span>contact@pintumas.id</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-300">
+                <MapPin className="h-4 w-4 mr-3 text-yellow-500" />
+                <span>Semarang, Jawa Tengah</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -210,13 +180,13 @@ export default function Footer() {
             <p>&copy; {new Date().getFullYear()} PINTUMAS. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacy-policy" className="hover:text-yellow-400 transition-colors duration-200">
-                Privacy Policy
+                Kebijakan Privasi
               </Link>
               <Link href="/terms-of-service" className="hover:text-yellow-400 transition-colors duration-200">
-                Terms of Service
+                Syarat & Ketentuan
               </Link>
               <Link href="/cookie-policy" className="hover:text-yellow-400 transition-colors duration-200">
-                Cookie Policy
+                Kebijakan Cookie
               </Link>
             </div>
           </div>

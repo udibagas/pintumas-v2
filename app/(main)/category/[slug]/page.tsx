@@ -5,158 +5,145 @@ import Link from 'next/link';
 import CategoryPageClient from './CategoryPageClient';
 import Image from 'next/image';
 
-// Generate static params for all possible category slugs
-export async function generateStaticParams() {
-  return [
-    { slug: 'business' },
-    { slug: 'technology' },
-    { slug: 'health' },
-    { slug: 'world' },
-    { slug: 'sports' },
-    { slug: 'science' },
-    { slug: 'politics' },
-    { slug: 'culture' },
-  ];
+export const dynamic = 'force-dynamic';
+
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  image: string;
+  author: string;
+  publishedAt: string | Date;
+  readTime: string;
+  views: number;
+  comments: number;
+  featured: boolean;
 }
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  color: string;
+  articleCount: number;
+}
 
-  // Mock category data - in real app, this would come from API/database
-  const categoryData = {
-    business: {
-      name: 'Business',
-      description: 'Business news, market trends, finance, and economic developments',
-      color: 'bg-blue-500',
-      articleCount: 1247
-    },
-    technology: {
-      name: 'Technology',
-      description: 'Latest developments in technology, AI, software, and digital innovation',
-      color: 'bg-purple-500',
-      articleCount: 892
-    },
-    health: {
-      name: 'Health',
-      description: 'Health news, medical breakthroughs, wellness, and healthcare updates',
-      color: 'bg-green-500',
-      articleCount: 634
-    },
-    world: {
-      name: 'World',
-      description: 'Global news, international affairs, and worldwide developments',
-      color: 'bg-indigo-500',
-      articleCount: 1156
-    },
-    sports: {
-      name: 'Sports',
-      description: 'Sports news, match results, player updates, and athletic achievements',
-      color: 'bg-orange-500',
-      articleCount: 743
-    },
-    science: {
-      name: 'Science',
-      description: 'Scientific discoveries, research breakthroughs, and academic developments',
-      color: 'bg-teal-500',
-      articleCount: 521
-    },
-    politics: {
-      name: 'Politics',
-      description: 'Political news, government updates, policy changes, and civic matters',
-      color: 'bg-red-500',
-      articleCount: 934
-    },
-    culture: {
-      name: 'Culture',
-      description: 'Cultural events, arts, entertainment, and social trends',
-      color: 'bg-pink-500',
-      articleCount: 412
-    }
+interface CategoryData {
+  category: Category;
+  posts: Post[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
   };
+}
 
-  const category = categoryData[params.slug as keyof typeof categoryData] || categoryData.business;
+// Generate static params for all possible category slugs
+export async function generateStaticParams() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/categories`, {
+      cache: 'no-store'
+    });
 
-  const articles = [
-    {
-      id: 1,
-      title: "Revolutionary AI Algorithm Predicts Weather Patterns with 95% Accuracy",
-      slug: "revolutionary-ai-algorithm-predicts-weather-patterns",
-      summary: "Scientists develop groundbreaking machine learning model that could transform meteorological forecasting and climate research worldwide.",
-      image: "https://images.pexels.com/photos/1422286/pexels-photo-1422286.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Emily Chen",
-      publishedAt: "3 hours ago",
-      readTime: "7 min read",
-      views: "12.4K",
-      comments: 45,
-      featured: true
-    },
-    {
-      id: 2,
-      title: "Breakthrough Gene Therapy Shows Promise for Treating Rare Diseases",
-      slug: "breakthrough-gene-therapy-shows-promise",
-      summary: "Clinical trials reveal significant improvements in patients with genetic disorders, offering hope for previously untreatable conditions.",
-      image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Sarah Williams",
-      publishedAt: "5 hours ago",
-      readTime: "6 min read",
-      views: "8.2K",
-      comments: 28,
-      featured: false
-    },
-    {
-      id: 3,
-      title: "Quantum Computing Reaches New Milestone in Processing Power",
-      slug: "quantum-computing-reaches-new-milestone",
-      summary: "Latest quantum processor demonstrates unprecedented computational capabilities, bringing practical quantum computing closer to reality.",
-      image: "https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Prof. Michael Zhang",
-      publishedAt: "8 hours ago",
-      readTime: "8 min read",
-      views: "15.7K",
-      comments: 67,
-      featured: false
-    },
-    {
-      id: 4,
-      title: "Sustainable Energy Storage Solution Revolutionizes Grid Systems",
-      slug: "sustainable-energy-storage-solution-revolutionizes-grid-systems",
-      summary: "New battery technology promises to solve renewable energy storage challenges with unprecedented efficiency and longevity.",
-      image: "https://images.pexels.com/photos/371900/pexels-photo-371900.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Lisa Park",
-      publishedAt: "12 hours ago",
-      readTime: "5 min read",
-      views: "9.8K",
-      comments: 34,
-      featured: false
-    },
-    {
-      id: 5,
-      title: "Machine Learning Transforms Medical Diagnosis Accuracy",
-      slug: "machine-learning-transforms-medical-diagnosis-accuracy",
-      summary: "AI-powered diagnostic tools show remarkable improvement in early disease detection, potentially saving millions of lives.",
-      image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. James Rodriguez",
-      publishedAt: "1 day ago",
-      readTime: "6 min read",
-      views: "11.3K",
-      comments: 52,
-      featured: false
-    },
-    {
-      id: 6,
-      title: "Space Technology Advances Enable Mars Mission Preparations",
-      slug: "space-technology-advances-enable-mars-mission-preparations",
-      summary: "Latest developments in spacecraft technology and life support systems bring human Mars exploration closer to reality.",
-      image: "https://images.pexels.com/photos/796206/pexels-photo-796206.jpeg?auto=compress&cs=tinysrgb&w=600",
-      author: "Dr. Anna Thompson",
-      publishedAt: "1 day ago",
-      readTime: "7 min read",
-      views: "13.9K",
-      comments: 78,
-      featured: false
+    if (!response.ok) {
+      // Fallback to default categories if API fails
+      return [
+        { slug: 'business' },
+        { slug: 'technology' },
+        { slug: 'health' },
+        { slug: 'world' },
+        { slug: 'sports' },
+        { slug: 'science' },
+        { slug: 'politics' },
+        { slug: 'culture' },
+      ];
     }
-  ];
 
-  const featuredArticle = articles.find(article => article.featured);
+    const data = await response.json();
+    return data.success ? data.data.map((cat: any) => ({ slug: cat.slug })) : [];
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [
+      { slug: 'business' },
+      { slug: 'technology' },
+      { slug: 'health' },
+      { slug: 'world' },
+      { slug: 'sports' },
+      { slug: 'science' },
+      { slug: 'politics' },
+      { slug: 'culture' },
+    ];
+  }
+}
+
+async function getCategoryData(slug: string): Promise<CategoryData | null> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/categories/${slug}/posts?limit=12`, {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch category data');
+    }
+
+    const data = await response.json();
+    return data.success ? data.data : null;
+  } catch (error) {
+    console.error('Error fetching category data:', error);
+    return null;
+  }
+}
+
+// Helper function to format time ago
+const formatTimeAgo = (date: string | Date) => {
+  const now = new Date();
+  const postDate = new Date(date);
+  const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
+
+  if (diffInHours < 1) return 'Just now';
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  return postDate.toLocaleDateString('id-ID');
+};
+
+// Helper function to format views
+const formatViews = (views: number) => {
+  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+  if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+  return views.toString();
+};
+
+export default async function CategoryPage({ params }: { params: { slug: string } }) {
+  const categoryData = await getCategoryData(params.slug);
+
+  if (!categoryData) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Link href="/" className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-6 transition-colors duration-200">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Link>
+        <div className="text-center py-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Category Not Found</h1>
+          <p className="text-gray-600 mb-8">The category you&apos;re looking for doesn&apos;t exist or has been moved.</p>
+          <Link href="/">
+            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black">
+              Return to Homepage
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { category, posts } = categoryData;
+  const featuredArticle = posts.find(post => post.featured);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -168,7 +155,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
       {/* Category Header */}
       <div className="text-center mb-12">
-        <div className={`${category.color} w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6`}>
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+          style={{ backgroundColor: category.color || '#3B82F6' }}>
           <div className="w-10 h-10 bg-white rounded-full"></div>
         </div>
         <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -189,7 +177,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         <section className="mb-12">
           <div className="flex items-center space-x-2 mb-6">
             <Badge className="bg-yellow-500 text-black font-semibold">Featured</Badge>
-            <h2 className="text-2xl font-bold text-gray-900">Editors Pick</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Editor&apos;s Pick</h2>
           </div>
           <Link href={`/post/${featuredArticle.slug}`} className="block">
             <div className="relative overflow-hidden rounded-2xl shadow-2xl group cursor-pointer">
@@ -213,14 +201,14 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6 text-gray-300 text-sm">
                     <span>By {featuredArticle.author}</span>
-                    <span>{featuredArticle.publishedAt}</span>
+                    <span>{formatTimeAgo(featuredArticle.publishedAt)}</span>
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
                       <span>{featuredArticle.readTime}</span>
                     </div>
                     <div className="flex items-center">
                       <Eye className="h-4 w-4 mr-1" />
-                      <span>{featuredArticle.views}</span>
+                      <span>{formatViews(featuredArticle.views)}</span>
                     </div>
                   </div>
                   <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
@@ -234,7 +222,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       )}
 
       {/* Articles List with Client-side Interactions */}
-      <CategoryPageClient articles={articles} />
+      <CategoryPageClient initialPosts={posts} categorySlug={params.slug} />
 
     </div>
   );

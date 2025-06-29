@@ -1,102 +1,209 @@
 import { ArrowLeft, Clock, Eye, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
 import PostInteractions from './PostInteractions';
+
+export const dynamic = 'force-dynamic';
+
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string | null;
+  content: string;
+  imageUrl: string | null;
+  status: string;
+  featured: boolean;
+  views: number;
+  readTime: string | null;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  author: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    bio: string | null;
+  };
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+    color: string | null;
+  };
+  tags: Array<{
+    id: string;
+    tag: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  }>;
+  comments: Array<{
+    id: string;
+    content: string;
+    status: string;
+    createdAt: Date;
+    author: {
+      id: string;
+      name: string;
+      avatar: string | null;
+    };
+  }>;
+}
 
 // Generate static params for all possible post slugs
 export async function generateStaticParams() {
-  return [
-    { slug: 'revolutionary-ai-algorithm-predicts-weather-patterns' },
-    { slug: 'breakthrough-gene-therapy-shows-promise' },
-    { slug: 'quantum-computing-reaches-new-milestone' },
-    { slug: 'sustainable-energy-storage-solution-revolutionizes-grid-systems' },
-    { slug: 'machine-learning-transforms-medical-diagnosis-accuracy' },
-    { slug: 'space-technology-advances-enable-mars-mission-preparations' },
-    { slug: 'global-markets-surge-trade-agreements-final-negotiations' },
-    { slug: 'olympic-champions-prepare-world-athletics-championships' },
-    { slug: 'archaeological-discovery-reveals-ancient-civilization-secrets' },
-    { slug: 'renewable-energy-initiative-powers-entire-city' },
-    { slug: 'quantum-computing-breakthrough-faster-drug-discovery' },
-    { slug: 'space-mission-deploys-advanced-satellite-network' },
-    { slug: 'quantum-computing-breakthrough-accelerates-drug-discovery' },
-    { slug: 'international-space-station-research-milestone' },
-    { slug: 'sustainable-agriculture-technology-increases-crop-yields' },
-    { slug: 'central-banks-digital-currency-implementation' },
-    { slug: 'mental-health-initiative-schools-nationwide' },
-    { slug: 'professional-esports-league-record-prize-pool' },
-    { slug: 'advanced-neural-networks-transform-computer-vision' },
-    { slug: 'cybersecurity-innovation-protects-critical-infrastructure' },
-    { slug: 'biotechnology-advances-enable-personalized-medicine' },
-    { slug: 'smart-city-technologies-improve-urban-living' },
-    { slug: 'virtual-reality-applications-expand-beyond-gaming' },
-    { slug: 'autonomous-vehicle-technology-reaches-new-milestones' },
-    { slug: 'sustainable-agriculture-revolution-transforms-food-production' },
-    { slug: 'global-climate-summit-historic-agreement-carbon-emissions' },
-    { slug: 'tech-giants-report-record-q4-earnings-market-volatility' },
-  ];
+  try {
+    const posts = await prisma.post.findMany({
+      where: { status: 'PUBLISHED' },
+      select: { slug: true }
+    });
+
+    return posts.map(post => ({ slug: post.slug }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
+  }
 }
 
-export default function SinglePost({ params }: { params: { slug: string } }) {
+async function getPost(slug: string): Promise<Post | null> {
+  try {
+    const post = await prisma.post.findUnique({
+      where: {
+        slug,
+        status: 'PUBLISHED'
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            bio: true
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            color: true
+          }
+        },
+        tags: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                slug: true
+              }
+            }
+          }
+        },
+        comments: {
+          where: {
+            status: 'APPROVED'
+          },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
+      }
+    });
 
-  // Mock article data - in real app, this would come from API/database
-  const article = {
-    id: 1,
-    title: "Revolutionary AI Algorithm Predicts Weather Patterns with 95% Accuracy",
-    content: `
-      <p>Scientists at the International Weather Research Institute have developed a groundbreaking machine learning algorithm that can predict weather patterns with an unprecedented 95% accuracy rate, potentially revolutionizing meteorological forecasting and climate research worldwide.</p>
-      
-      <p>The new system, dubbed "WeatherNet AI," combines deep learning neural networks with traditional meteorological models to analyze vast amounts of atmospheric data from satellites, weather stations, and ocean buoys across the globe.</p>
-      
-      <h2>How It Works</h2>
-      <p>The algorithm processes over 10 terabytes of weather data daily, identifying patterns that human meteorologists might miss. By analyzing historical weather data spanning the last 50 years, the AI has learned to recognize subtle atmospheric indicators that precede major weather events.</p>
-      
-      <p>"What makes this system unique is its ability to factor in micro-climate variations and long-term climate trends simultaneously," explains Dr. Emily Chen, lead researcher on the project. "Traditional models often struggle with this dual perspective."</p>
-      
-      <h2>Real-World Applications</h2>
-      <p>The implications of this breakthrough extend far beyond daily weather forecasts. Emergency management agencies could receive earlier warnings about severe weather events, potentially saving thousands of lives and billions in property damage.</p>
-      
-      <p>Agricultural sectors stand to benefit enormously, with farmers able to make more informed decisions about planting, harvesting, and crop protection. The aviation industry could also see significant improvements in flight planning and safety protocols.</p>
-      
-      <h2>Future Developments</h2>
-      <p>The research team is already working on the next iteration of WeatherNet AI, which aims to extend prediction accuracy to 30-day forecasts. They're also exploring applications in climate change modeling and extreme weather event prediction.</p>
-      
-      <p>The technology is expected to be integrated into major weather services within the next 18 months, marking a new era in meteorological science.</p>
-    `,
-    summary: "Scientists develop groundbreaking machine learning model that could transform meteorological forecasting and climate research worldwide.",
-    image: "https://images.pexels.com/photos/1422286/pexels-photo-1422286.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    category: "Technology",
-    author: {
-      name: "Dr. Emily Chen",
-      avatar: "https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=150",
-      bio: "Senior Science Correspondent with over 15 years of experience covering breakthrough technologies and scientific discoveries."
-    },
-    publishedAt: "3 hours ago",
-    readTime: "7 min read",
-    views: "12.4K",
-    comments: 45,
-    tags: ["AI", "Weather", "Technology", "Science", "Climate"]
-  };
-
-  const relatedArticles = [
-    {
-      title: "Climate Change Accelerates Arctic Ice Melting",
-      image: "https://images.pexels.com/photos/1108701/pexels-photo-1108701.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: "Environment",
-      readTime: "5 min"
-    },
-    {
-      title: "Machine Learning Breakthrough in Medical Diagnosis",
-      image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: "Health",
-      readTime: "6 min"
-    },
-    {
-      title: "Quantum Computing Reaches New Milestone",
-      image: "https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: "Technology",
-      readTime: "8 min"
+    // Increment view count
+    if (post) {
+      await prisma.post.update({
+        where: { id: post.id },
+        data: { views: { increment: 1 } }
+      });
     }
-  ];
+
+    return post;
+  } catch (error) {
+    console.error('Error fetching post:', error);
+    return null;
+  }
+}
+
+async function getRelatedPosts(categoryId: string, currentPostId: string) {
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        categoryId,
+        id: { not: currentPostId },
+        status: 'PUBLISHED'
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        category: {
+          select: {
+            name: true,
+            color: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 3
+    });
+
+    return posts;
+  } catch (error) {
+    console.error('Error fetching related posts:', error);
+    return [];
+  }
+}
+
+// Helper function to format time ago
+const formatTimeAgo = (date: Date) => {
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays === 1) return 'yesterday';
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+export default async function SinglePost({ params }: { params: { slug: string } }) {
+  const post = await getPost(params.slug);
+
+  if (!post) {
+    notFound();
+  }
+
+  const relatedPosts = await getRelatedPosts(post.category.id, post.id);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -107,131 +214,183 @@ export default function SinglePost({ params }: { params: { slug: string } }) {
       </Link>
 
       {/* Article Header */}
-      <article className="mb-12">
-        <div className="mb-6">
-          <Badge className="bg-purple-500 text-white mb-4">
-            {article.category}
+      <div className="mb-8">
+        <div className="flex items-center space-x-3 mb-4">
+          <Badge
+            className="text-white font-semibold"
+            style={{ backgroundColor: post.category.color || '#3B82F6' }}
+          >
+            {post.category.name}
           </Badge>
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-            {article.title}
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            {article.summary}
+          {post.featured && (
+            <Badge className="bg-yellow-500 text-black font-semibold">Featured</Badge>
+          )}
+        </div>
+
+        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+          {post.title}
+        </h1>
+
+        {post.summary && (
+          <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+            {post.summary}
           </p>
-        </div>
+        )}
 
-        {/* Article Meta */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 pb-8 border-b border-gray-200">
-          <div className="flex items-center space-x-4 mb-4 sm:mb-0">
-            <img
-              src={article.author.avatar}
-              alt={article.author.name}
-              className="w-12 h-12 rounded-full object-cover"
-            />
+        {/* Author and Meta */}
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-full overflow-hidden">
+              <Image
+                src={post.author.avatar || '/images/default-avatar.png'}
+                alt={post.author.name}
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div>
-              <p className="font-semibold text-gray-900">{article.author.name}</p>
-              <p className="text-sm text-gray-500">{article.publishedAt}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-6 text-sm text-gray-500">
-            <div className="flex items-center">
-              <Clock className="h-4 w-4 mr-1" />
-              <span>{article.readTime}</span>
-            </div>
-            <div className="flex items-center">
-              <Eye className="h-4 w-4 mr-1" />
-              <span>{article.views}</span>
-            </div>
-            <div className="flex items-center">
-              <MessageCircle className="h-4 w-4 mr-1" />
-              <span>{article.comments}</span>
+              <p className="font-semibold text-gray-900">{post.author.name}</p>
+              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                <span>{formatTimeAgo(post.publishedAt || post.createdAt)}</span>
+                {post.readTime && (
+                  <>
+                    <span>•</span>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      <span>{post.readTime}</span>
+                    </div>
+                  </>
+                )}
+                <span>•</span>
+                <div className="flex items-center">
+                  <Eye className="h-4 w-4 mr-1" />
+                  <span>{post.views.toLocaleString()} views</span>
+                </div>
+                <span>•</span>
+                <div className="flex items-center">
+                  <MessageCircle className="h-4 w-4 mr-1" />
+                  <span>{post.comments.length} komentar</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Featured Image */}
+      {/* Featured Image */}
+      {post.imageUrl && (
         <div className="mb-8">
-          <img
-            src={article.image}
-            alt={article.title}
+          <Image
+            src={post.imageUrl}
+            alt={post.title}
+            width={800}
+            height={400}
             className="w-full h-96 object-cover rounded-2xl shadow-lg"
           />
         </div>
+      )}
 
-        {/* Article Content */}
+      {/* Article Content */}
+      <div className="prose prose-lg max-w-none mb-12">
         <div
-          className="prose prose-lg max-w-none mb-8"
-          dangerouslySetInnerHTML={{ __html: article.content }}
-          style={{
-            lineHeight: '1.8',
-            fontSize: '18px'
-          }}
+          dangerouslySetInnerHTML={{ __html: post.content }}
+          className="text-gray-800 leading-relaxed"
         />
+      </div>
 
-        {/* Tags */}
+      {/* Tags */}
+      {post.tags.length > 0 && (
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">Tags</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
           <div className="flex flex-wrap gap-2">
-            {article.tags.map((tag, index) => (
-              <Badge key={index} variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50">
-                #{tag}
+            {post.tags.map((postTag) => (
+              <Badge key={postTag.id} variant="outline" className="text-sm">
+                {postTag.tag.name}
               </Badge>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Interactive Components */}
-        <PostInteractions
-          initialLikes={234}
-          initialDislikes={12}
-          articleUrl={`${process.env.NODE_ENV === 'production' ? 'https://yoursite.com' : 'http://localhost:3000'}/post/${params.slug}`}
-          articleTitle={article.title}
-          articleSummary={article.summary}
-        />
-
-        {/* Author Bio */}
-        <div className="bg-gray-50 rounded-2xl p-6 mb-12">
+      {/* Author Bio */}
+      {post.author.bio && (
+        <div className="bg-gray-50 rounded-2xl p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">About the Author</h3>
           <div className="flex items-start space-x-4">
-            <img
-              src={article.author.avatar}
-              alt={article.author.name}
-              className="w-16 h-16 rounded-full object-cover"
-            />
+            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+              <Image
+                src={post.author.avatar || '/images/default-avatar.png'}
+                alt={post.author.name}
+                width={64}
+                height={64}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">About {article.author.name}</h3>
-              <p className="text-gray-600 leading-relaxed">{article.author.bio}</p>
+              <h4 className="font-semibold text-gray-900 mb-2">{post.author.name}</h4>
+              <p className="text-gray-600">{post.author.bio}</p>
             </div>
           </div>
         </div>
-      </article>
+      )}
+
+      {/* Post Interactions */}
+      <PostInteractions
+        postId={post.id}
+        initialLikes={0}
+        initialDislikes={0}
+        comments={post.comments}
+        articleUrl={typeof window !== 'undefined' ? window.location.href : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/post/${post.slug}`}
+        articleTitle={post.title}
+        articleSummary={post.summary || ''}
+      />
 
       {/* Related Articles */}
-      <section>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Articles</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {relatedArticles.map((related, index) => (
-            <div key={index} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <img
-                src={related.image}
-                alt={related.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <Badge variant="outline" className="mb-2 text-xs">
-                  {related.category}
-                </Badge>
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {related.title}
-                </h3>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Clock className="h-3 w-3 mr-1" />
-                  <span>{related.readTime}</span>
+      {relatedPosts.length > 0 && (
+        <div className="mt-16">
+          <h3 className="text-2xl font-bold text-gray-900 mb-8">Berita Terkait</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            {relatedPosts.map((relatedPost) => (
+              <Link key={relatedPost.id} href={`/post/${relatedPost.slug}`} className="group">
+                <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 group-hover:shadow-md transition-shadow duration-200">
+                  {relatedPost.imageUrl && (
+                    <div className="aspect-video overflow-hidden">
+                      <Image
+                        src={relatedPost.imageUrl}
+                        alt={relatedPost.title}
+                        width={400}
+                        height={225}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <Badge
+                      className="text-white text-xs mb-2"
+                      style={{ backgroundColor: relatedPost.category.color || '#3B82F6' }}
+                    >
+                      {relatedPost.category.name}
+                    </Badge>
+                    <h4 className="font-semibold text-gray-900 group-hover:text-yellow-600 transition-colors duration-200 line-clamp-2 mb-2">
+                      {relatedPost.title}
+                    </h4>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <span>{formatTimeAgo(relatedPost.publishedAt || relatedPost.createdAt)}</span>
+                      {relatedPost.readTime && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>{relatedPost.readTime}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 }

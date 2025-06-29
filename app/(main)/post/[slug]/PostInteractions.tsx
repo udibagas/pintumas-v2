@@ -5,18 +5,35 @@ import { MessageCircle, Share2, BookmarkPlus, ThumbsUp, ThumbsDown, Facebook, Tw
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import Image from 'next/image';
+
+interface Comment {
+  id: string;
+  content: string;
+  status: string;
+  createdAt: Date;
+  author: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+}
 
 interface PostInteractionsProps {
+  postId: string;
   initialLikes: number;
   initialDislikes: number;
+  comments: Comment[];
   articleUrl?: string;
   articleTitle?: string;
   articleSummary?: string;
 }
 
 export default function PostInteractions({
+  postId,
   initialLikes,
   initialDislikes,
+  comments,
   articleUrl = typeof window !== 'undefined' ? window.location.href : '',
   articleTitle = 'Check out this article',
   articleSummary = 'An interesting article worth reading'
@@ -28,6 +45,29 @@ export default function PostInteractions({
   const [hasDisliked, setHasDisliked] = useState(false);
   const [comment, setComment] = useState('');
   const [copied, setCopied] = useState(false);
+  const [localComments, setLocalComments] = useState<Comment[]>(comments);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  // Helper function to format time ago
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays === 1) return 'yesterday';
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   // Share functions
   const shareToFacebook = () => {
@@ -110,11 +150,54 @@ export default function PostInteractions({
     setIsBookmarked(!isBookmarked);
   };
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle comment submission here
-    console.log('Comment submitted:', comment);
-    setComment('');
+    if (!comment.trim() || isSubmittingComment) return;
+
+    setIsSubmittingComment(true);
+
+    try {
+      const response = await fetch('/api/comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: comment.trim(),
+          postId: postId,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Add the new comment to local state (it will be pending moderation)
+          const newComment: Comment = {
+            id: result.data.id,
+            content: comment.trim(),
+            status: 'PENDING',
+            createdAt: new Date(),
+            author: {
+              id: 'current-user',
+              name: 'You',
+              avatar: null
+            }
+          };
+          setLocalComments(prev => [newComment, ...prev]);
+          setComment('');
+
+          // Show success message
+          alert('Comment submitted successfully! It will appear after moderation.');
+        }
+      } else {
+        alert('Failed to submit comment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      alert('Failed to submit comment. Please try again.');
+    } finally {
+      setIsSubmittingComment(false);
+    }
   };
 
   return (
@@ -233,14 +316,16 @@ export default function PostInteractions({
 
       {/* Comments Section */}
       <section className="my-12">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Comments (127)</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Comments ({localComments.length})</h3>
 
         {/* Comment Form */}
         <form onSubmit={handleCommentSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 mb-8">
           <div className="flex items-start space-x-4">
-            <img
-              src={`https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=100`}
+            <Image
+              src="/images/default-avatar.png"
               alt="Your avatar"
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-full object-cover"
             />
             <div className="flex-1">
@@ -255,9 +340,9 @@ export default function PostInteractions({
                 <Button
                   type="submit"
                   className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                  disabled={!comment.trim()}
+                  disabled={!comment.trim() || isSubmittingComment}
                 >
-                  Post Comment
+                  {isSubmittingComment ? 'Posting...' : 'Post Comment'}
                 </Button>
               </div>
             </div>
@@ -266,35 +351,51 @@ export default function PostInteractions({
 
         {/* Comments List */}
         <div className="space-y-6">
-          {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6">
-              <div className="flex items-start space-x-4">
-                <img
-                  src={`https://images.pexels.com/photos/${3785077 + i}/pexels-photo-${3785077 + i}.jpeg?auto=compress&cs=tinysrgb&w=100`}
-                  alt="Commenter"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <h4 className="font-semibold text-gray-900">User {i + 1}</h4>
-                    <span className="text-sm text-gray-500">2 hours ago</span>
-                  </div>
-                  <p className="text-gray-700 mb-3">
-                    This is a great article! Really insightful analysis of the topic. Looking forward to more content like this.
-                  </p>
-                  <div className="flex items-center space-x-4 text-sm">
-                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-green-600 p-0">
-                      <ThumbsUp className="h-4 w-4 mr-1" />
-                      12
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600 p-0">
-                      Reply
-                    </Button>
+          {localComments.length > 0 ? (
+            localComments.map((commentItem) => (
+              <div key={commentItem.id} className="bg-white border border-gray-200 rounded-2xl p-6">
+                <div className="flex items-start space-x-4">
+                  <Image
+                    src={commentItem.author.avatar || '/images/default-avatar.png'}
+                    alt={commentItem.author.name}
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <h4 className="font-semibold text-gray-900">{commentItem.author.name}</h4>
+                      <span className="text-sm text-gray-500">
+                        {formatTimeAgo(commentItem.createdAt)}
+                      </span>
+                      {commentItem.status === 'PENDING' && (
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                          Pending moderation
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-700 mb-3">
+                      {commentItem.content}
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm">
+                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-green-600 p-0">
+                        <ThumbsUp className="h-4 w-4 mr-1" />
+                        0
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600 p-0">
+                        Reply
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
     </>
