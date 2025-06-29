@@ -8,9 +8,14 @@ import Image from 'next/image';
 // Generate static params for all possible category slugs
 export async function generateStaticParams() {
   return [
-    { slug: 'technology' },
     { slug: 'business' },
+    { slug: 'technology' },
     { slug: 'health' },
+    { slug: 'world' },
+    { slug: 'sports' },
+    { slug: 'science' },
+    { slug: 'politics' },
+    { slug: 'culture' },
   ];
 }
 
@@ -18,27 +23,57 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
   // Mock category data - in real app, this would come from API/database
   const categoryData = {
-    technology: {
-      name: 'Technology',
-      description: 'Latest developments in technology, AI, software, and digital innovation',
-      color: 'bg-purple-500',
-      articleCount: 892
-    },
     business: {
       name: 'Business',
       description: 'Business news, market trends, finance, and economic developments',
       color: 'bg-blue-500',
       articleCount: 1247
     },
+    technology: {
+      name: 'Technology',
+      description: 'Latest developments in technology, AI, software, and digital innovation',
+      color: 'bg-purple-500',
+      articleCount: 892
+    },
     health: {
       name: 'Health',
       description: 'Health news, medical breakthroughs, wellness, and healthcare updates',
       color: 'bg-green-500',
       articleCount: 634
+    },
+    world: {
+      name: 'World',
+      description: 'Global news, international affairs, and worldwide developments',
+      color: 'bg-indigo-500',
+      articleCount: 1156
+    },
+    sports: {
+      name: 'Sports',
+      description: 'Sports news, match results, player updates, and athletic achievements',
+      color: 'bg-orange-500',
+      articleCount: 743
+    },
+    science: {
+      name: 'Science',
+      description: 'Scientific discoveries, research breakthroughs, and academic developments',
+      color: 'bg-teal-500',
+      articleCount: 521
+    },
+    politics: {
+      name: 'Politics',
+      description: 'Political news, government updates, policy changes, and civic matters',
+      color: 'bg-red-500',
+      articleCount: 934
+    },
+    culture: {
+      name: 'Culture',
+      description: 'Cultural events, arts, entertainment, and social trends',
+      color: 'bg-pink-500',
+      articleCount: 412
     }
   };
 
-  const category = categoryData[params.slug as keyof typeof categoryData] || categoryData.technology;
+  const category = categoryData[params.slug as keyof typeof categoryData] || categoryData.business;
 
   const articles = [
     {

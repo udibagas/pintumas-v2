@@ -39,22 +39,21 @@ export default function CategoriesSection() {
           {categories.map((category, index) => {
             const IconComponent = category.icon;
             return (
-              <div
-                key={index}
-                className="group cursor-pointer bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-yellow-300"
-              >
-                <div className="text-center">
-                  <div className={`${category.color} w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform duration-200`}>
-                    <IconComponent className="h-6 w-6 text-white" />
+              <Link key={index} href={`/category/${category.name.toLowerCase()}`}>
+                <div className="group cursor-pointer bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-yellow-300">
+                  <div className="text-center">
+                    <div className={`${category.color} w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform duration-200`}>
+                      <IconComponent className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-yellow-700 transition-colors duration-200">
+                      {category.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {category.articles.toLocaleString()}
+                    </p>
                   </div>
-                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-yellow-700 transition-colors duration-200">
-                    {category.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {category.articles.toLocaleString()}
-                  </p>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
