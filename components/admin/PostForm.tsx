@@ -23,8 +23,10 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { PostFormSchema, type PostForm } from '@/lib/validations'
-import { Save, Eye, Upload } from 'lucide-react'
+import { Save, Eye, Upload, X } from 'lucide-react'
 import { generateSlug } from '@/lib/utils'
+import Image from 'next/image'
+import { toast } from 'sonner'
 
 interface Category {
   id: string
@@ -57,6 +59,9 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>(initialData?.imageUrl || '')
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   const form = useForm<PostForm>({
     resolver: zodResolver(PostFormSchema),
@@ -83,6 +88,66 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
     if (!watchedSlug || watchedSlug === generateSlug(form.getValues('title'))) {
       setValue('slug', generateSlug(title))
     }
+  }
+
+  // Handle image file selection
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB')
+      return
+    }
+
+    setImageFile(file)
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload immediately
+    setIsUploadingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await axios.post('/api/media', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      const imageUrl = response.data.url
+      // Update the form field with the uploaded image URL
+      setValue('imageUrl', imageUrl)
+      toast.success('Image uploaded successfully!')
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast.error('Failed to upload image')
+      // Reset on error
+      setImageFile(null)
+      setImagePreview('')
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
+  // Remove selected image
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview('')
+    setValue('imageUrl', '')
   }
 
   const onSubmit = async (data: PostForm) => {
@@ -286,27 +351,64 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
               />
             </div>
 
-            {/* Featured Image URL */}
-            <FormField
-              control={form.control}
-              name="imageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Featured Image URL</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="https://example.com/image.jpg"
-                      type="url"
+            {/* Featured Image Upload */}
+            <div className="space-y-4">
+              <div>
+                <FormLabel>Featured Image</FormLabel>
+                <FormDescription>
+                  Upload an image for this post (max 5MB)
+                </FormDescription>
+              </div>
+
+              {imagePreview ? (
+                <div className="relative">
+                  <div className="relative w-full h-48 border rounded-lg overflow-hidden">
+                    <Image
+                      src={imagePreview}
+                      alt="Featured image preview"
+                      fill
+                      className="object-cover"
                     />
-                  </FormControl>
-                  <FormDescription>
-                    Enter the URL of the featured image for this post
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={removeImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                  <div className="text-center">
+                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                        disabled={isUploadingImage}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {isUploadingImage ? 'Uploading...' : 'Choose Image'}
+                      </Button>
+                      <p className="text-sm text-gray-500">
+                        PNG, JPG, GIF up to 5MB
+                      </p>
+                    </div>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                </div>
               )}
-            />
+            </div>
 
             {/* Tags */}
             <FormField

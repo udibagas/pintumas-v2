@@ -15,6 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import axios from 'axios'
 import { toast } from 'sonner'
+import Image from 'next/image'
 
 const userSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -36,6 +37,8 @@ export default function UserForm({ initialData, isEdit = false }: UserFormProps)
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(initialData?.avatar || '')
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 
   const {
     register,
@@ -84,10 +87,56 @@ export default function UserForm({ initialData, isEdit = false }: UserFormProps)
     }
   }
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setValue('avatar', value)
-    setAvatarPreview(value)
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB')
+      return
+    }
+
+    setAvatarFile(file)
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = () => {
+      setAvatarPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload immediately
+    setIsUploadingAvatar(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await axios.post('/api/media', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      const avatarUrl = response.data.url
+      // Update the form field with the uploaded avatar URL
+      setValue('avatar', avatarUrl)
+      toast.success('Avatar uploaded successfully!')
+    } catch (error) {
+      console.error('Error uploading avatar:', error)
+      toast.error('Failed to upload avatar')
+      // Reset on error
+      setAvatarFile(null)
+      setAvatarPreview('')
+    } finally {
+      setIsUploadingAvatar(false)
+    }
   }
 
   return (
@@ -108,7 +157,7 @@ export default function UserForm({ initialData, isEdit = false }: UserFormProps)
             <CardDescription>Basic user details and contact information</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Avatar Preview */}
+            {/* Avatar Upload */}
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={avatarPreview} alt="User avatar" />
@@ -116,12 +165,40 @@ export default function UserForm({ initialData, isEdit = false }: UserFormProps)
                   {watch('name')?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <Label htmlFor="avatar">Avatar URL</Label>
+              <div className="flex-1 space-y-2">
+                <Label>Avatar</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('avatar-upload')?.click()}
+                    disabled={isUploadingAvatar}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isUploadingAvatar ? 'Uploading...' : 'Upload Image'}
+                  </Button>
+                  {avatarPreview && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setAvatarFile(null)
+                        setAvatarPreview('')
+                        setValue('avatar', '')
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">PNG, JPG, GIF up to 5MB</p>
                 <Input
-                  id="avatar"
-                  placeholder="https://example.com/avatar.jpg"
-                  {...register('avatar')}
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
                   onChange={handleAvatarChange}
                 />
               </div>

@@ -101,6 +101,28 @@ export default function Profile({ redirectPath = '/', showRoleInfo = false }: Pr
     }
   };
 
+  // Handle avatar file upload
+  const uploadAvatar = async (): Promise<string | null> => {
+    if (!avatarFile) return null;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', avatarFile);
+
+      const response = await axios.post('/api/media', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data.url;
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to upload avatar');
+      return null;
+    }
+  };
+
   // Handle profile form submission
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,10 +131,16 @@ export default function Profile({ redirectPath = '/', showRoleInfo = false }: Pr
     try {
       let avatarUrl = profileForm.avatar;
 
-      // If a new avatar file was selected, simulate upload
+      // If a new avatar file was selected, upload it
       if (avatarFile) {
-        // In a real app, you would upload to your server/cloud storage
-        avatarUrl = avatarPreview; // Use the preview URL for demo
+        const uploadedAvatarUrl = await uploadAvatar();
+        if (uploadedAvatarUrl) {
+          avatarUrl = uploadedAvatarUrl;
+        } else {
+          // Upload failed, show error and return
+          setIsLoading(false);
+          return;
+        }
       }
 
       const updateData = {
