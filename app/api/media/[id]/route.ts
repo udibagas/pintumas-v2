@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import fs from "fs";
 
 export async function DELETE(
@@ -9,9 +9,7 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const media = await prisma.media.delete({
-      where: { id: parseInt(id, 10) },
-    });
+    const media = await prisma.media.delete({ where: { id } });
 
     fs.unlink(`public${media.url}`, (err) => {
       if (err) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import path from "path";
 import fs from "fs/promises";
 import moment from "moment";
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
   const fileName = `${Date.now()}-${file.name}`;
   const filePath = path.join(uploadsDir + dir, fileName);
-  await fs.writeFile(filePath, buffer);
+  await fs.writeFile(filePath, new Uint8Array(buffer));
 
   const url = `/uploads${dir}/${fileName}`;
 
