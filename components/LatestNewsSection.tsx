@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
+import { formatTimeAgo } from '@/lib/utils';
 
 interface Post {
   id: string;
@@ -60,19 +61,6 @@ export default function LatestNewsSection() {
     } finally {
       setIsInitialLoading(false);
     }
-  };
-
-  // Helper function to format time ago
-  const formatTimeAgo = (date: string | Date) => {
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    return postDate.toLocaleDateString('id-ID');
   };
 
   // Handle load more functionality

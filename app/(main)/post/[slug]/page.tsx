@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import PostInteractions from './PostInteractions';
+import { formatTimeAgo } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -174,27 +175,6 @@ async function getRelatedPosts(categoryId: string, currentPostId: string) {
     return [];
   }
 }
-
-// Helper function to format time ago
-const formatTimeAgo = (date: Date) => {
-  const now = new Date();
-  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-
-  if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} hours ago`;
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays === 1) return 'yesterday';
-  if (diffInDays < 7) return `${diffInDays} days ago`;
-
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-};
 
 export default async function SinglePost({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);

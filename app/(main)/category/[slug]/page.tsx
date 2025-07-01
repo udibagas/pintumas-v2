@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import CategoryPageClient from './CategoryPageClient';
 import Image from 'next/image';
+import { formatTimeAgo, formatViews } from '@/lib/utils';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,83 +43,84 @@ interface CategoryData {
   };
 }
 
-// Generate static params for all possible category slugs
-export async function generateStaticParams() {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/categories`, {
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      // Fallback to default categories if API fails
-      return [
-        { slug: 'business' },
-        { slug: 'technology' },
-        { slug: 'health' },
-        { slug: 'world' },
-        { slug: 'sports' },
-        { slug: 'science' },
-        { slug: 'politics' },
-        { slug: 'culture' },
-      ];
-    }
-
-    const data = await response.json();
-    return data.success ? data.data.map((cat: any) => ({ slug: cat.slug })) : [];
-  } catch (error) {
-    console.error('Error generating static params:', error);
-    return [
-      { slug: 'business' },
-      { slug: 'technology' },
-      { slug: 'health' },
-      { slug: 'world' },
-      { slug: 'sports' },
-      { slug: 'science' },
-      { slug: 'politics' },
-      { slug: 'culture' },
-    ];
-  }
-}
-
 async function getCategoryData(slug: string): Promise<CategoryData | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/categories/${slug}/posts?limit=12`, {
-      cache: 'no-store'
+    const category = await prisma.category.findUnique({
+      where: { slug },
+      include: {
+        posts: {
+          where: {
+            status: 'PUBLISHED',
+            isAnnouncement: false // Exclude announcements from regular posts
+          },
+          take: 12,
+          orderBy: { publishedAt: 'desc' },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            },
+            _count: {
+              select: {
+                comments: {
+                  where: { status: 'APPROVED' }
+                }
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            posts: {
+              where: {
+                status: 'PUBLISHED',
+                isAnnouncement: false
+              }
+            }
+          }
+        }
+      }
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch category data');
-    }
+    if (!category) return null;
 
-    const data = await response.json();
-    return data.success ? data.data : null;
+    return {
+      category: {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        description: category.description || '',
+        color: category.color || '#3B82F6',
+        articleCount: category._count.posts
+      },
+      posts: category.posts.map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        summary: post.summary || '',
+        image: post.imageUrl || '/images/default-post.jpg',
+        author: post.author.name,
+        publishedAt: post.publishedAt || post.createdAt,
+        readTime: post.readTime || '5 min read',
+        views: post.views,
+        comments: post._count.comments,
+        featured: post.featured
+      })),
+      pagination: {
+        total: category._count.posts,
+        limit: 12,
+        offset: 0,
+        hasMore: category._count.posts > 12
+      }
+    };
   } catch (error) {
     console.error('Error fetching category data:', error);
     return null;
   }
 }
-
-// Helper function to format time ago
-const formatTimeAgo = (date: string | Date) => {
-  const now = new Date();
-  const postDate = new Date(date);
-  const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
-
-  if (diffInHours < 1) return 'Just now';
-  if (diffInHours < 24) return `${diffInHours} hours ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays} days ago`;
-  return postDate.toLocaleDateString('id-ID');
-};
-
-// Helper function to format views
-const formatViews = (views: number) => {
-  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-  if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
-  return views.toString();
-};
 
 export default async function CategoryPage({ params }: { params: { slug: string } }) {
   const categoryData = await getCategoryData(params.slug);

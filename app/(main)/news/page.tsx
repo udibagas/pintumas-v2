@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Link from 'next/link';
 import Image from 'next/image';
 import NewsGridClient from './NewsGridClient';
+import { formatTimeAgo, formatViews } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,26 +45,6 @@ async function getPosts() {
     return [];
   }
 }
-
-// Helper function to format time ago
-const formatTimeAgo = (date: string | Date) => {
-  const now = new Date();
-  const postDate = new Date(date);
-  const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
-
-  if (diffInHours < 1) return 'Just now';
-  if (diffInHours < 24) return `${diffInHours} hours ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays} days ago`;
-  return postDate.toLocaleDateString('id-ID');
-};
-
-// Helper function to format views
-const formatViews = (views: number) => {
-  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-  if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
-  return views.toString();
-};
 
 export default async function NewsPage() {
   const allNews = await getPosts();

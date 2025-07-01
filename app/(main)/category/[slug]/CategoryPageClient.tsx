@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
+import { formatTimeAgo, formatViews } from '@/lib/utils';
 
 interface Article {
   id: string;
@@ -35,26 +36,6 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visibleArticles, setVisibleArticles] = useState(6);
-
-  // Helper function to format time ago
-  const formatTimeAgo = (date: string | Date) => {
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    return postDate.toLocaleDateString('id-ID');
-  };
-
-  // Helper function to format views
-  const formatViews = (views: number) => {
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
-    return views.toString();
-  };
 
   const handleSortChange = async (newSortBy: string) => {
     setSortBy(newSortBy);
@@ -255,7 +236,7 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
                           </div>
                         </div>
                         <Button variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50">
-                          Read More
+                          Selengkapnya
                         </Button>
                       </div>
                     </div>
@@ -289,11 +270,11 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Loading More Articles...
+                Memuat lebih banyak artikel...
               </>
             ) : (
               <>
-                Load More Articles
+                Muat lebih banyak artikel
                 <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
                   {regularArticles.length - visibleArticles} more
                 </span>
@@ -308,18 +289,18 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">You&apos;ve explored everything!</h3>
               <p className="text-gray-600 mb-4">
-                You&apos;ve viewed all {regularArticles.length} articles in this category.
+                Anda telah melihat semua artikel di kategori ini.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/">
                 <Button variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50">
-                  Back to Home
+                  Kembali ke Beranda
                 </Button>
               </Link>
               <Link href="/news">
                 <Button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white">
-                  Browse All News
+                  Lihat Berita Terbaru
                 </Button>
               </Link>
             </div>

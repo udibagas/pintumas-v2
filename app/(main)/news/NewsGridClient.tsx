@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
+import { formatViews } from '@/lib/utils';
 
 interface Article {
   id: string;
@@ -46,13 +47,6 @@ export default function NewsGridClient({ initialArticles }: NewsGridClientProps)
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays} days ago`;
     return postDate.toLocaleDateString('id-ID');
-  };
-
-  // Helper function to format views
-  const formatViews = (views: number) => {
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
-    return views.toString();
   };
 
   const handleLoadMore = async () => {
