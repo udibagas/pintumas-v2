@@ -430,16 +430,16 @@ export default function Header() {
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <User className="h-4 w-4" />
-                        <span>Profile</span>
+                        <span>Profil</span>
                       </Link>
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3">
+                      {/* <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3">
                         <Bookmark className="h-4 w-4" />
                         <span>Saved Articles</span>
                       </button>
                       <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3">
                         <Settings className="h-4 w-4" />
                         <span>Settings</span>
-                      </button>
+                      </button> */}
                     </div>
 
                     <div className="border-t border-gray-100 py-2">

@@ -10,12 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface UserProfile {
+  id: string;
   name: string;
   email: string;
-  avatar: string;
+  avatar?: string;
   bio?: string;
+  role: string;
 }
 
 export default function ProfilePage() {
@@ -46,24 +49,37 @@ export default function ProfilePage() {
 
   // Load user profile on component mount
   useEffect(() => {
-    const savedUser = localStorage.getItem('userProfile');
-    const savedAuth = localStorage.getItem('isAuthenticated');
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            const user = data.user;
+            setUserProfile(user);
+            setIsAuthenticated(true);
+            setProfileForm({
+              name: user.name || '',
+              email: user.email || '',
+              bio: user.bio || '',
+              avatar: user.avatar || ''
+            });
+            setAvatarPreview(user.avatar || '');
+          } else {
+            // Not authenticated, redirect to home
+            router.push('/');
+          }
+        } else {
+          // Not authenticated, redirect to home  
+          router.push('/');
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+        router.push('/');
+      }
+    };
 
-    if (savedUser && savedAuth === 'true') {
-      const user = JSON.parse(savedUser);
-      setUserProfile(user);
-      setIsAuthenticated(true);
-      setProfileForm({
-        name: user.name || '',
-        email: user.email || '',
-        bio: user.bio || '',
-        avatar: user.avatar || ''
-      });
-      setAvatarPreview(user.avatar || '');
-    } else {
-      // Redirect to home if not authenticated
-      router.push('/');
-    }
+    fetchUserProfile();
   }, [router]);
 
   // Handle avatar file selection
@@ -91,9 +107,6 @@ export default function ProfilePage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       let avatarUrl = profileForm.avatar;
 
       // If a new avatar file was selected, simulate upload
@@ -102,23 +115,43 @@ export default function ProfilePage() {
         avatarUrl = avatarPreview; // Use the preview URL for demo
       }
 
-      const updatedProfile = {
-        ...userProfile,
+      const updateData = {
         name: profileForm.name,
         email: profileForm.email,
         bio: profileForm.bio,
         avatar: avatarUrl
       };
 
-      // Update localStorage and state
-      setUserProfile(updatedProfile);
-      localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+      const response = await fetch('/api/auth/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
 
-      setProfileForm(prev => ({ ...prev, avatar: avatarUrl }));
-      setAvatarFile(null);
-
-      toast.success('Profile updated successfully!');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          const updatedUser = data.user;
+          setUserProfile(updatedUser);
+          setProfileForm({
+            name: updatedUser.name,
+            email: updatedUser.email,
+            bio: updatedUser.bio || '',
+            avatar: updatedUser.avatar || ''
+          });
+          setAvatarPreview(updatedUser.avatar || '');
+          setAvatarFile(null);
+          toast.success('Profile updated successfully!');
+        } else {
+          toast.error(data.error || 'Failed to update profile');
+        }
+      } else {
+        toast.error('Failed to update profile. Please try again.');
+      }
     } catch (error) {
+      console.error('Error updating profile:', error);
       toast.error('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
@@ -142,18 +175,36 @@ export default function ProfilePage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call for password change
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Reset password form
-      setPasswordForm({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+      const response = await fetch('/api/auth/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
       });
 
-      toast.success('Password updated successfully!');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Reset password form
+          setPasswordForm({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          });
+          toast.success('Password updated successfully!');
+        } else {
+          toast.error(data.error || 'Failed to update password');
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to update password. Please try again.');
+      }
     } catch (error) {
+      console.error('Error updating password:', error);
       toast.error('Failed to update password. Please try again.');
     } finally {
       setIsLoading(false);
@@ -199,9 +250,11 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                 <div className="flex flex-col items-center space-y-4">
                   <div className="relative">
-                    <img
-                      src={avatarPreview || userProfile.avatar}
+                    <Image
+                      src={avatarPreview || userProfile.avatar || '/images/default-avatar.png'}
                       alt={userProfile.name}
+                      width={128}
+                      height={128}
                       className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
                     />
                     <label
