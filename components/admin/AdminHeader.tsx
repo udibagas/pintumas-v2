@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Image from 'next/image'
+import axios from 'axios'
 import Link from 'next/link'
 
 interface AdminHeaderProps {
@@ -30,7 +31,7 @@ export default function AdminHeader({ user }: AdminHeaderProps) {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await axios.post('/api/auth/logout')
       window.location.href = '/admin/login'
     } catch (error) {
       console.error('Logout error:', error)

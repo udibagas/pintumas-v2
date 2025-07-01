@@ -13,6 +13,8 @@ import {
 import { DataTable } from '@/components/ui/data-table'
 import { MoreHorizontal, Edit, Trash2, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import axios from 'axios'
 
 interface Category {
   id: string
@@ -33,17 +35,15 @@ const handleDelete = async (categoryId: string) => {
   if (!confirm('Are you sure you want to delete this category?')) return
 
   try {
-    const response = await fetch(`/api/admin/categories/${categoryId}`, {
-      method: 'DELETE',
-    })
+    const response = await axios.delete(`/api/admin/categories/${categoryId}`)
 
-    if (response.ok) {
+    if (response.status === 200) {
       window.location.reload()
     } else {
-      alert('Failed to delete category')
+      toast.error('Failed to delete category')
     }
   } catch (error) {
-    alert('Error deleting category')
+    toast.error('Error deleting category')
   }
 }
 

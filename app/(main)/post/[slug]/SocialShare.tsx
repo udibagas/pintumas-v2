@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Facebook, Twitter, Linkedin, Instagram, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface SocialShareProps {
   articleUrl?: string;
@@ -37,7 +38,7 @@ export default function SocialShare({
   const shareToInstagram = () => {
     // Instagram doesn't support direct URL sharing, so we'll copy the link for manual sharing
     copyToClipboard();
-    alert('Link copied! You can now paste it in your Instagram story or bio.');
+    toast.success('Link copied! You can now paste it in your Instagram story or bio.');
   };
 
   const copyToClipboard = async () => {

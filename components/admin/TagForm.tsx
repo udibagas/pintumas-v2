@@ -10,6 +10,8 @@ import { Loader2, Tag as TagIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import axios from 'axios'
+import { toast } from 'sonner'
 
 const tagSchema = z.object({
   name: z.string().min(1, 'Tag name is required').max(50, 'Tag name must be less than 50 characters'),
@@ -53,25 +55,21 @@ export default function TagForm({ initialData, isEdit = false }: TagFormProps) {
   const onSubmit = async (data: TagFormData) => {
     setIsLoading(true)
     try {
-      const url = isEdit ? `/api/admin/tags/${initialData?.id}` : '/api/admin/tags'
-      const method = isEdit ? 'PUT' : 'POST'
+      const url = `/api/admin/tags${isEdit ? `/${initialData?.id}` : ''}`
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
+      const response = isEdit
+        ? await axios.put(url, data)
+        : await axios.post(url, data)
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         router.push('/admin/tags')
         router.refresh()
       } else {
-        const errorData = await response.json()
-        alert(errorData.error || 'Failed to save tag')
+        toast.error(response.data?.error || 'Failed to save tag')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving tag:', error)
-      alert('An error occurred while saving the tag')
+      toast.error(error.response?.data?.error || 'An error occurred while saving the tag')
     } finally {
       setIsLoading(false)
     }

@@ -13,6 +13,8 @@ import {
 import { DataTable } from '@/components/ui/data-table'
 import { MoreHorizontal, Edit, Trash2, ArrowUpDown, Tag as TagIcon } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Tag {
@@ -33,17 +35,15 @@ const handleDelete = async (tagId: string) => {
   if (!confirm('Are you sure you want to delete this tag?')) return
 
   try {
-    const response = await fetch(`/api/admin/tags/${tagId}`, {
-      method: 'DELETE',
-    })
+    const response = await axios.delete(`/api/admin/tags/${tagId}`)
 
-    if (response.ok) {
+    if (response.status === 200) {
       window.location.reload()
     } else {
-      alert('Failed to delete tag')
+      toast.error('Failed to delete tag')
     }
   } catch (error) {
-    alert('Error deleting tag')
+    toast.error('Error deleting tag')
   }
 }
 

@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import axios from 'axios';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -77,25 +78,18 @@ export default function CategoryForm({ category, isEdit = false }: CategoryFormP
     try {
       setIsSubmitting(true);
 
-      const url = isEdit ? `/api/admin/categories/${category?.id}` : '/api/admin/categories';
-      const method = isEdit ? 'PUT' : 'POST';
+      const url = `/api/admin/categories${isEdit ? `/${category?.id}` : ''}`;
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const response = isEdit
+        ? await axios.put(url, data)
+        : await axios.post(url, data);
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.data.success) {
         toast.success(isEdit ? 'Category updated successfully!' : 'Category created successfully!');
         router.push('/admin/categories');
         router.refresh();
       } else {
-        toast.error(result.error || 'Something went wrong');
+        toast.error(response.data.error || 'Something went wrong');
       }
     } catch (error) {
       console.error('Error saving category:', error);

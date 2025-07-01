@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { DataTable } from '@/components/ui/data-table'
 import { MoreHorizontal, Edit, Trash2, ArrowUpDown, Shield, User as UserIcon, Crown } from 'lucide-react'
+import { toast } from 'sonner'
+import axios from 'axios'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -54,17 +56,15 @@ const handleDelete = async (userId: string) => {
   if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return
 
   try {
-    const response = await fetch(`/api/admin/users/${userId}`, {
-      method: 'DELETE',
-    })
+    const response = await axios.delete(`/api/admin/users/${userId}`)
 
-    if (response.ok) {
+    if (response.status === 200) {
       window.location.reload()
     } else {
-      alert('Failed to delete user')
+      toast.error('Failed to delete user')
     }
   } catch (error) {
-    alert('Error deleting user')
+    toast.error('Error deleting user')
   }
 }
 

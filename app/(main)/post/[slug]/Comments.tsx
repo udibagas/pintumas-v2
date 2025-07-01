@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import axios from 'axios';
 import { formatTimeAgo } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface Comment {
   id: string;
@@ -59,14 +60,14 @@ export default function Comments({ postId, initialComments }: CommentsProps) {
         setComment('');
 
         // Show success message
-        alert('Comment submitted successfully! It will appear after moderation.');
+        toast.success('Comment submitted successfully! It will appear after moderation.');
       } else {
-        alert('Failed to submit comment. Please try again.');
+        toast.error('Failed to submit comment. Please try again.');
       }
     } catch (error: any) {
       console.error('Error submitting comment:', error);
       const errorMessage = error.response?.data?.error || 'Failed to submit comment. Please try again.';
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmittingComment(false);
     }

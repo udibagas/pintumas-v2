@@ -13,6 +13,8 @@ import { Loader2, Upload } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import axios from 'axios'
+import { toast } from 'sonner'
 
 const userSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -57,30 +59,26 @@ export default function UserForm({ initialData, isEdit = false }: UserFormProps)
   const onSubmit = async (data: UserFormData) => {
     setIsLoading(true)
     try {
-      const url = isEdit ? `/api/admin/users/${initialData?.id}` : '/api/admin/users'
-      const method = isEdit ? 'PUT' : 'POST'
+      const url = `/api/admin/users${isEdit ? `/${initialData?.id}` : ''}`
 
       // Remove password from data if it's empty in edit mode
       if (isEdit && !data.password) {
         delete data.password
       }
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
+      const response = isEdit
+        ? await axios.put(url, data)
+        : await axios.post(url, data)
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         router.push('/admin/users')
         router.refresh()
       } else {
-        const errorData = await response.json()
-        alert(errorData.error || 'Failed to save user')
+        toast.error(response.data?.error || 'Failed to save user')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving user:', error)
-      alert('An error occurred while saving the user')
+      toast.error(error.response?.data?.error || 'An error occurred while saving the user')
     } finally {
       setIsLoading(false)
     }

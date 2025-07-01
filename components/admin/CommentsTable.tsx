@@ -8,6 +8,8 @@ import { DataTable } from '@/components/ui/data-table'
 import { Check, X, Trash2, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
+import axios from 'axios'
+import { toast } from 'sonner'
 
 interface Comment {
   id: string
@@ -43,19 +45,17 @@ const getStatusBadge = (status: Comment['status']) => {
 
 const handleStatusChange = async (commentId: string, newStatus: string) => {
   try {
-    const response = await fetch(`/api/admin/comments/${commentId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus }),
+    const response = await axios.put(`/api/admin/comments/${commentId}`, {
+      status: newStatus,
     })
 
-    if (response.ok) {
+    if (response.status === 200) {
       window.location.reload()
     } else {
-      alert('Failed to update comment status')
+      toast.error('Failed to update comment status')
     }
   } catch (error) {
-    alert('Error updating comment status')
+    toast.error('Error updating comment status')
   }
 }
 
@@ -63,17 +63,15 @@ const handleDelete = async (commentId: string) => {
   if (!confirm('Are you sure you want to delete this comment?')) return
 
   try {
-    const response = await fetch(`/api/admin/comments/${commentId}`, {
-      method: 'DELETE',
-    })
+    const response = await axios.delete(`/api/admin/comments/${commentId}`)
 
-    if (response.ok) {
+    if (response.status === 200) {
       window.location.reload()
     } else {
-      alert('Failed to delete comment')
+      toast.error('Failed to delete comment')
     }
   } catch (error) {
-    alert('Error deleting comment')
+    toast.error('Error deleting comment')
   }
 }
 

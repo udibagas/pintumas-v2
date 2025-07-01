@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import NewsGridClient from './NewsGridClient';
 import { formatTimeAgo, formatViews } from '@/lib/utils';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,17 +30,57 @@ interface Post {
 
 async function getPosts() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/posts?limit=20&sortBy=latest`, {
-      cache: 'no-store'
+    // Build where clause - only published posts
+    const where = {
+      status: 'PUBLISHED' as const,
+    };
+
+    // Get posts with their categories and authors, including comment count
+    const posts = await prisma.post.findMany({
+      where,
+      include: {
+        category: {
+          select: {
+            name: true,
+            slug: true,
+            color: true,
+          },
+        },
+        author: {
+          select: {
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
+      orderBy: [{ publishedAt: 'desc' }],
+      take: 20,
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch posts');
-    }
+    // Transform the data to match the expected format
+    const transformedPosts = posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      summary: post.summary || "",
+      image: post.imageUrl || "/images/default-avatar.png",
+      category: post.category.name,
+      categorySlug: post.category.slug,
+      categoryColor: post.category.color || undefined,
+      readTime: post.readTime || "5 min read",
+      views: post.views || 0,
+      author: post.author.name,
+      publishedAt: post.publishedAt || post.createdAt,
+      createdAt: post.createdAt,
+      featured: post.featured,
+      comments: post._count.comments,
+    }));
 
-    const data = await response.json();
-    return data.success ? data.data : [];
+    return transformedPosts;
   } catch (error) {
     console.error('Error fetching posts:', error);
     return [];
@@ -48,8 +89,8 @@ async function getPosts() {
 
 export default async function NewsPage() {
   const allNews = await getPosts();
-  const featuredNews = allNews.filter((article: Post) => article.featured);
-  const regularNews = allNews.filter((article: Post) => !article.featured);
+  const featuredNews = allNews.filter((article) => article.featured);
+  const regularNews = allNews.filter((article) => !article.featured);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -73,7 +114,7 @@ export default async function NewsPage() {
       {featuredNews.length > 0 && (
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Story</h2>
-          {featuredNews.map((article: Post) => (
+          {featuredNews.map((article) => (
             <Link key={article.id} href={`/post/${article.slug}`} className="block">
               <article className="bg-white rounded-2xl shadow-xl overflow-hidden group cursor-pointer hover:shadow-2xl transition-all duration-300">
                 <div className="lg:flex">

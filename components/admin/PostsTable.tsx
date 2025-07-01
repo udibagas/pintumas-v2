@@ -13,6 +13,8 @@ import {
 import { DataTable } from '@/components/ui/data-table'
 import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Post {
@@ -56,17 +58,15 @@ const handleDelete = async (postId: string) => {
   if (!confirm('Are you sure you want to delete this post?')) return
 
   try {
-    const response = await fetch(`/api/admin/posts/${postId}`, {
-      method: 'DELETE',
-    })
+    const response = await axios.delete(`/api/admin/posts/${postId}`)
 
-    if (response.ok) {
+    if (response.status === 200) {
       window.location.reload()
     } else {
-      alert('Failed to delete post')
+      toast.error('Failed to delete post')
     }
   } catch (error) {
-    alert('Error deleting post')
+    toast.error('Error deleting post')
   }
 }
 

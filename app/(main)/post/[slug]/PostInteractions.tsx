@@ -3,6 +3,7 @@
 import ArticleActions from './ArticleActions';
 import SocialShare from './SocialShare';
 import Comments from './Comments';
+import { toast } from 'sonner';
 
 interface Comment {
   id: string;
@@ -51,7 +52,7 @@ export default function PostInteractions({
       // Fallback to copying URL
       try {
         await navigator.clipboard.writeText(articleUrl);
-        alert('Link copied to clipboard!');
+        toast.success('Link copied to clipboard!');
       } catch (err) {
         console.error('Failed to copy: ', err);
       }
