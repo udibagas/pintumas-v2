@@ -163,8 +163,8 @@ export const AnnouncementPostSchema = z.object({
     .max(4, "Priority must be at most 4")
     .default(1),
   status: z.enum(["DRAFT", "PUBLISHED"]).default("PUBLISHED"),
-  startDate: z.string().optional().or(z.date().optional()),
-  endDate: z.string().optional().or(z.date().optional()),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   linkUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
   linkText: z
     .string()

@@ -208,30 +208,52 @@ export default function AnnouncementsTable() {
           </form>
 
           <div className="flex gap-2">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
-                <SelectItem value="INFO">Info</SelectItem>
-                <SelectItem value="BREAKING">Breaking</SelectItem>
-                <SelectItem value="ALERT">Alert</SelectItem>
-                <SelectItem value="EVENT">Event</SelectItem>
-                <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-1">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INFO">Info</SelectItem>
+                  <SelectItem value="BREAKING">Breaking</SelectItem>
+                  <SelectItem value="ALERT">Alert</SelectItem>
+                  <SelectItem value="EVENT">Event</SelectItem>
+                  <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
+                </SelectContent>
+              </Select>
+              {typeFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setTypeFilter('')}
+                  className="h-8 w-8 p-0"
+                >
+                  ×
+                </Button>
+              )}
+            </div>
 
-            <Select value={activeFilter} onValueChange={setActiveFilter}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
-                <SelectItem value="true">Active</SelectItem>
-                <SelectItem value="false">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-1">
+              <Select value={activeFilter} onValueChange={setActiveFilter}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PUBLISHED">Published</SelectItem>
+                  <SelectItem value="DRAFT">Draft</SelectItem>
+                </SelectContent>
+              </Select>
+              {activeFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setActiveFilter('')}
+                  className="h-8 w-8 p-0"
+                >
+                  ×
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

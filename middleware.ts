@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth";
+import { verifyTokenEdge } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Skip authentication for admin login page
+  if (pathname === "/admin/login") {
+    return NextResponse.next();
+  }
 
   // Protected admin routes
   if (pathname.startsWith("/admin")) {
@@ -13,7 +18,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
-    const decoded = verifyToken(token);
+    const decoded = await verifyTokenEdge(token);
+    console.log("Decoded token:", decoded);
     if (!decoded) {
       // Redirect to admin login if invalid token
       return NextResponse.redirect(new URL("/admin/login", request.url));
@@ -29,26 +35,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Skip login page if already authenticated admin
-  if (pathname === "/admin/login") {
-    const token = request.cookies.get("auth-token")?.value;
-
-    if (token) {
-      const decoded = verifyToken(token);
-      if (
-        decoded &&
-        (decoded.role === "ADMIN" || decoded.role === "MODERATOR")
-      ) {
-        return NextResponse.redirect(new URL("/admin", request.url));
-      }
-
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-  }
-
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/admin/login"],
+  matcher: ["/((?!admin/login|_next/static|_next/image|favicon.ico).*)"],
 };
