@@ -64,19 +64,7 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       href: '/admin/users',
       icon: Users,
       roles: ['ADMIN'],
-    },
-    {
-      name: 'Analytics',
-      href: '/admin/analytics',
-      icon: BarChart3,
-      roles: ['ADMIN'],
-    },
-    {
-      name: 'Settings',
-      href: '/admin/settings',
-      icon: Settings,
-      roles: ['ADMIN'],
-    },
+    }
   ]
 
   const filteredNavigation = navigation.filter(item =>

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/form'
 import { PostFormSchema, type PostForm } from '@/lib/validations'
 import { Save, Eye, Upload } from 'lucide-react'
+import { generateSlug } from '@/lib/utils'
 
 interface Category {
   id: string
@@ -42,16 +43,6 @@ interface PostFormProps {
   tags: Tag[]
   mode: 'create' | 'edit'
   initialData?: Partial<PostForm & { id: string }>
-}
-
-// Helper functions
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
 }
 
 function calculateReadTime(content: string): string {
