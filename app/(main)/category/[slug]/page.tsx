@@ -6,6 +6,7 @@ import CategoryPageClient from './CategoryPageClient';
 import Image from 'next/image';
 import { formatTimeAgo, formatViews } from '@/lib/utils';
 import { prisma } from '@/lib/prisma';
+import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,79 @@ interface CategoryData {
     offset: number;
     hasMore: boolean;
   };
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  try {
+    const category = await prisma.category.findUnique({
+      where: { slug: params.slug },
+      include: {
+        _count: {
+          select: {
+            posts: {
+              where: {
+                status: 'PUBLISHED',
+                isAnnouncement: false
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!category) {
+      return {
+        title: 'Kategori Tidak Ditemukan - Pintumas',
+        description: 'Kategori yang Anda cari tidak ditemukan.',
+      };
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const url = `${baseUrl}/category/${category.slug}`;
+
+    const description = category.description ||
+      `Baca berita terbaru dalam kategori ${category.name} di Pintumas. Temukan ${category._count.posts} artikel informatif dan terpercaya.`;
+
+    return {
+      title: `${category.name} - Berita & Artikel Terbaru | Pintumas`,
+      description,
+      keywords: `${category.name}, berita ${category.name.toLowerCase()}, artikel ${category.name.toLowerCase()}, pintumas, pelabuhan tanjung mas`,
+      openGraph: {
+        title: `${category.name} - Berita & Artikel Terbaru`,
+        description,
+        url,
+        siteName: 'Pintumas',
+        type: 'website',
+        images: [
+          {
+            url: `${baseUrl}/images/pintumas.png`,
+            width: 1200,
+            height: 630,
+            alt: `Kategori ${category.name} - Pintumas`,
+          }
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${category.name} - Berita & Artikel Terbaru`,
+        description,
+        images: [`${baseUrl}/images/pintumas.png`],
+      },
+      alternates: {
+        canonical: url,
+      },
+      other: {
+        'article:section': category.name,
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return {
+      title: 'Kategori - Pintumas',
+      description: 'Portal berita terpercaya dengan informasi terkini.',
+    };
+  }
 }
 
 async function getCategoryData(slug: string): Promise<CategoryData | null> {

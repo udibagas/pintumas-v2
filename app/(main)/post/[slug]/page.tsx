@@ -5,9 +5,12 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import PostInteractions from './PostInteractions';
+import ViewCounter from '@/components/ViewCounter';
 import { formatTimeAgo } from '@/lib/utils';
+import { Metadata } from 'next';
 
-export const dynamic = 'force-dynamic';
+// Use ISR instead of force-dynamic for better performance
+export const revalidate = 300; // Revalidate every 5 minutes
 
 interface Post {
   id: string;
@@ -55,6 +58,121 @@ interface Post {
       avatar: string | null;
     };
   }>;
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  try {
+    const post = await prisma.post.findUnique({
+      where: {
+        slug: params.slug,
+        status: 'PUBLISHED'
+      },
+      include: {
+        author: {
+          select: {
+            name: true
+          }
+        },
+        category: {
+          select: {
+            name: true
+          }
+        },
+        tags: {
+          include: {
+            tag: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!post) {
+      return {
+        title: 'Berita Tidak Ditemukan - Pintumas',
+        description: 'Berita yang Anda cari tidak ditemukan.',
+      };
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const url = `${baseUrl}/post/${post.slug}`;
+
+    // Extract text from HTML content for description
+    const textContent = post.content
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/\s+/g, ' ')    // Replace multiple spaces with single space
+      .trim();
+
+    const description = post.summary ||
+      (textContent.length > 160 ? textContent.substring(0, 157) + '...' : textContent) ||
+      `Baca berita terbaru tentang ${post.category.name} di Pintumas.`;
+
+    const keywords = post.tags.map(tag => tag.tag.name).join(', ');
+
+    return {
+      title: `${post.title} - Pintumas`,
+      description,
+      keywords: keywords || post.category.name,
+      authors: [{ name: post.author.name }],
+      category: post.category.name,
+      openGraph: {
+        title: post.title,
+        description,
+        url,
+        siteName: 'Pintumas',
+        type: 'article',
+        publishedTime: post.publishedAt?.toISOString() || post.createdAt.toISOString(),
+        modifiedTime: post.updatedAt.toISOString(),
+        authors: [post.author.name],
+        section: post.category.name,
+        tags: post.tags.map(tag => tag.tag.name),
+        images: post.imageUrl ? [
+          {
+            url: post.imageUrl.startsWith('http') ? post.imageUrl : `${baseUrl}${post.imageUrl}`,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          }
+        ] : [
+          {
+            url: `${baseUrl}/images/pintumas.png`,
+            width: 1200,
+            height: 630,
+            alt: 'Pintumas - Portal Berita',
+          }
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: post.title,
+        description,
+        images: post.imageUrl ? [
+          post.imageUrl.startsWith('http') ? post.imageUrl : `${baseUrl}${post.imageUrl}`
+        ] : [`${baseUrl}/images/pintumas.png`],
+        creator: `@${post.author.name.replace(/\s+/g, '')}`,
+      },
+      alternates: {
+        canonical: url,
+      },
+      other: {
+        'article:author': post.author.name,
+        'article:section': post.category.name,
+        'article:published_time': post.publishedAt?.toISOString() || post.createdAt.toISOString(),
+        'article:modified_time': post.updatedAt.toISOString(),
+        'article:tag': keywords,
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return {
+      title: 'Berita - Pintumas',
+      description: 'Portal berita terpercaya dengan informasi terkini.',
+    };
+  }
 }
 
 // Generate static params for all possible post slugs
@@ -128,13 +246,8 @@ async function getPost(slug: string): Promise<Post | null> {
       }
     });
 
-    // Increment view count
-    if (post) {
-      await prisma.post.update({
-        where: { id: post.id },
-        data: { views: { increment: 1 } }
-      });
-    }
+    // Don't increment view count on server-side to allow static generation
+    // View counting will be handled on client-side instead
 
     return post;
   } catch (error) {
@@ -187,6 +300,9 @@ export default async function SinglePost({ params }: { params: { slug: string } 
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Client-side view counter */}
+      <ViewCounter postId={post.id} />
+
       {/* Back Button */}
       <Link href="/" className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-6 transition-colors duration-200">
         <ArrowLeft className="h-4 w-4 mr-2" />

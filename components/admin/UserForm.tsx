@@ -286,14 +286,14 @@ export default function UserForm({ initialData, isEdit = false }: UserFormProps)
         <div className="flex items-center gap-4">
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEdit ? 'Update User' : 'Create User'}
+            {isEdit ? 'Ubah User' : 'Tambah User'}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => router.back()}
           >
-            Cancel
+            Batal
           </Button>
         </div>
       </form>

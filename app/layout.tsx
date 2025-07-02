@@ -5,22 +5,31 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'PintuMas - Pusat Informasi Terpadu Pelabuhan Tanjung Mas',
-  description: 'Stay informed with comprehensive news coverage from around the globe. Breaking news, politics, business, technology, sports, and more.',
-  keywords: 'news, breaking news, politics, business, technology, sports, world news, latest news',
-  authors: [{ name: 'PintuMas Team' }],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+  title: 'Pintumas - Portal Berita Pelabuhan Tanjung Mas',
+  description: 'Portal berita terpercaya dengan informasi terkini seputar Pelabuhan Tanjung Mas, perdagangan maritim, logistik, dan berita terbaru lainnya.',
+  keywords: 'berita, pelabuhan tanjung mas, maritim, logistik, perdagangan, shipping, semarang, jawa tengah, indonesia',
+  authors: [{ name: 'Tim Pintumas' }],
   viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
-    title: 'PintuMas - Pusat Informasi Terpadu Pelabuhan Tanjung Mas',
-    description: 'Stay informed with comprehensive news coverage from around the globe.',
+    title: 'Pintumas - Portal Berita Pelabuhan Tanjung Mas',
+    description: 'Portal berita terpercaya dengan informasi terkini seputar Pelabuhan Tanjung Mas, perdagangan maritim, logistik, dan berita terbaru lainnya.',
     type: 'website',
-    locale: 'en_US',
+    locale: 'id_ID',
+    siteName: 'Pintumas',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PintuMas - Pusat Informasi Terpadu Pelabuhan Tanjung Mas',
-    description: 'Stay informed with comprehensive news coverage from around the globe.',
+    title: 'Pintumas - Portal Berita Pelabuhan Tanjung Mas',
+    description: 'Portal berita terpercaya dengan informasi terkini seputar Pelabuhan Tanjung Mas dan industri maritim.',
+  },
+  other: {
+    'language': 'id-ID',
+    'geo.region': 'ID-JT',
+    'geo.placename': 'Semarang',
+    'geo.position': '-6.966667;110.416664',
+    'ICBM': '-6.966667, 110.416664',
   },
 };
 

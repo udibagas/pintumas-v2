@@ -7,6 +7,24 @@ import Image from 'next/image';
 import NewsGridClient from './NewsGridClient';
 import { formatTimeAgo, formatViews } from '@/lib/utils';
 import { prisma } from '@/lib/prisma';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Berita Terbaru - Pintumas',
+  description: 'Kumpulan berita terbaru dan terkini seputar Pelabuhan Tanjung Mas, industri maritim, logistik, dan perdagangan di Indonesia.',
+  keywords: 'berita terbaru, news, pelabuhan tanjung mas, maritim, logistik, perdagangan, shipping, semarang',
+  openGraph: {
+    title: 'Berita Terbaru - Pintumas',
+    description: 'Kumpulan berita terbaru dan terkini seputar Pelabuhan Tanjung Mas, industri maritim, logistik, dan perdagangan di Indonesia.',
+    type: 'website',
+    siteName: 'Pintumas',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Berita Terbaru - Pintumas',
+    description: 'Kumpulan berita terbaru dan terkini seputar Pelabuhan Tanjung Mas dan industri maritim.',
+  },
+};
 
 export const dynamic = 'force-dynamic';
 
