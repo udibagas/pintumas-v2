@@ -227,8 +227,8 @@ export default function Profile({ redirectPath = '/', showRoleInfo = false }: Pr
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-        <p className="text-gray-600">Manage your account settings and preferences</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Pengaturan Profil</h1>
+        <p className="text-gray-600">Kelola pengaturan akun dan preferensi Anda</p>
       </div>
 
       <div className="space-y-8">
@@ -237,10 +237,10 @@ export default function Profile({ redirectPath = '/', showRoleInfo = false }: Pr
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Profile Information
+              Informasi Profil
             </CardTitle>
             <CardDescription>
-              Update your personal information and profile picture
+              Perbarui informasi pribadi dan foto profil Anda
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -289,25 +289,25 @@ export default function Profile({ redirectPath = '/', showRoleInfo = false }: Pr
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Nama Lengkap</Label>
                   <Input
                     id="name"
                     type="text"
                     value={profileForm.name}
                     onChange={(e) => setProfileForm(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Enter your full name"
+                    placeholder="Masukkan nama lengkap Anda"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Alamat Email</Label>
                   <Input
                     id="email"
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Enter your email"
+                    placeholder="Masukkan email Anda"
                     required
                   />
                 </div>
@@ -319,7 +319,7 @@ export default function Profile({ redirectPath = '/', showRoleInfo = false }: Pr
                   id="bio"
                   value={profileForm.bio}
                   onChange={(e) => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
-                  placeholder="Tell us about yourself..."
+                  placeholder="Ceritakan tentang diri Anda..."
                   rows={4}
                 />
               </div>

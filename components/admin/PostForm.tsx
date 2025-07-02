@@ -97,13 +97,13 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
+      toast.error('Harap pilih file gambar')
       return
     }
 
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB')
+      toast.error('Ukuran gambar harus kurang dari 5MB')
       return
     }
 
@@ -131,10 +131,10 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
       const imageUrl = response.data.url
       // Update the form field with the uploaded image URL
       setValue('imageUrl', imageUrl)
-      toast.success('Image uploaded successfully!')
+      toast.success('Gambar berhasil diunggah!')
     } catch (error) {
       console.error('Error uploading image:', error)
-      toast.error('Failed to upload image')
+      toast.error('Gagal mengunggah gambar')
       // Reset on error
       setImageFile(null)
       setImagePreview('')
@@ -164,16 +164,16 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
 
       if (mode === 'create') {
         await axios.post('/api/admin/posts', submitData)
-        setSuccess('Post created successfully!')
+        setSuccess('Artikel berhasil dibuat!')
         router.push('/admin/posts')
       } else if (mode === 'edit' && initialData?.id) {
         await axios.put(`/api/admin/posts/${initialData.id}`, submitData)
-        setSuccess('Post updated successfully!')
+        setSuccess('Artikel berhasil diperbarui!')
         router.push('/admin/posts')
       }
     } catch (err: any) {
       console.error('Error saving post:', err)
-      setError(err.response?.data?.error || 'Failed to save post')
+      setError(err.response?.data?.error || 'Gagal menyimpan artikel')
     } finally {
       setIsLoading(false)
     }
@@ -193,12 +193,12 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>
-          {mode === 'create' ? 'Create New Post' : 'Edit Post'}
+          {mode === 'create' ? 'Buat Artikel Baru' : 'Edit Artikel'}
         </CardTitle>
         <CardDescription>
           {mode === 'create'
-            ? 'Fill in the details below to create a new post.'
-            : 'Update the details below to edit the post.'
+            ? 'Isi detail di bawah ini untuk membuat artikel baru.'
+            : 'Perbarui detail di bawah ini untuk mengedit artikel.'
           }
         </CardDescription>
       </CardHeader>
@@ -225,11 +225,11 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>Judul</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Enter post title"
+                        placeholder="Masukkan judul artikel"
                         onChange={(e) => {
                           field.onChange(e)
                           handleTitleChange(e.target.value)
@@ -249,10 +249,10 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                   <FormItem>
                     <FormLabel>Slug</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="post-slug" />
+                      <Input {...field} placeholder="slug-artikel" />
                     </FormControl>
                     <FormDescription>
-                      URL-friendly version of the title
+                      Versi URL yang ramah dari judul
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -266,11 +266,11 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
               name="summary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Summary</FormLabel>
+                  <FormLabel>Ringkasan</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Brief summary of the post (optional)"
+                      placeholder="Ringkasan singkat artikel (opsional)"
                       rows={3}
                     />
                   </FormControl>
@@ -285,11 +285,11 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel>Konten</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Write your post content here..."
+                      placeholder="Tulis konten artikel Anda di sini..."
                       rows={12}
                       className="min-h-[300px]"
                     />
@@ -306,11 +306,11 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                 name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel>Kategori</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
+                          <SelectValue placeholder="Pilih kategori" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -336,13 +336,13 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
+                          <SelectValue placeholder="Pilih status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="DRAFT">Draft</SelectItem>
-                        <SelectItem value="PUBLISHED">Published</SelectItem>
-                        <SelectItem value="ARCHIVED">Archived</SelectItem>
+                        <SelectItem value="DRAFT">Draf</SelectItem>
+                        <SelectItem value="PUBLISHED">Diterbitkan</SelectItem>
+                        <SelectItem value="ARCHIVED">Diarsipkan</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -354,9 +354,9 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
             {/* Featured Image Upload */}
             <div className="space-y-4">
               <div>
-                <FormLabel>Featured Image</FormLabel>
+                <FormLabel>Gambar Utama</FormLabel>
                 <FormDescription>
-                  Upload an image for this post (max 5MB)
+                  Unggah gambar untuk artikel ini (maks 5MB)
                 </FormDescription>
               </div>
 
@@ -365,7 +365,7 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                   <div className="relative w-full h-48 border rounded-lg overflow-hidden">
                     <Image
                       src={imagePreview}
-                      alt="Featured image preview"
+                      alt="Pratinjau gambar utama"
                       fill
                       className="object-cover"
                     />
@@ -392,10 +392,10 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                         disabled={isUploadingImage}
                       >
                         <Upload className="h-4 w-4 mr-2" />
-                        {isUploadingImage ? 'Uploading...' : 'Choose Image'}
+                        {isUploadingImage ? 'Mengunggah...' : 'Pilih Gambar'}
                       </Button>
                       <p className="text-sm text-gray-500">
-                        PNG, JPG, GIF up to 5MB
+                        PNG, JPG, GIF hingga 5MB
                       </p>
                     </div>
                     <Input
@@ -416,7 +416,7 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
               name="tagIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags</FormLabel>
+                  <FormLabel>Tag</FormLabel>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {tags.map((tag) => (
                       <div key={tag.id} className="flex items-center space-x-2">
@@ -442,7 +442,7 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                     ))}
                   </div>
                   <FormDescription>
-                    Select tags that are relevant to this post
+                    Pilih tag yang relevan dengan artikel ini
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -456,9 +456,9 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Featured Post</FormLabel>
+                    <FormLabel className="text-base">Artikel Unggulan</FormLabel>
                     <FormDescription>
-                      Mark this post as featured to highlight it on the homepage
+                      Tandai artikel ini sebagai unggulan untuk ditampilkan di beranda
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -481,7 +481,7 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                 className="flex-1"
               >
                 <Save className="w-4 h-4 mr-2" />
-                Save as Draft
+                Simpan sebagai Draf
               </Button>
 
               <Button
@@ -491,7 +491,7 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                 className="flex-1"
               >
                 <Eye className="w-4 h-4 mr-2" />
-                {mode === 'create' ? 'Publish' : 'Update & Publish'}
+                {mode === 'create' ? 'Terbitkan' : 'Perbarui & Terbitkan'}
               </Button>
 
               <Button
@@ -500,7 +500,7 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                 onClick={() => router.push('/admin/posts')}
                 disabled={isLoading}
               >
-                Cancel
+                Batal
               </Button>
             </div>
           </form>
