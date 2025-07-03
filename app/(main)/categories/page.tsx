@@ -161,7 +161,7 @@ export default function AllCategoriesPage() {
                     {category.description}
                   </p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>{category.articles.toLocaleString()} articles</span>
+                    <span>{category.articles.toLocaleString()} artikel</span>
                     <div className="flex items-center">
                       <Clock className="h-3 w-3 mr-1" />
                       <span>Updated daily</span>
@@ -221,7 +221,7 @@ export default function AllCategoriesPage() {
                     </p>
 
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Recent Articles:</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Artikel Terkini:</h4>
                       {category.recentArticles && category.recentArticles.length > 0 ? (
                         <ul className="space-y-2">
                           {category.recentArticles.slice(0, 3).map((article, articleIndex) => (
@@ -231,13 +231,13 @@ export default function AllCategoriesPage() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-gray-500 italic">No recent articles available</p>
+                        <p className="text-sm text-gray-500 italic">Tidak ada artikel</p>
                       )}
                     </div>
 
                     <div className="mt-6 pt-4 border-t border-gray-100">
                       <Button variant="outline" className="w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50 group-hover:bg-yellow-500 group-hover:text-white transition-all duration-300">
-                        Explore {category.name}
+                        Jelajahi {category.name}
                       </Button>
                     </div>
                   </div>

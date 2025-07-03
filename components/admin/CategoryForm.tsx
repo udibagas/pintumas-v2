@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { generateSlug } from '@/lib/utils';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -55,16 +56,6 @@ export default function CategoryForm({ category, isEdit = false }: CategoryFormP
   });
 
   const watchName = watch('name');
-
-  // Auto-generate slug from name
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
 
   // Update slug when name changes (only if not editing)
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

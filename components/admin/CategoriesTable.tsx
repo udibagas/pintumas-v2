@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,9 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { DataTable } from '@/components/ui/data-table'
 import { MoreHorizontal, Edit, Trash2, ArrowUpDown } from 'lucide-react'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import axios from 'axios'
+import CategoryDialog from './CategoryDialog'
 
 interface Category {
   id: string
@@ -29,16 +29,18 @@ interface Category {
 
 interface CategoriesTableProps {
   categories: Category[]
+  onRefresh?: () => void
 }
 
-const handleDelete = async (categoryId: string) => {
+const handleDelete = async (categoryId: string, onRefresh?: () => void) => {
   if (!confirm('Are you sure you want to delete this category?')) return
 
   try {
     const response = await axios.delete(`/api/admin/categories/${categoryId}`)
 
     if (response.status === 200) {
-      window.location.reload()
+      toast.success('Category deleted successfully!')
+      onRefresh?.()
     } else {
       toast.error('Failed to delete category')
     }
@@ -47,7 +49,7 @@ const handleDelete = async (categoryId: string) => {
   }
 }
 
-export default function CategoriesTable({ categories }: CategoriesTableProps) {
+export default function CategoriesTable({ categories, onRefresh }: CategoriesTableProps) {
   const columns: ColumnDef<Category>[] = useMemo(
     () => [
       {
@@ -122,14 +124,25 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href={`/admin/categories/${category.id}/edit`}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </Link>
-                </DropdownMenuItem>
+                <CategoryDialog
+                  category={{
+                    id: category.id,
+                    name: category.name,
+                    slug: category.slug,
+                    description: category.description ?? null,
+                    color: category.color ?? null,
+                  }}
+                  isEdit={true}
+                  onSuccess={onRefresh}
+                  trigger={
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                  }
+                />
                 <DropdownMenuItem
-                  onClick={() => handleDelete(category.id)}
+                  onClick={() => handleDelete(category.id, onRefresh)}
                   className="text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -141,7 +154,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
         },
       },
     ],
-    []
+    [onRefresh]
   )
 
   return (

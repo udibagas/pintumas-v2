@@ -1,17 +1,43 @@
-import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Plus, Edit, Trash2 } from 'lucide-react'
-import Link from 'next/link'
-import CategoriesTable from '@/components/admin/CategoriesTable'
+'use client';
 
-export default async function CategoriesPage() {
-  const categories = await prisma.category.findMany({
-    include: {
-      _count: { select: { posts: true } }
-    },
-    orderBy: { name: 'asc' }
-  })
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import CategoriesTable from '@/components/admin/CategoriesTable';
+import CategoryDialog from '@/components/admin/CategoryDialog';
+import axios from 'axios';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  color?: string | null;
+  _count: {
+    posts: number;
+  };
+}
+
+export default function CategoriesPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/admin/categories');
+      if (response.data.success) {
+        setCategories(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -20,25 +46,18 @@ export default async function CategoriesPage() {
           <h1 className="text-3xl font-bold text-gray-900">Categories Management</h1>
           <p className="text-gray-600">Organize content with categories</p>
         </div>
-        <Link href="/admin/categories/new">
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Category
-          </Button>
-        </Link>
+        <CategoryDialog onSuccess={fetchCategories} />
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>All Categories</CardTitle>
-          <CardDescription>
-            Manage content categories and their settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CategoriesTable categories={categories} />
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="text-center py-8">Loading categories...</div>
+          ) : (
+            <CategoriesTable categories={categories} onRefresh={fetchCategories} />
+          )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
