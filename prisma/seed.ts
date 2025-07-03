@@ -217,153 +217,175 @@ async function main() {
       console.log("Created post:", post.title);
     }
 
-    // Create sample announcement posts
-    const announcementPosts = [
+    // Create sample announcements
+    const announcements = [
       {
         title: "Pelabuhan Tanjung Mas Raih Penghargaan Pelabuhan Terbaik 2024",
-        slug: "penghargaan-pelabuhan-terbaik-2024",
         summary:
           "Pelabuhan Tanjung Mas berhasil meraih penghargaan sebagai pelabuhan terbaik kategori efisiensi operasional tahun 2024.",
         content:
           "Pelabuhan Tanjung Mas kembali membuktikan keunggulannya dengan meraih penghargaan sebagai pelabuhan terbaik kategori efisiensi operasional tahun 2024. Penghargaan ini diberikan berdasarkan penilaian terhadap kinerja operasional, inovasi teknologi, dan pelayanan kepada pengguna jasa pelabuhan.",
         status: "PUBLISHED" as const,
-        isAnnouncement: true,
         announcementType: "BREAKING" as const,
         priority: 4,
         linkUrl: null,
         linkText: "Baca Selengkapnya",
-        publishedAt: new Date(),
         authorId: admin.id,
         categoryId: businessCategory.id,
       },
       {
         title: "Sistem Baru Online Tracking Container Diluncurkan",
-        slug: "sistem-tracking-container-baru",
         summary:
           "Mulai hari ini, tracking container dapat dilakukan secara real-time melalui sistem digital terbaru kami.",
         content:
           "Pelabuhan Tanjung Mas meluncurkan sistem tracking container online yang memungkinkan pengguna untuk memantau posisi dan status container secara real-time. Sistem ini menggunakan teknologi GPS dan IoT untuk memberikan informasi yang akurat dan up-to-date.",
         status: "PUBLISHED" as const,
-        isAnnouncement: true,
         announcementType: "INFO" as const,
         priority: 3,
         linkUrl: "/tracking",
         linkText: "Coba Sekarang",
-        publishedAt: new Date(),
         authorId: admin.id,
         categoryId: techCategory.id,
       },
       {
         title: "Peningkatan Keamanan Cyber Security Pelabuhan",
-        slug: "peningkatan-cyber-security",
         summary:
           "Implementasi sistem keamanan siber terbaru untuk melindungi data dan operasional pelabuhan.",
         content:
           "Dalam upaya meningkatkan keamanan data dan operasional, Pelabuhan Tanjung Mas mengimplementasikan sistem keamanan siber terbaru. Sistem ini meliputi firewall canggih, sistem deteksi intrusi, dan enkripsi data end-to-end.",
         status: "PUBLISHED" as const,
-        isAnnouncement: true,
         announcementType: "ALERT" as const,
         priority: 3,
-        publishedAt: new Date(),
         authorId: moderator.id,
         categoryId: techCategory.id,
       },
       {
         title: "Event Pelabuhan Terbuka untuk Masyarakat - 15 Juli 2024",
-        slug: "pelabuhan-terbuka-2024",
         summary:
           "Bergabunglah dengan kami dalam acara pelabuhan terbuka yang akan menampilkan inovasi terbaru dan teknologi pelabuhan.",
         content:
           "Pelabuhan Tanjung Mas mengundang masyarakat untuk mengikuti acara pelabuhan terbuka pada tanggal 15 Juli 2024. Acara ini akan menampilkan teknologi terbaru, tur fasilitas pelabuhan, dan presentasi mengenai peran pelabuhan dalam ekonomi nasional.",
         status: "PUBLISHED" as const,
-        isAnnouncement: true,
         announcementType: "EVENT" as const,
         priority: 2,
         startDate: new Date("2024-07-01"),
         endDate: new Date("2024-07-15"),
         linkUrl: "/events/pelabuhan-terbuka-2024",
         linkText: "Daftar Sekarang",
-        publishedAt: new Date(),
         authorId: admin.id,
         categoryId: businessCategory.id,
       },
       {
         title: "Maintenance Sistem Informasi - 30 Juni 2024",
-        slug: "maintenance-sistem-informasi-juni",
         summary:
           "Sistem informasi pelabuhan akan mengalami maintenance pada tanggal 30 Juni 2024 pukul 01:00 - 05:00 WIB.",
         content:
           "Untuk meningkatkan kinerja dan keamanan sistem, kami akan melakukan maintenance rutin pada sistem informasi pelabuhan. Selama periode maintenance, beberapa layanan online mungkin tidak dapat diakses.",
         status: "PUBLISHED" as const,
-        isAnnouncement: true,
         announcementType: "MAINTENANCE" as const,
         priority: 2,
         startDate: new Date("2024-06-29"),
         endDate: new Date("2024-06-30"),
-        publishedAt: new Date(),
         authorId: admin.id,
         categoryId: techCategory.id,
       },
     ];
 
-    for (const postData of announcementPosts) {
-      const post = await prisma.post.create({
-        data: postData,
+    for (const announcementData of announcements) {
+      const announcement = await prisma.announcement.create({
+        data: announcementData,
       });
-      console.log(`Created announcement post: ${post.title}`);
+      console.log(`Created announcement: ${announcement.title}`);
     }
 
-    console.log("Created sample announcement posts");
-  }
+    console.log("Created sample announcements");
 
-  // Create sample comments
-  const posts = await prisma.post.findMany({ take: 3 });
+    // Create sample comments
+    const posts = await prisma.post.findMany({ take: 3 });
 
-  const sampleComments = [
-    {
-      content:
-        "Great article! Really insightful analysis. Thanks for sharing this valuable information.",
-      status: "APPROVED" as const,
-    },
-    {
-      content:
-        "I found this very helpful. Looking forward to more content like this.",
-      status: "APPROVED" as const,
-    },
-    {
-      content:
-        "Interesting perspective on this topic. Well written and informative.",
-      status: "APPROVED" as const,
-    },
-    {
-      content:
-        "This is exactly what I was looking for. Thank you for the detailed explanation.",
-      status: "APPROVED" as const,
-    },
-    {
-      content:
-        "Excellent work! The insights provided here are really valuable.",
-      status: "APPROVED" as const,
-    },
-  ];
+    const sampleComments = [
+      {
+        content:
+          "Great article! Really insightful analysis. Thanks for sharing this valuable information.",
+        status: "APPROVED" as const,
+      },
+      {
+        content:
+          "I found this very helpful. Looking forward to more content like this.",
+        status: "APPROVED" as const,
+      },
+      {
+        content:
+          "Interesting perspective on this topic. Well written and informative.",
+        status: "APPROVED" as const,
+      },
+      {
+        content:
+          "This is exactly what I was looking for. Thank you for the detailed explanation.",
+        status: "APPROVED" as const,
+      },
+      {
+        content:
+          "Excellent work! The insights provided here are really valuable.",
+        status: "APPROVED" as const,
+      },
+    ];
 
-  for (const post of posts) {
-    for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-      const commentData =
-        sampleComments[Math.floor(Math.random() * sampleComments.length)];
-      await prisma.comment.create({
-        data: {
-          ...commentData,
-          postId: post.id,
-          authorId: i % 2 === 0 ? admin.id : moderator.id,
+    for (const post of posts) {
+      for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
+        const commentData =
+          sampleComments[Math.floor(Math.random() * sampleComments.length)];
+        await prisma.comment.create({
+          data: {
+            ...commentData,
+            postId: post.id,
+            authorId: i % 2 === 0 ? admin.id : moderator.id,
+          },
+        });
+      }
+    }
+
+    console.log("Created sample comments");
+
+    // Create default settings
+    console.log("Creating default settings...");
+
+    await prisma.settings.upsert({
+      where: { key: "contact_info" },
+      update: {},
+      create: {
+        key: "contact_info",
+        value: {
+          address:
+            "Jl. Coaster No. 7, Tanjung Mas, Semarang Utara, Kota Semarang, Jawa Tengah 50174",
+          phone: "+62 (24) 3520073",
+          email: "info@pintumas.id",
+          workingHours: "Senin - Jumat: 08:00 - 17:00 WIB",
+          fax: "+62 (24) 3520074",
         },
-      });
-    }
+      },
+    });
+
+    await prisma.settings.upsert({
+      where: { key: "social_media" },
+      update: {},
+      create: {
+        key: "social_media",
+        value: {
+          facebook: "https://facebook.com/pintumas",
+          twitter: "https://twitter.com/pintumas",
+          instagram: "https://instagram.com/pintumas",
+          linkedin: "https://linkedin.com/company/pintumas",
+          youtube: "https://youtube.com/@pintumas",
+          tiktok: "",
+        },
+      },
+    });
+
+    console.log("Created default settings");
+
+    console.log("Database seed completed successfully!");
   }
-
-  console.log("Created sample comments");
-
-  console.log("Database seed completed successfully!");
 }
 
 main()

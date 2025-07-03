@@ -54,8 +54,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
           select: {
             posts: {
               where: {
-                status: 'PUBLISHED',
-                isAnnouncement: false
+                status: 'PUBLISHED'
               }
             }
           }
@@ -124,8 +123,7 @@ async function getCategoryData(slug: string): Promise<CategoryData | null> {
       include: {
         posts: {
           where: {
-            status: 'PUBLISHED',
-            isAnnouncement: false // Exclude announcements from regular posts
+            status: 'PUBLISHED'
           },
           take: 12,
           orderBy: { publishedAt: 'desc' },
@@ -150,8 +148,7 @@ async function getCategoryData(slug: string): Promise<CategoryData | null> {
           select: {
             posts: {
               where: {
-                status: 'PUBLISHED',
-                isAnnouncement: false
+                status: 'PUBLISHED'
               }
             }
           }

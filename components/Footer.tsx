@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import Image from 'next/image';
+import { Settings } from '@/lib/validations';
 
 interface Category {
   id: string;
@@ -28,6 +29,7 @@ interface Category {
 export default function Footer() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [settings, setSettings] = useState<Settings | null>(null);
 
   // Fetch categories from backend
   useEffect(() => {
@@ -51,26 +53,61 @@ export default function Footer() {
     fetchCategories();
   }, []);
 
+  // Fetch settings from backend
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get('/api/settings');
+        if (response.data.success) {
+          setSettings(response.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const footerLinks = {
-    company: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Contact', href: '/contact' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Press', href: '/press' },
-    ],
+  // Generate social links from settings
+  const getSocialLinks = () => {
+    if (!settings?.socialMedia) {
+      // Fallback social links if no settings
+      return [
+        { name: 'Facebook', icon: Facebook, href: '#' },
+        { name: 'Twitter', icon: Twitter, href: '#' },
+        { name: 'Instagram', icon: Instagram, href: '#' },
+        { name: 'YouTube', icon: Youtube, href: '#' },
+        { name: 'LinkedIn', icon: Linkedin, href: '#' }
+      ];
+    }
+
+    const socialLinks = [];
+
+    if (settings.socialMedia.facebook) {
+      socialLinks.push({ name: 'Facebook', icon: Facebook, href: settings.socialMedia.facebook });
+    }
+    if (settings.socialMedia.twitter) {
+      socialLinks.push({ name: 'Twitter', icon: Twitter, href: settings.socialMedia.twitter });
+    }
+    if (settings.socialMedia.instagram) {
+      socialLinks.push({ name: 'Instagram', icon: Instagram, href: settings.socialMedia.instagram });
+    }
+    if (settings.socialMedia.youtube) {
+      socialLinks.push({ name: 'YouTube', icon: Youtube, href: settings.socialMedia.youtube });
+    }
+    if (settings.socialMedia.linkedin) {
+      socialLinks.push({ name: 'LinkedIn', icon: Linkedin, href: settings.socialMedia.linkedin });
+    }
+
+    return socialLinks;
   };
 
-  const socialLinks = [
-    { name: 'Facebook', icon: Facebook, href: '#' },
-    { name: 'Twitter', icon: Twitter, href: '#' },
-    { name: 'Instagram', icon: Instagram, href: '#' },
-    { name: 'YouTube', icon: Youtube, href: '#' },
-    { name: 'LinkedIn', icon: Linkedin, href: '#' }
-  ];
+  const socialLinks = getSocialLinks();
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -123,22 +160,45 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Contact Info */}
           <div>
             <h3 className="text-lg font-semibold mb-6">Hubungi Kami</h3>
             <div className="space-y-3">
-              <div className="flex items-center text-sm text-gray-300">
-                <Phone className="h-4 w-4 mr-3 text-yellow-500" />
-                <span>+62 (24) xxx-xxx</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-300">
-                <Mail className="h-4 w-4 mr-3 text-yellow-500" />
-                <span>contact@pintumas.id</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-300">
-                <MapPin className="h-4 w-4 mr-3 text-yellow-500" />
-                <span>Semarang, Jawa Tengah</span>
-              </div>
+              {settings?.contactInfo?.phone && (
+                <div className="flex items-center text-sm text-gray-300">
+                  <Phone className="h-4 w-4 mr-3 text-yellow-500" />
+                  <span>{settings.contactInfo.phone}</span>
+                </div>
+              )}
+              {settings?.contactInfo?.email && (
+                <div className="flex items-center text-sm text-gray-300">
+                  <Mail className="h-4 w-4 mr-3 text-yellow-500" />
+                  <span>{settings.contactInfo.email}</span>
+                </div>
+              )}
+              {settings?.contactInfo?.address && (
+                <div className="flex items-start text-sm text-gray-300">
+                  <MapPin className="h-4 w-4 mr-3 text-yellow-500 mt-0.5 flex-shrink-0" />
+                  <span>{settings.contactInfo.address}</span>
+                </div>
+              )}
+              {!settings && (
+                // Fallback content while loading or if no settings
+                <>
+                  <div className="flex items-center text-sm text-gray-300">
+                    <Phone className="h-4 w-4 mr-3 text-yellow-500" />
+                    <span>+62 (24) xxx-xxx</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-300">
+                    <Mail className="h-4 w-4 mr-3 text-yellow-500" />
+                    <span>contact@pintumas.id</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-300">
+                    <MapPin className="h-4 w-4 mr-3 text-yellow-500" />
+                    <span>Semarang, Jawa Tengah</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -147,22 +207,26 @@ export default function Footer() {
         <div className="border-t border-gray-800 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
             {/* Social Media Links */}
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-400 text-sm mr-4">Follow us:</span>
-              {socialLinks.map((social) => {
-                const IconComponent = social.icon;
-                return (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="bg-gray-800 hover:bg-yellow-600 p-2 rounded-full transition-colors duration-200"
-                    aria-label={social.name}
-                  >
-                    <IconComponent className="h-4 w-4" />
-                  </a>
-                );
-              })}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex items-center space-x-4">
+                <span className="text-gray-400 text-sm mr-4">Follow us:</span>
+                {socialLinks.map((social) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-gray-800 hover:bg-yellow-600 p-2 rounded-full transition-colors duration-200"
+                      aria-label={social.name}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Back to Top Button */}
             <Button

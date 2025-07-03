@@ -142,8 +142,8 @@ export const ApiResponseSchema = z.object({
   error: z.string().optional(),
 });
 
-// Announcement Post schemas (posts with isAnnouncement: true)
-export const AnnouncementPostSchema = z.object({
+// Announcement schemas (separate from posts)
+export const AnnouncementSchema = z.object({
   id: z.string().optional(),
   title: z
     .string()
@@ -170,10 +170,56 @@ export const AnnouncementPostSchema = z.object({
     .string()
     .max(50, "Link text must be less than 50 characters")
     .optional(),
-  categoryId: z.string().min(1, "Category is required"),
+  categoryId: z.string().optional(), // Optional for announcements
 });
 
-export const UpdateAnnouncementPostSchema = AnnouncementPostSchema.partial();
+export const UpdateAnnouncementSchema = AnnouncementSchema.partial();
+
+// Legacy: Keep AnnouncementPostSchema for backward compatibility
+export const AnnouncementPostSchema = AnnouncementSchema;
+
+// Settings schemas
+export const ContactInfoSchema = z.object({
+  address: z.string().min(1, "Alamat wajib diisi"),
+  phone: z.string().min(1, "Nomor telepon wajib diisi"),
+  email: z.string().email("Email tidak valid"),
+  workingHours: z.string().optional(),
+  fax: z.string().optional(),
+});
+
+export const SocialMediaSchema = z.object({
+  facebook: z
+    .string()
+    .url("URL Facebook tidak valid")
+    .optional()
+    .or(z.literal("")),
+  twitter: z
+    .string()
+    .url("URL Twitter tidak valid")
+    .optional()
+    .or(z.literal("")),
+  instagram: z
+    .string()
+    .url("URL Instagram tidak valid")
+    .optional()
+    .or(z.literal("")),
+  linkedin: z
+    .string()
+    .url("URL LinkedIn tidak valid")
+    .optional()
+    .or(z.literal("")),
+  youtube: z
+    .string()
+    .url("URL YouTube tidak valid")
+    .optional()
+    .or(z.literal("")),
+  tiktok: z.string().url("URL TikTok tidak valid").optional().or(z.literal("")),
+});
+
+export const SettingsSchema = z.object({
+  contactInfo: ContactInfoSchema,
+  socialMedia: SocialMediaSchema,
+});
 
 export type User = z.infer<typeof UserSchema>;
 export type LoginData = z.infer<typeof LoginSchema>;
@@ -186,8 +232,11 @@ export type UpdatePost = z.infer<typeof UpdatePostSchema>;
 export type Comment = z.infer<typeof CommentSchema>;
 export type UpdateComment = z.infer<typeof UpdateCommentSchema>;
 export type Tag = z.infer<typeof TagSchema>;
-export type AnnouncementPost = z.infer<typeof AnnouncementPostSchema>;
-export type UpdateAnnouncementPost = z.infer<
-  typeof UpdateAnnouncementPostSchema
->;
+export type Announcement = z.infer<typeof AnnouncementSchema>;
+export type UpdateAnnouncement = z.infer<typeof UpdateAnnouncementSchema>;
+export type AnnouncementPost = z.infer<typeof AnnouncementPostSchema>; // Legacy
+export type UpdateAnnouncementPost = z.infer<typeof UpdateAnnouncementSchema>; // Legacy
+export type ContactInfo = z.infer<typeof ContactInfoSchema>;
+export type SocialMedia = z.infer<typeof SocialMediaSchema>;
+export type Settings = z.infer<typeof SettingsSchema>;
 export type ApiResponse = z.infer<typeof ApiResponseSchema>;

@@ -7,13 +7,12 @@ interface RouteParams {
   };
 }
 
-// GET /api/admin/announcements/[id] - Get specific announcement post
+// GET /api/admin/announcements/[id] - Get specific announcement
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const announcement = await prisma.post.findUnique({
+    const announcement = await prisma.announcement.findUnique({
       where: {
         id: params.id,
-        isAnnouncement: true,
       },
       include: {
         author: {
@@ -35,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     if (!announcement) {
       return NextResponse.json(
-        { success: false, error: "Announcement post not found" },
+        { success: false, error: "Announcement not found" },
         { status: 404 }
       );
     }
@@ -45,36 +44,25 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       data: announcement,
     });
   } catch (error) {
-    console.error("Error fetching announcement post:", error);
+    console.error("Error fetching announcement:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch announcement post" },
+      { success: false, error: "Failed to fetch announcement" },
       { status: 500 }
     );
   }
 }
 
-// PUT /api/admin/announcements/[id] - Update announcement post
+// PUT /api/admin/announcements/[id] - Update announcement
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const data = await request.json();
 
-    // Generate new slug if title changed
-    let updateData = { ...data };
-    if (data.title) {
-      updateData.slug = data.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-    }
-
-    const announcement = await prisma.post.update({
+    const announcement = await prisma.announcement.update({
       where: {
         id: params.id,
-        isAnnouncement: true,
       },
       data: {
-        ...updateData,
-        publishedAt: data.status === "PUBLISHED" ? new Date() : null,
+        ...data,
         startDate: data.startDate ? new Date(data.startDate) : null,
         endDate: data.endDate ? new Date(data.endDate) : null,
       },
@@ -101,32 +89,31 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       data: announcement,
     });
   } catch (error) {
-    console.error("Error updating announcement post:", error);
+    console.error("Error updating announcement:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to update announcement post" },
+      { success: false, error: "Failed to update announcement" },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/admin/announcements/[id] - Delete announcement post
+// DELETE /api/admin/announcements/[id] - Delete announcement
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    await prisma.post.delete({
+    await prisma.announcement.delete({
       where: {
         id: params.id,
-        isAnnouncement: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Announcement post deleted successfully",
+      message: "Announcement deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting announcement post:", error);
+    console.error("Error deleting announcement:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to delete announcement post" },
+      { success: false, error: "Failed to delete announcement" },
       { status: 500 }
     );
   }

@@ -36,18 +36,18 @@ interface AnnouncementFormProps {
 }
 
 const announcementTypes = [
-  { value: 'INFO', label: 'Information', description: 'General information' },
-  { value: 'BREAKING', label: 'Breaking News', description: 'Important breaking news' },
-  { value: 'ALERT', label: 'Alert', description: 'Important alerts or warnings' },
-  { value: 'EVENT', label: 'Event', description: 'Event announcements' },
-  { value: 'MAINTENANCE', label: 'Maintenance', description: 'System maintenance notices' },
+  { value: 'INFO', label: 'Informasi', description: 'Informasi umum' },
+  { value: 'BREAKING', label: 'Berita Terbaru', description: 'Berita penting dan terbaru' },
+  { value: 'ALERT', label: 'Peringatan', description: 'Peringatan penting atau bahaya' },
+  { value: 'EVENT', label: 'Acara', description: 'Pengumuman acara' },
+  { value: 'MAINTENANCE', label: 'Pemeliharaan', description: 'Pemberitahuan pemeliharaan sistem' },
 ]
 
 const priorities = [
-  { value: 1, label: 'Low', color: 'text-green-600' },
-  { value: 2, label: 'Medium', color: 'text-yellow-600' },
-  { value: 3, label: 'High', color: 'text-orange-600' },
-  { value: 4, label: 'Urgent', color: 'text-red-600' },
+  { value: 1, label: 'Rendah', color: 'text-green-600' },
+  { value: 2, label: 'Sedang', color: 'text-yellow-600' },
+  { value: 3, label: 'Tinggi', color: 'text-orange-600' },
+  { value: 4, label: 'Mendesak', color: 'text-red-600' },
 ]
 
 export default function AnnouncementForm({ initialData, isEditing = false }: AnnouncementFormProps) {
@@ -85,7 +85,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
         }
       } catch (error) {
         console.error('Error fetching categories:', error)
-        toast.error('Failed to load categories')
+        toast.error('Gagal memuat kategori')
       }
     }
 
@@ -99,7 +99,6 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
     try {
       const payload = {
         ...data,
-        isAnnouncement: true,
         // Convert date strings to proper format if provided
         startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
@@ -107,6 +106,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
         linkUrl: data.linkUrl || null,
         linkText: data.linkText || null,
         summary: data.summary || null,
+        categoryId: data.categoryId || null, // Allow null category
       }
 
       let response
@@ -117,15 +117,15 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
       }
 
       if (response.data.success) {
-        toast.success(isEditing ? 'Announcement updated successfully!' : 'Announcement created successfully!')
+        toast.success(isEditing ? 'Pengumuman berhasil diperbarui!' : 'Pengumuman berhasil dibuat!')
         router.push('/admin/announcements')
         router.refresh()
       } else {
-        setError(response.data.error || 'Something went wrong')
+        setError(response.data.error || 'Terjadi kesalahan')
       }
     } catch (error: any) {
       console.error('Error saving announcement:', error)
-      setError(error.response?.data?.error || 'Failed to save announcement')
+      setError(error.response?.data?.error || 'Gagal menyimpan pengumuman')
     } finally {
       setIsLoading(false)
     }
@@ -149,9 +149,9 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
+              <CardTitle>Informasi Dasar</CardTitle>
               <CardDescription>
-                Enter the main details for your announcement
+                Masukkan detail utama untuk pengumuman Anda
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -160,9 +160,9 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>Judul</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter announcement title..." {...field} />
+                      <Input placeholder="Masukkan judul pengumuman..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -174,16 +174,16 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                 name="summary"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Summary</FormLabel>
+                    <FormLabel>Ringkasan</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Brief summary of the announcement..."
+                        placeholder="Ringkasan singkat pengumuman..."
                         className="min-h-[100px]"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      Optional brief summary that will be shown in lists
+                      Ringkasan opsional yang akan ditampilkan dalam daftar
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -195,16 +195,16 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content</FormLabel>
+                    <FormLabel>Konten</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Write your announcement content here..."
+                        placeholder="Tulis konten pengumuman Anda di sini..."
                         className="min-h-[200px]"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      The main content of your announcement
+                      Konten utama pengumuman Anda
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -216,9 +216,9 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
           {/* Announcement Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Announcement Settings</CardTitle>
+              <CardTitle>Pengaturan Pengumuman</CardTitle>
               <CardDescription>
-                Configure how your announcement will be displayed
+                Konfigurasikan bagaimana pengumuman Anda akan ditampilkan
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -228,11 +228,11 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   name="announcementType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Type</FormLabel>
+                      <FormLabel>Jenis</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select announcement type" />
+                            <SelectValue placeholder="Pilih jenis pengumuman" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -256,11 +256,11 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   name="priority"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Priority</FormLabel>
+                      <FormLabel>Prioritas</FormLabel>
                       <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value.toString()}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select priority" />
+                            <SelectValue placeholder="Pilih prioritas" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -283,11 +283,11 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   name="categoryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>Kategori</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
+                            <SelectValue placeholder="Pilih kategori" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -312,12 +312,12 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
+                            <SelectValue placeholder="Pilih status" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="DRAFT">Draft</SelectItem>
-                          <SelectItem value="PUBLISHED">Published</SelectItem>
+                          <SelectItem value="DRAFT">Draf</SelectItem>
+                          <SelectItem value="PUBLISHED">Terbit</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -331,9 +331,9 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
           {/* Schedule & Links */}
           <Card>
             <CardHeader>
-              <CardTitle>Schedule & Links</CardTitle>
+              <CardTitle>Jadwal & Tautan</CardTitle>
               <CardDescription>
-                Set when the announcement should be shown and add optional links
+                Atur kapan pengumuman harus ditampilkan dan tambahkan tautan opsional
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -343,7 +343,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   name="startDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Start Date</FormLabel>
+                      <FormLabel>Tanggal Mulai</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -358,7 +358,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                         </div>
                       </FormControl>
                       <FormDescription>
-                        When to start showing this announcement
+                        Kapan mulai menampilkan pengumuman ini
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -370,7 +370,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   name="endDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>End Date</FormLabel>
+                      <FormLabel>Tanggal Berakhir</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -385,7 +385,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                         </div>
                       </FormControl>
                       <FormDescription>
-                        When to stop showing this announcement
+                        Kapan berhenti menampilkan pengumuman ini
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -399,7 +399,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   name="linkUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Link URL</FormLabel>
+                      <FormLabel>URL Tautan</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="https://example.com"
@@ -407,7 +407,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                         />
                       </FormControl>
                       <FormDescription>
-                        Optional external link for this announcement
+                        Tautan eksternal opsional untuk pengumuman ini
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -419,15 +419,15 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   name="linkText"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Link Text</FormLabel>
+                      <FormLabel>Teks Tautan</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Read more"
+                          placeholder="Baca selengkapnya"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Text to display for the link
+                        Teks yang ditampilkan untuk tautan
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -445,11 +445,11 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
               onClick={handleCancel}
               disabled={isLoading}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={isLoading}>
               <Save className="mr-2 h-4 w-4" />
-              {isLoading ? 'Saving...' : isEditing ? 'Update Announcement' : 'Create Announcement'}
+              {isLoading ? 'Menyimpan...' : isEditing ? 'Perbarui Pengumuman' : 'Buat Pengumuman'}
             </Button>
           </div>
         </form>

@@ -3,10 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Get active announcement posts ordered by priority and creation date
-    const announcements = await prisma.post.findMany({
+    // Get active announcements ordered by priority and creation date
+    const announcements = await prisma.announcement.findMany({
       where: {
-        isAnnouncement: true,
         status: "PUBLISHED",
         OR: [
           { startDate: null }, // No start date restriction
@@ -29,7 +28,6 @@ export async function GET() {
         priority: true,
         linkUrl: true,
         linkText: true,
-        slug: true,
         createdAt: true,
         author: {
           select: {
@@ -51,7 +49,7 @@ export async function GET() {
       content: announcement.summary,
       type: announcement.announcementType?.toLowerCase() || "info",
       priority: announcement.priority,
-      linkUrl: announcement.linkUrl || `/post/${announcement.slug}`,
+      linkUrl: announcement.linkUrl || null, // Use provided linkUrl or null
       linkText: announcement.linkText || "Read More",
       createdAt: announcement.createdAt,
       author: announcement.author.name,

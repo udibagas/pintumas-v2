@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// GET /api/admin/announcements - Get all announcement posts for admin
+// GET /api/admin/announcements - Get all announcements for admin
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -14,9 +14,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {
-      isAnnouncement: true, // Only get announcement posts
-    };
+    const where: any = {};
 
     if (search) {
       where.OR = [
@@ -35,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [announcements, total] = await Promise.all([
-      prisma.post.findMany({
+      prisma.announcement.findMany({
         where,
         include: {
           author: {
@@ -57,7 +55,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
       }),
-      prisma.post.count({ where }),
+      prisma.announcement.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -71,15 +69,15 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching announcement posts:", error);
+    console.error("Error fetching announcements:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch announcement posts" },
+      { success: false, error: "Failed to fetch announcements" },
       { status: 500 }
     );
   }
 }
 
-// POST /api/admin/announcements - Create new announcement post
+// POST /api/admin/announcements - Create new announcement
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
@@ -97,19 +95,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate slug from title
-    const slug = data.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
-    const announcement = await prisma.post.create({
+    const announcement = await prisma.announcement.create({
       data: {
         ...data,
-        slug,
-        isAnnouncement: true,
         authorId: adminUser.id,
-        publishedAt: data.status === "PUBLISHED" ? new Date() : null,
         startDate: data.startDate ? new Date(data.startDate) : null,
         endDate: data.endDate ? new Date(data.endDate) : null,
       },
@@ -136,9 +125,9 @@ export async function POST(request: NextRequest) {
       data: announcement,
     });
   } catch (error) {
-    console.error("Error creating announcement post:", error);
+    console.error("Error creating announcement:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to create announcement post" },
+      { success: false, error: "Failed to create announcement" },
       { status: 500 }
     );
   }

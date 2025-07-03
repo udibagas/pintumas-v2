@@ -22,9 +22,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  posts    Post[]
-  comments Comment[]
-  Media    Media[]
+  posts         Post[]
+  announcements Announcement[]
+  comments      Comment[]
+  Media         Media[]
 
   @@map("users")
 }
@@ -40,7 +41,8 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  posts Post[]
+  posts         Post[]
+  announcements Announcement[]
 
   @@map("categories")
 }
@@ -58,15 +60,6 @@ model Post {
   readTime    String?
   publishedAt DateTime?
 
-  // Announcement fields
-  isAnnouncement   Boolean           @default(false)
-  announcementType AnnouncementType? // Only used if isAnnouncement is true
-  priority         Int               @default(1) // 1=low, 2=medium, 3=high, 4=urgent
-  startDate        DateTime? // When to start showing (for announcements)
-  endDate          DateTime? // When to stop showing (for announcements)
-  linkUrl          String? // Optional external link for announcements
-  linkText         String? // Text for the link
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -80,6 +73,32 @@ model Post {
   PostMedia  PostMedia[]
 
   @@map("posts")
+}
+
+model Announcement {
+  id               String           @id @default(cuid())
+  title            String
+  summary          String?
+  content          String
+  announcementType AnnouncementType @default(INFO)
+  priority         Int              @default(1) // 1=low, 2=medium, 3=high, 4=urgent
+  status           Status           @default(PUBLISHED)
+  startDate        DateTime? // When to start showing
+  endDate          DateTime? // When to stop showing
+  linkUrl          String? // Optional external link
+  linkText         String? // Text for the link
+  views            Int              @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId String? // Optional category for announcements
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("announcements")
 }
 
 model Media {
@@ -165,6 +184,16 @@ model Comment {
   post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("comments")
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique // e.g., 'contact_info', 'social_media'
+  value     Json // Store contact info and social media as JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
 }
 
 enum Role {
