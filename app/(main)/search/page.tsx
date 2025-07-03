@@ -10,119 +10,40 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import Image from 'next/image';
+import axios from 'axios';
 
 interface SearchResult {
-  id: number;
+  id: string;
   title: string;
   excerpt: string;
-  category: string;
-  author: string;
-  publishedAt: string;
-  readTime: string;
-  imageUrl: string;
+  content: string;
   slug: string;
-  tags: string[];
+  featuredImage: string | null;
+  publishedAt: string;
+  views: number;
+  readTime: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  author: {
+    id: string;
+    name: string;
+  };
+  tags: Array<{
+    id: string;
+    name: string;
+    slug: string;
+  }>;
 }
 
-// Mock search results data - moved outside component to prevent re-renders
-const mockSearchResults: SearchResult[] = [
-  {
-    id: 1,
-    title: 'Revolutionary AI Algorithm Predicts Weather Patterns with Unprecedented Accuracy',
-    excerpt: 'Scientists have developed a groundbreaking artificial intelligence system that can predict weather patterns up to 30 days in advance with remarkable precision, potentially revolutionizing climate forecasting.',
-    category: 'Technology',
-    author: 'Dr. Sarah Chen',
-    publishedAt: '2024-12-15',
-    readTime: '5 min read',
-    imageUrl: 'https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'revolutionary-ai-algorithm-predicts-weather-patterns',
-    tags: ['AI', 'Weather', 'Technology', 'Climate']
-  },
-  {
-    id: 2,
-    title: 'Breakthrough Gene Therapy Shows Promise for Treating Rare Diseases',
-    excerpt: 'A new gene therapy approach has shown remarkable success in clinical trials, offering hope for patients with previously incurable genetic disorders.',
-    category: 'Health',
-    author: 'Dr. Michael Rodriguez',
-    publishedAt: '2024-12-14',
-    readTime: '4 min read',
-    imageUrl: 'https://images.pexels.com/photos/3938023/pexels-photo-3938023.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'breakthrough-gene-therapy-shows-promise',
-    tags: ['Gene Therapy', 'Health', 'Medical Research', 'Innovation']
-  },
-  {
-    id: 3,
-    title: 'Quantum Computing Reaches New Milestone with 1000-Qubit Processor',
-    excerpt: 'Tech giant announces the development of a 1000-qubit quantum processor, marking a significant leap forward in quantum computing capabilities.',
-    category: 'Technology',
-    author: 'Prof. David Kim',
-    publishedAt: '2024-12-13',
-    readTime: '6 min read',
-    imageUrl: 'https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'quantum-computing-reaches-new-milestone',
-    tags: ['Quantum Computing', 'Technology', 'Innovation', 'Science']
-  },
-  {
-    id: 4,
-    title: 'Sustainable Energy Storage Solution Could Transform Renewable Power',
-    excerpt: 'Researchers have developed a new battery technology that could store renewable energy for weeks, addressing one of the biggest challenges in sustainable power.',
-    category: 'Business',
-    author: 'Emma Thompson',
-    publishedAt: '2024-12-12',
-    readTime: '3 min read',
-    imageUrl: 'https://images.pexels.com/photos/9800029/pexels-photo-9800029.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'sustainable-energy-storage-solution',
-    tags: ['Renewable Energy', 'Battery Technology', 'Sustainability', 'Green Tech']
-  },
-  {
-    id: 5,
-    title: 'Machine Learning Transforms Medical Diagnosis Accuracy',
-    excerpt: 'New AI-powered diagnostic tools are helping doctors identify diseases earlier and more accurately than ever before, potentially saving millions of lives.',
-    category: 'Health',
-    author: 'Dr. Lisa Wang',
-    publishedAt: '2024-12-11',
-    readTime: '5 min read',
-    imageUrl: 'https://images.pexels.com/photos/3912317/pexels-photo-3912317.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'machine-learning-transforms-medical-diagnosis',
-    tags: ['Machine Learning', 'Healthcare', 'AI', 'Medical Technology']
-  },
-  {
-    id: 6,
-    title: 'Global Climate Summit Reaches Historic Agreement on Carbon Reduction',
-    excerpt: 'World leaders have signed a landmark agreement to reduce global carbon emissions by 50% within the next decade, marking a crucial step in fighting climate change.',
-    category: 'World',
-    author: 'James Patterson',
-    publishedAt: '2024-12-10',
-    readTime: '7 min read',
-    imageUrl: 'https://images.pexels.com/photos/3617500/pexels-photo-3617500.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'global-climate-summit-reaches-agreement',
-    tags: ['Climate Change', 'Environment', 'Global Politics', 'Sustainability']
-  },
-  {
-    id: 7,
-    title: 'Economic Recovery Shows Positive Signs as Markets Stabilize',
-    excerpt: 'Financial analysts report encouraging signs of economic recovery as major markets show sustained growth and unemployment rates continue to decline.',
-    category: 'Business',
-    author: 'Robert Johnson',
-    publishedAt: '2024-12-09',
-    readTime: '4 min read',
-    imageUrl: 'https://images.pexels.com/photos/6801648/pexels-photo-6801648.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'economic-recovery-shows-positive-signs',
-    tags: ['Economy', 'Finance', 'Markets', 'Business News']
-  },
-  {
-    id: 8,
-    title: 'Space Technology Advances Bring Mars Mission Closer to Reality',
-    excerpt: 'Latest developments in propulsion and life support systems are bringing human Mars missions closer to reality, with the first crewed mission planned for 2030.',
-    category: 'Technology',
-    author: 'Dr. Amanda Foster',
-    publishedAt: '2024-12-08',
-    readTime: '6 min read',
-    imageUrl: 'https://images.pexels.com/photos/586063/pexels-photo-586063.jpeg?auto=compress&cs=tinysrgb&w=800',
-    slug: 'space-technology-advances-mars-mission',
-    tags: ['Space Technology', 'Mars Mission', 'NASA', 'Space Exploration']
-  }
-];
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -136,80 +57,134 @@ export default function SearchPage() {
   const [totalResults, setTotalResults] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreResults, setHasMoreResults] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const categories = ['all', 'Technology', 'Health', 'Business', 'World', 'Sports', 'Politics'];
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('/api/categories');
+        if (response.data.success) {
+          setCategories(response.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const timeframes = [
-    { value: 'all', label: 'All Time' },
-    { value: 'today', label: 'Today' },
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
-    { value: 'year', label: 'This Year' }
+    { value: 'all', label: 'Semua waktu' },
+    { value: 'today', label: 'Hari Ini' },
+    { value: 'week', label: 'Minggu Ini' },
+    { value: 'month', label: 'Bulan Ini' },
+    { value: 'year', label: 'Tahun Ini' }
   ];
 
   const sortOptions = [
-    { value: 'relevance', label: 'Most Relevant' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'popular', label: 'Most Popular' }
+    { value: 'relevance', label: 'Paling Relevan' },
+    { value: 'newest', label: 'Terbaru' },
+    { value: 'oldest', label: 'Terlama' },
+    { value: 'popular', label: 'Terpopuler' }
   ];
 
-  // Perform search function
-  const performSearch = useCallback((query: string, page = 1) => {
+  // Perform search function with real API
+  const performSearch = useCallback(async (query: string, page = 1) => {
     setIsLoading(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      let filteredResults = mockSearchResults;
+    try {
+      // Build search parameters
+      const searchParams = new URLSearchParams();
 
-      // Filter by search query
       if (query) {
-        filteredResults = filteredResults.filter(
-          result =>
-            result.title.toLowerCase().includes(query.toLowerCase()) ||
-            result.excerpt.toLowerCase().includes(query.toLowerCase()) ||
-            result.category.toLowerCase().includes(query.toLowerCase()) ||
-            result.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-        );
+        searchParams.append('q', query);
       }
 
-      // Filter by category
       if (filterCategory !== 'all') {
-        filteredResults = filteredResults.filter(result => result.category === filterCategory);
+        const selectedCategory = categories.find(cat => cat.name === filterCategory);
+        if (selectedCategory) {
+          searchParams.append('category', selectedCategory.slug);
+        }
       }
 
-      // Sort results
+      // Map sort options to API parameters
+      let apiSortBy = 'latest';
       switch (sortBy) {
         case 'newest':
-          filteredResults.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+          apiSortBy = 'latest';
           break;
         case 'oldest':
-          filteredResults.sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
+          apiSortBy = 'oldest';
           break;
         case 'popular':
-          // Simulate popularity by randomizing order
-          filteredResults.sort(() => Math.random() - 0.5);
+          apiSortBy = 'popular';
           break;
         default:
-          // Relevance - keep current order
+          apiSortBy = 'latest';
           break;
       }
+      searchParams.append('sortBy', apiSortBy);
 
-      // Pagination simulation
-      const resultsPerPage = 10;
-      const startIndex = (page - 1) * resultsPerPage;
-      const paginatedResults = filteredResults.slice(startIndex, startIndex + resultsPerPage);
-
-      if (page === 1) {
-        setSearchResults(paginatedResults);
-      } else {
-        setSearchResults(prev => [...prev, ...paginatedResults]);
+      // Add timeframe filter
+      if (filterTimeframe !== 'all') {
+        searchParams.append('timeframe', filterTimeframe);
       }
 
-      setTotalResults(filteredResults.length);
-      setHasMoreResults(filteredResults.length > page * resultsPerPage);
+      // Pagination
+      const limit = 10;
+      const offset = (page - 1) * limit;
+      searchParams.append('limit', limit.toString());
+      searchParams.append('offset', offset.toString());
+
+      // Make API call
+      const response = await axios.get(`/api/posts?${searchParams.toString()}`);
+
+      if (response.data.success) {
+        const posts = response.data.data;
+
+        // Transform posts to match SearchResult interface
+        const transformedResults: SearchResult[] = posts.map((post: any) => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.summary || '',
+          content: '', // Not needed for search results
+          slug: post.slug,
+          featuredImage: post.image,
+          publishedAt: post.publishedAt,
+          views: post.views,
+          readTime: post.readTime || '5 min read',
+          category: {
+            id: post.categorySlug,
+            name: post.category,
+            slug: post.categorySlug
+          },
+          author: {
+            id: '1', // API doesn't return author ID
+            name: post.author
+          },
+          tags: [] // API doesn't return tags in this format
+        }));
+
+        if (page === 1) {
+          setSearchResults(transformedResults);
+        } else {
+          setSearchResults(prev => [...prev, ...transformedResults]);
+        }
+
+        setTotalResults(response.data.pagination?.total || transformedResults.length);
+        setHasMoreResults(response.data.pagination?.hasMore || false);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+      setTotalResults(0);
+      setHasMoreResults(false);
+    } finally {
       setIsLoading(false);
-    }, 500);
-  }, [filterCategory, sortBy]);
+    }
+  }, [filterCategory, sortBy, filterTimeframe, categories]);
 
   // Get search query from URL params
   useEffect(() => {
@@ -336,9 +311,10 @@ export default function SearchPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
                           {categories.map(category => (
-                            <SelectItem key={category} value={category}>
-                              {category === 'all' ? 'All Categories' : category}
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -391,18 +367,21 @@ export default function SearchPage() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="md:col-span-1">
                             <Link href={`/post/${result.slug}`}>
-                              <img
-                                src={result.imageUrl}
-                                alt={result.title}
-                                className="w-full h-32 object-cover rounded-lg hover:opacity-90 transition-opacity duration-200"
-                              />
+                              <div className="relative w-full h-32 rounded-lg overflow-hidden">
+                                <Image
+                                  src={result.featuredImage || '/images/pintumas.png'}
+                                  alt={result.title}
+                                  fill
+                                  className="object-cover hover:opacity-90 transition-opacity duration-200"
+                                />
+                              </div>
                             </Link>
                           </div>
 
                           <div className="md:col-span-3">
                             <div className="mb-2">
                               <Badge variant="secondary" className="text-xs">
-                                {result.category}
+                                {result.category.name}
                               </Badge>
                             </div>
 
@@ -420,7 +399,7 @@ export default function SearchPage() {
                               <div className="flex items-center space-x-4 text-sm text-gray-500">
                                 <div className="flex items-center space-x-1">
                                   <User className="h-4 w-4" />
-                                  <span>{result.author}</span>
+                                  <span>{result.author.name}</span>
                                 </div>
                                 <div className="flex items-center space-x-1">
                                   <Calendar className="h-4 w-4" />
@@ -438,7 +417,7 @@ export default function SearchPage() {
                                 {result.tags.slice(0, 3).map((tag, index) => (
                                   <Badge key={index} variant="outline" className="text-xs">
                                     <Tag className="h-3 w-3 mr-1" />
-                                    {tag}
+                                    {tag.name}
                                   </Badge>
                                 ))}
                                 {result.tags.length > 3 && (
