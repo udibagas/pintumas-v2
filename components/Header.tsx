@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Menu, X, Bell, User, Globe, Clock, TrendingUp, LogOut, Settings, Bookmark } from 'lucide-react';
+import { Search, Menu, X, Bell, User, Globe, LogOut, Settings, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import AuthDialog from '@/components/AuthDialog';
+import SearchBar from '@/components/SearchBar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -34,10 +34,6 @@ export default function Header() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Array<{ id: number, title: string, category: string }>>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -53,36 +49,10 @@ export default function Header() {
     avatar: string | null;
     role: string;
   } | null>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  // Mock data for search suggestions and trending topics
-  const trendingTopics = [
-    'AI Technology',
-    'Climate Change',
-    'Global Economy',
-    'Space Exploration',
-    'Healthcare Innovation'
-  ];
-
-  const mockArticles = [
-    { id: 1, title: 'Revolutionary AI Algorithm Predicts Weather Patterns', category: 'Technology' },
-    { id: 2, title: 'Breakthrough Gene Therapy Shows Promise', category: 'Health' },
-    { id: 3, title: 'Quantum Computing Reaches New Milestone', category: 'Technology' },
-    { id: 4, title: 'Sustainable Energy Storage Solution', category: 'Business' },
-    { id: 5, title: 'Machine Learning Transforms Medical Diagnosis', category: 'Health' },
-    { id: 6, title: 'Global Climate Summit Reaches Agreement', category: 'World' },
-    { id: 7, title: 'Economic Recovery Shows Positive Signs', category: 'Business' },
-    { id: 8, title: 'Space Technology Advances Mars Mission', category: 'Technology' }
-  ];
 
   // Load recent searches from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('recentSearches');
-    if (saved) {
-      setRecentSearches(JSON.parse(saved));
-    }
-
     // Check authentication status from backend
     checkAuthStatus();
 
@@ -193,48 +163,9 @@ export default function Header() {
     }
   };
 
-  // Handle search input changes
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    if (query.length > 0) {
-      // Filter mock articles based on search query
-      const filtered = mockArticles.filter(article =>
-        article.title.toLowerCase().includes(query.toLowerCase()) ||
-        article.category.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filtered.slice(0, 5)); // Limit to 5 results
-    } else {
-      setSearchResults([]);
-    }
-  };
-
-  // Handle search submission
-  const handleSearchSubmit = (query = searchQuery) => {
-    if (query.trim()) {
-      // Add to recent searches
-      const updatedRecentSearches = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5);
-      setRecentSearches(updatedRecentSearches);
-      localStorage.setItem('recentSearches', JSON.stringify(updatedRecentSearches));
-
-      // Navigate to search results page
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-
-      // Close search and reset
-      setIsSearchOpen(false);
-      setSearchQuery('');
-      setSearchResults([]);
-      setIsSearchFocused(false);
-    }
-  };
-
-  // Handle clicking outside search to close
+  // Handle clicking outside user menu to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsSearchFocused(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
       }
@@ -244,24 +175,15 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const clearRecentSearches = () => {
-    setRecentSearches([]);
-    localStorage.removeItem('recentSearches');
-  };
-
   // Keyboard shortcut for search (Cmd/Ctrl + K)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
         event.preventDefault();
         setIsSearchOpen(true);
-        setIsSearchFocused(true);
       }
       if (event.key === 'Escape') {
         setIsSearchOpen(false);
-        setIsSearchFocused(false);
-        setSearchQuery('');
-        setSearchResults([]);
       }
     };
 
@@ -365,9 +287,6 @@ export default function Header() {
             <button
               onClick={() => {
                 setIsSearchOpen(!isSearchOpen);
-                if (!isSearchOpen) {
-                  setIsSearchFocused(true);
-                }
               }}
               className="p-2 text-gray-300 hover:text-yellow-400 transition-colors duration-200 relative group"
               title="Search (⌘K)"
@@ -433,14 +352,6 @@ export default function Header() {
                         <User className="h-4 w-4" />
                         <span>Profil</span>
                       </Link>
-                      {/* <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3">
-                        <Bookmark className="h-4 w-4" />
-                        <span>Saved Articles</span>
-                      </button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3">
-                        <Settings className="h-4 w-4" />
-                        <span>Settings</span>
-                      </button> */}
                     </div>
 
                     <div className="border-t border-gray-100 py-2">
@@ -477,125 +388,8 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Enhanced Search Bar */}
-        {isSearchOpen && (
-          <div className="pb-4">
-            <div className="relative max-w-2xl mx-auto" ref={searchRef}>
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search news, topics, or categories..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleSearchSubmit();
-                    }
-                  }}
-                  className="pl-10 pr-12 py-3 text-lg border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-xl"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                {searchQuery && (
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSearchResults([]);
-                    }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
-                  >
-                    <X className="h-4 w-4 text-gray-400" />
-                  </button>
-                )}
-              </div>
-
-              {/* Search Dropdown */}
-              {(isSearchFocused || searchQuery) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-96 overflow-y-auto">
-
-                  {/* Search Results */}
-                  {searchResults.length > 0 && (
-                    <div className="p-2">
-                      <div className="px-3 py-2 text-sm font-semibold text-gray-500 border-b">
-                        Search Results
-                      </div>
-                      {searchResults.map((article) => (
-                        <button
-                          key={article.id}
-                          onClick={() => handleSearchSubmit(article.title)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-150"
-                        >
-                          <div className="font-medium text-gray-900 line-clamp-1">
-                            {article.title}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {article.category}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Recent Searches */}
-                  {recentSearches.length > 0 && searchQuery === '' && (
-                    <div className="p-2 border-t">
-                      <div className="flex items-center justify-between px-3 py-2">
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm font-semibold text-gray-500">Recent Searches</span>
-                        </div>
-                        <button
-                          onClick={clearRecentSearches}
-                          className="text-xs text-gray-400 hover:text-gray-600"
-                        >
-                          Clear
-                        </button>
-                      </div>
-                      {recentSearches.map((search, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSearchSubmit(search)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-150 text-gray-700"
-                        >
-                          {search}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Trending Topics */}
-                  {searchQuery === '' && (
-                    <div className="p-2 border-t">
-                      <div className="flex items-center space-x-2 px-3 py-2">
-                        <TrendingUp className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm font-semibold text-gray-500">Trending Topics</span>
-                      </div>
-                      {trendingTopics.map((topic, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSearchSubmit(topic)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-150 text-gray-700"
-                        >
-                          {topic}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* No Results */}
-                  {searchQuery && searchResults.length === 0 && (
-                    <div className="p-4 text-center text-gray-500">
-                      <Search className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <p>No results found for &ldquo;{searchQuery}&rdquo;</p>
-                      <p className="text-sm">Try different keywords or browse trending topics</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Search Bar */}
+        <SearchBar isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
         {/* Mobile Menu */}
         {isMenuOpen && (

@@ -210,7 +210,7 @@ export default function Footer() {
             {/* Social Media Links */}
             {socialLinks.length > 0 && (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-400 text-sm mr-4">Follow us:</span>
+                <span className="text-gray-400 text-sm mr-4">Ikuti kami:</span>
                 {socialLinks.map((social) => {
                   const IconComponent = social.icon;
                   return (
