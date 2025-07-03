@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import axios from 'axios'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
+import DeleteAlertDialog from '@/components/ui/DeleteAlertDialog'
 
 interface User {
   id: string
@@ -52,23 +53,10 @@ const getRoleBadge = (role: User['role']) => {
   )
 }
 
-const handleDelete = async (userId: string) => {
-  if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return
-
-  try {
-    const response = await axios.delete(`/api/admin/users/${userId}`)
-
-    if (response.status === 200) {
-      window.location.reload()
-    } else {
-      toast.error('Failed to delete user')
-    }
-  } catch (error) {
-    toast.error('Error deleting user')
-  }
-}
-
 export default function UsersTable({ users }: UsersTableProps) {
+  const [isDialogOpen, setDialogOpen] = useState(false)
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null)
+
   const columns: ColumnDef<User>[] = useMemo(
     () => [
       {
@@ -182,7 +170,10 @@ export default function UsersTable({ users }: UsersTableProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => handleDelete(user.id)}
+                  onClick={() => {
+                    setDeleteUserId(user.id)
+                    setDialogOpen(true)
+                  }}
                   className="text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -203,19 +194,50 @@ export default function UsersTable({ users }: UsersTableProps) {
     { label: 'User', value: 'USER' },
   ]
 
+  const handleDelete = async () => {
+    if (!deleteUserId) return
+
+    try {
+      const response = await axios.delete(`/api/admin/users/${deleteUserId}`)
+
+      if (response.status === 200) {
+        toast.success('User deleted successfully!')
+      } else {
+        toast.error('Failed to delete user')
+      }
+    } catch (error) {
+      toast.error('Error deleting user')
+    } finally {
+      setDialogOpen(false)
+      setDeleteUserId(null)
+    }
+  }
+
   return (
-    <DataTable
-      columns={columns}
-      data={users}
-      searchKey="name"
-      searchPlaceholder="Search users..."
-      filterableColumns={[
-        {
-          id: 'role',
-          title: 'Role',
-          options: roleOptions,
-        },
-      ]}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={users}
+        searchKey="name"
+        searchPlaceholder="Search users..."
+        filterableColumns={[
+          {
+            id: 'role',
+            title: 'Role',
+            options: roleOptions,
+          },
+        ]}
+      />
+      <DeleteAlertDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this user? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={() => setDialogOpen(false)}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
+    </>
   )
 }

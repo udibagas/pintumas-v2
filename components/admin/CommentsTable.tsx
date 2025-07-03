@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import axios from 'axios'
 import { toast } from 'sonner'
+import DeleteAlertDialog from '@/components/ui/DeleteAlertDialog'
 
 interface Comment {
   id: string
@@ -27,6 +28,7 @@ interface Comment {
 
 interface CommentsTableProps {
   comments: Comment[]
+  onRefresh?: () => void
 }
 
 const getStatusBadge = (status: Comment['status']) => {
@@ -59,23 +61,10 @@ const handleStatusChange = async (commentId: string, newStatus: string) => {
   }
 }
 
-const handleDelete = async (commentId: string) => {
-  if (!confirm('Are you sure you want to delete this comment?')) return
+export default function CommentsTable({ comments, onRefresh }: CommentsTableProps) {
+  const [isDialogOpen, setDialogOpen] = useState(false)
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null)
 
-  try {
-    const response = await axios.delete(`/api/admin/comments/${commentId}`)
-
-    if (response.status === 200) {
-      window.location.reload()
-    } else {
-      toast.error('Failed to delete comment')
-    }
-  } catch (error) {
-    toast.error('Error deleting comment')
-  }
-}
-
-export default function CommentsTable({ comments }: CommentsTableProps) {
   const columns: ColumnDef<Comment>[] = useMemo(
     () => [
       {
@@ -184,7 +173,10 @@ export default function CommentsTable({ comments }: CommentsTableProps) {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => handleDelete(comment.id)}
+                onClick={() => {
+                  setDeleteCommentId(comment.id)
+                  setDialogOpen(true)
+                }}
                 className="text-red-600 border-red-300 hover:bg-red-50"
               >
                 <Trash2 className="h-3 w-3" />
@@ -203,19 +195,40 @@ export default function CommentsTable({ comments }: CommentsTableProps) {
     { label: 'Rejected', value: 'REJECTED' },
   ]
 
+  const handleDelete = async () => {
+    if (!deleteCommentId) return
+
+    try {
+      const response = await axios.delete(`/api/admin/comments/${deleteCommentId}`)
+
+      if (response.status === 200) {
+        toast.success('Comment deleted successfully!')
+        onRefresh?.()
+      } else {
+        toast.error('Failed to delete comment')
+      }
+    } catch (error) {
+      toast.error('Error deleting comment')
+    } finally {
+      setDialogOpen(false)
+      setDeleteCommentId(null)
+    }
+  }
+
   return (
-    <DataTable
-      columns={columns}
-      data={comments}
-      searchKey="content"
-      searchPlaceholder="Search comments..."
-      filterableColumns={[
-        {
-          id: 'status',
-          title: 'Status',
-          options: statusOptions,
-        },
-      ]}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={comments}
+        searchKey="author.name"
+        searchPlaceholder="Search comments..."
+      />
+      <DeleteAlertDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        onConfirm={handleDelete}
+        onCancel={() => setDialogOpen(false)}
+      />
+    </>
   )
 }

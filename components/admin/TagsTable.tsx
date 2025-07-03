@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
+import DeleteAlertDialog from '@/components/ui/DeleteAlertDialog'
 
 interface Tag {
   id: string
@@ -31,23 +32,30 @@ interface TagsTableProps {
   tags: Tag[]
 }
 
-const handleDelete = async (tagId: string) => {
-  if (!confirm('Are you sure you want to delete this tag?')) return
-
-  try {
-    const response = await axios.delete(`/api/admin/tags/${tagId}`)
-
-    if (response.status === 200) {
-      window.location.reload()
-    } else {
-      toast.error('Failed to delete tag')
-    }
-  } catch (error) {
-    toast.error('Error deleting tag')
-  }
-}
-
 export default function TagsTable({ tags }: TagsTableProps) {
+  const [isDialogOpen, setDialogOpen] = useState(false)
+  const [deleteTagId, setDeleteTagId] = useState<string | null>(null)
+
+  const handleDelete = async () => {
+    if (!deleteTagId) return
+
+    try {
+      const response = await axios.delete(`/api/admin/tags/${deleteTagId}`)
+
+      if (response.status === 200) {
+        toast.success('Tag deleted successfully!')
+        window.location.reload()
+      } else {
+        toast.error('Failed to delete tag')
+      }
+    } catch (error) {
+      toast.error('Error deleting tag')
+    } finally {
+      setDialogOpen(false)
+      setDeleteTagId(null)
+    }
+  }
+
   const columns: ColumnDef<Tag>[] = useMemo(
     () => [
       {
@@ -124,7 +132,10 @@ export default function TagsTable({ tags }: TagsTableProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => handleDelete(tag.id)}
+                  onClick={() => {
+                    setDeleteTagId(tag.id)
+                    setDialogOpen(true)
+                  }}
                   className="text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -140,11 +151,23 @@ export default function TagsTable({ tags }: TagsTableProps) {
   )
 
   return (
-    <DataTable
-      columns={columns}
-      data={tags}
-      searchKey="name"
-      searchPlaceholder="Search tags..."
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={tags}
+        searchKey="name"
+        searchPlaceholder="Search tags..."
+      />
+      <DeleteAlertDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this tag? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={() => setDialogOpen(false)}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
+    </>
   )
 }

@@ -4,53 +4,36 @@ import { useMemo, useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { DataTable } from '@/components/ui/data-table'
-import { MoreHorizontal, Edit, Trash2, ArrowUpDown } from 'lucide-react'
+import { Edit, Trash2, ArrowUpDown } from 'lucide-react'
 import { toast } from 'sonner'
 import axios from 'axios'
-import CategoryDialog from './CategoryDialog'
+import DeleteAlertDialog from '../ui/DeleteAlertDialog'
+import { Category } from '@prisma/client'
 
-interface Category {
-  id: string
-  name: string
-  slug: string
-  description?: string | null
-  color?: string | null
+interface CategoryWithPostCount extends Category {
   _count: {
     posts: number
   }
 }
 
 interface CategoriesTableProps {
-  categories: Category[]
-  onRefresh?: () => void
+  categories: CategoryWithPostCount[]
+  onRefresh?: () => void,
+  setCategory: (category: Category) => void
+  setIsFormOpen: (isOpen: boolean) => void
 }
 
-const handleDelete = async (categoryId: string, onRefresh?: () => void) => {
-  if (!confirm('Are you sure you want to delete this category?')) return
+export default function CategoriesTable({
+  categories,
+  onRefresh,
+  setCategory,
+  setIsFormOpen
+}: CategoriesTableProps) {
+  const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null)
 
-  try {
-    const response = await axios.delete(`/api/admin/categories/${categoryId}`)
-
-    if (response.status === 200) {
-      toast.success('Category deleted successfully!')
-      onRefresh?.()
-    } else {
-      toast.error('Failed to delete category')
-    }
-  } catch (error) {
-    toast.error('Error deleting category')
-  }
-}
-
-export default function CategoriesTable({ categories, onRefresh }: CategoriesTableProps) {
-  const columns: ColumnDef<Category>[] = useMemo(
+  const columns: ColumnDef<CategoryWithPostCount>[] = useMemo(
     () => [
       {
         accessorKey: 'name',
@@ -64,10 +47,14 @@ export default function CategoriesTable({ categories, onRefresh }: CategoriesTab
           </Button>
         ),
         cell: ({ row }) => (
-          <div>
-            <div className="font-medium">{row.getValue('name')}</div>
-            <div className="text-sm text-gray-500">/{row.original.slug}</div>
-          </div>
+          <div className="font-medium">{row.getValue('name')}</div>
+        ),
+      },
+      {
+        accessorKey: 'slug',
+        header: 'Slug',
+        cell: ({ row }) => (
+          <div className="text-sm text-gray-500">/{row.original.slug}</div>
         ),
       },
       {
@@ -116,40 +103,28 @@ export default function CategoriesTable({ categories, onRefresh }: CategoriesTab
           const category = row.original
 
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <CategoryDialog
-                  category={{
-                    id: category.id,
-                    name: category.name,
-                    slug: category.slug,
-                    description: category.description ?? null,
-                    color: category.color ?? null,
-                  }}
-                  isEdit={true}
-                  onSuccess={onRefresh}
-                  trigger={
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                  }
-                />
-                <DropdownMenuItem
-                  onClick={() => handleDelete(category.id, onRefresh)}
-                  className="text-red-600"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setIsFormOpen(true)
+                  setCategory(category)
+                }}
+                className="p-2"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setDeleteCategoryId(category.id)
+                  setDeleteConfirmOpen(true)
+                }}
+                className="p-2 cursor-pointer hover:bg-red-100"
+              >
+                <Trash2 className="h-4 w-4 text-red-600" />
+              </Button>
+            </>
           )
         },
       },
@@ -157,12 +132,39 @@ export default function CategoriesTable({ categories, onRefresh }: CategoriesTab
     [onRefresh]
   )
 
+  const handleDelete = async () => {
+    try {
+      const response = await axios.delete(`/api/admin/categories/${deleteCategoryId}`)
+
+      if (response.status === 200) {
+        toast.success('Category deleted successfully!')
+        onRefresh?.()
+      } else {
+        toast.error('Failed to delete category')
+      }
+    } catch (error) {
+      toast.error('Error deleting category')
+    } finally {
+      setDeleteConfirmOpen(false)
+      setDeleteCategoryId(null)
+    }
+  }
+
   return (
-    <DataTable
-      columns={columns}
-      data={categories}
-      searchKey="name"
-      searchPlaceholder="Search categories..."
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={categories}
+        searchKey="name"
+        searchPlaceholder="Search categories..."
+      />
+
+      <DeleteAlertDialog
+        isOpen={isDeleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
+    </>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
+import DeleteAlertDialog from '@/components/ui/DeleteAlertDialog'
 
 interface Post {
   id: string
@@ -54,23 +55,10 @@ const getStatusBadge = (status: Post['status']) => {
   )
 }
 
-const handleDelete = async (postId: string) => {
-  if (!confirm('Are you sure you want to delete this post?')) return
-
-  try {
-    const response = await axios.delete(`/api/admin/posts/${postId}`)
-
-    if (response.status === 200) {
-      window.location.reload()
-    } else {
-      toast.error('Failed to delete post')
-    }
-  } catch (error) {
-    toast.error('Error deleting post')
-  }
-}
-
 export default function PostsTable({ posts }: PostsTableProps) {
+  const [isDialogOpen, setDialogOpen] = useState(false)
+  const [deletePostId, setDeletePostId] = useState<string | null>(null)
+
   const columns: ColumnDef<Post>[] = useMemo(
     () => [
       {
@@ -168,7 +156,10 @@ export default function PostsTable({ posts }: PostsTableProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => handleDelete(post.id)}
+                  onClick={() => {
+                    setDeletePostId(post.id)
+                    setDialogOpen(true)
+                  }}
                   className="text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -189,19 +180,51 @@ export default function PostsTable({ posts }: PostsTableProps) {
     { label: 'Archived', value: 'ARCHIVED' },
   ]
 
+  const handleDelete = async () => {
+    if (!deletePostId) return
+
+    try {
+      const response = await axios.delete(`/api/admin/posts/${deletePostId}`)
+
+      if (response.status === 200) {
+        toast.success('Post deleted successfully!')
+        window.location.reload()
+      } else {
+        toast.error('Failed to delete post')
+      }
+    } catch (error) {
+      toast.error('Error deleting post')
+    } finally {
+      setDialogOpen(false)
+      setDeletePostId(null)
+    }
+  }
+
   return (
-    <DataTable
-      columns={columns}
-      data={posts}
-      searchKey="title"
-      searchPlaceholder="Search posts..."
-      filterableColumns={[
-        {
-          id: 'status',
-          title: 'Status',
-          options: statusOptions,
-        },
-      ]}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={posts}
+        searchKey="title"
+        searchPlaceholder="Search posts..."
+        filterableColumns={[
+          {
+            id: 'status',
+            title: 'Status',
+            options: statusOptions,
+          },
+        ]}
+      />
+      <DeleteAlertDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={() => setDialogOpen(false)}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
+    </>
   )
 }

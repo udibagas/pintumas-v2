@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell, Search, User, Settings, LogOut } from 'lucide-react'
+import { User, Settings, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,7 +61,7 @@ export default function AdminHeader({ user }: AdminHeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-8 w-8 bg-yellow-600">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>

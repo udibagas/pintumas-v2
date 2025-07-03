@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,16 +10,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
+  DialogContent,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { Plus, Edit } from 'lucide-react';
 import { generateSlug } from '@/lib/utils';
+import { Category } from '@prisma/client';
+import { DialogClose } from '@radix-ui/react-dialog';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -31,23 +32,15 @@ const categorySchema = z.object({
 
 type CategoryFormData = z.infer<typeof categorySchema>;
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  color: string | null;
-}
-
 interface CategoryDialogProps {
   category?: Category;
   isEdit?: boolean;
-  trigger?: React.ReactNode;
+  isOpen: boolean;
+  handleOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export default function CategoryDialog({ category, isEdit = false, trigger, onSuccess }: CategoryDialogProps) {
-  const [open, setOpen] = useState(false);
+export default function CategoryDialog({ category, isOpen, handleOpenChange, onSuccess }: CategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -56,7 +49,7 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
     watch,
     setValue,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
@@ -67,7 +60,17 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
     }
   });
 
+  useEffect(() => {
+    reset({
+      name: category?.name || '',
+      slug: category?.slug || '',
+      description: category?.description || '',
+      color: category?.color || '#3B82F6'
+    })
+  }, [category]);
+
   const watchName = watch('name');
+  const isEdit = Boolean(category?.id);
 
   // Update slug when name changes (only if not editing)
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +92,6 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
 
       if (response.data.success) {
         toast.success(isEdit ? 'Category updated successfully!' : 'Category created successfully!');
-        setOpen(false);
         reset();
         onSuccess?.();
       } else {
@@ -103,45 +105,19 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
     }
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      reset();
-    }
-  };
-
-  const defaultTrigger = (
-    <Button className="flex items-center gap-2">
-      {isEdit ? (
-        <>
-          <Edit className="h-4 w-4" />
-          Edit
-        </>
-      ) : (
-        <>
-          <Plus className="h-4 w-4" />
-          New Category
-        </>
-      )}
-    </Button>
-  );
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {trigger || defaultTrigger}
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? 'Edit Category' : 'Create New Category'}
+            {isEdit ? 'Edit Kategori' : 'Create New Kategori'}
           </DialogTitle>
           <DialogDescription>
             {isEdit ? 'Update category information' : 'Add a new content category'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" id="category-form">
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -151,7 +127,7 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
                 register('name').onChange(e);
                 handleNameChange(e);
               }}
-              placeholder="Category name"
+              placeholder="Nama Kategori"
               className={errors.name ? 'border-red-500' : ''}
             />
             {errors.name && (
@@ -176,7 +152,7 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Keterangan</Label>
             <Textarea
               id="description"
               {...register('description')}
@@ -189,7 +165,7 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
             )}
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="color">Color</Label>
             <div className="flex items-center gap-3">
               <Input
@@ -210,26 +186,20 @@ export default function CategoryDialog({ category, isEdit = false, trigger, onSu
             <p className="text-sm text-gray-500">
               Hex color code for the category badge
             </p>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
-              {isSubmitting ? 'Saving...' : (isEdit ? 'Update Category' : 'Create Category')}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
+          </div> */}
         </form>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Batal</Button>
+          </DialogClose>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            form='category-form'
+          >
+            {isSubmitting ? 'Saving...' : 'Simpan Kategori'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -3,23 +3,24 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import CategoriesTable from '@/components/admin/CategoriesTable';
-import CategoryDialog from '@/components/admin/CategoryDialog';
 import axios from 'axios';
+import { Category } from '@prisma/client';
+import { Button } from '@/components/ui/button';
+import CategoryDialog from '@/components/admin/CategoryDialog';
+import { set } from 'date-fns';
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  color?: string | null;
+interface CategoryWithPostCount extends Category {
   _count: {
-    posts: number;
-  };
+    posts: number
+  }
 }
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryWithPostCount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState<Category | undefined>(undefined)
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
 
   const fetchCategories = async () => {
     try {
@@ -41,23 +42,45 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categories Management</h1>
-          <p className="text-gray-600">Organize content with categories</p>
-        </div>
-        <CategoryDialog onSuccess={fetchCategories} />
-      </div>
-
       <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Categories</CardTitle>
+              <CardDescription>
+                Manage your categories here. You can create, edit, or delete categories.
+              </CardDescription>
+            </div>
+            <Button variant="default" onClick={() => setIsFormOpen(true)}>
+              Tambah Kategori
+            </Button>
+          </div>
+        </CardHeader>
         <CardContent className="pt-6">
           {loading ? (
             <div className="text-center py-8">Loading categories...</div>
           ) : (
-            <CategoriesTable categories={categories} onRefresh={fetchCategories} />
+            <CategoriesTable
+              categories={categories}
+              setCategory={setCategory}
+              setIsFormOpen={setIsFormOpen}
+              onRefresh={fetchCategories}
+            />
           )}
         </CardContent>
       </Card>
+
+      <CategoryDialog
+        category={category}
+        onSuccess={fetchCategories}
+        isOpen={isFormOpen}
+        handleOpenChange={(open) => {
+          setIsFormOpen(open)
+          if (!open) {
+            setCategory(undefined)
+          }
+        }}
+      />
     </div>
   );
 }
