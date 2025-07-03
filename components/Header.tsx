@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Menu, X, Bell, User, Globe, LogOut, Settings, Bookmark } from 'lucide-react';
+import { Search, Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import AuthDialog from '@/components/AuthDialog';
 import SearchBar from '@/components/SearchBar';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import axios from 'axios';
 
@@ -31,7 +30,6 @@ interface Announcement {
 }
 
 export default function Header() {
-  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -441,19 +439,13 @@ export default function Header() {
                       className="block w-full text-left text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Profile
+                      Profil
                     </Link>
-                    <button className="w-full text-left text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200">
-                      Saved Articles
-                    </button>
-                    <button className="w-full text-left text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200">
-                      Settings
-                    </button>
                     <button
                       onClick={handleSignOut}
                       className="w-full text-left text-red-400 hover:text-red-300 font-medium transition-colors duration-200"
                     >
-                      Sign Out
+                      Keluar
                     </button>
                   </div>
                 </div>
