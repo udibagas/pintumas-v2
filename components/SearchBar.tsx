@@ -85,7 +85,7 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
       // Filter posts based on search query
       const filtered = posts.filter(post =>
         post.title.toLowerCase().includes(query.toLowerCase()) ||
-        post.category.name.toLowerCase().includes(query.toLowerCase())
+        (post.category && post.category.name && post.category.name.toLowerCase().includes(query.toLowerCase()))
       );
       setSearchResults(filtered.slice(0, 5)); // Limit to 5 results
     } else {
