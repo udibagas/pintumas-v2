@@ -201,7 +201,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link href="/" className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-6 transition-colors duration-200">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
+          Kembali ke Beranda
         </Link>
         <div className="text-center py-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Category Not Found</h1>
@@ -224,7 +224,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
       {/* Back Button */}
       <Link href="/" className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-6 transition-colors duration-200">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Home
+        Kembali ke Beranda
       </Link>
 
       {/* Category Header */}

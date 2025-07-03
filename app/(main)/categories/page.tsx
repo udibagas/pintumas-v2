@@ -92,17 +92,17 @@ export default function AllCategoriesPage() {
       {/* Back Button */}
       <Link href="/" className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-6 transition-colors duration-200">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Home
+        Kembali ke Beranda
       </Link>
 
       {/* Page Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-          All Categories
+          Semua Kategori
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-          Explore news across all topics and discover stories that matter to you.
-          From breaking news to in-depth analysis, find everything in one place.
+          Jelajahi berita di berbagai topik dan temukan cerita yang penting bagi Anda.
+          Dari berita terkini hingga analisis mendalam, temukan semuanya di satu tempat.
         </p>
 
         {/* Stats */}

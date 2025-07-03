@@ -1,5 +1,4 @@
 import { ArrowLeft, Clock, Eye, MessageCircle, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
@@ -115,16 +114,16 @@ export default async function NewsPage() {
       {/* Back Button */}
       <Link href="/" className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-6 transition-colors duration-200">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Home
+        Kembali ke Beranda
       </Link>
 
       {/* Page Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-          All News
+          Berita
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Stay informed with comprehensive coverage of the latest developments from around the world
+          Kumpulan berita terbaru dan terkini seputar Pelabuhan Tanjung Mas, industri maritim, logistik, dan perdagangan di Indonesia.
         </p>
       </div>
 

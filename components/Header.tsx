@@ -3,19 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import AuthDialog from '@/components/AuthDialog';
 import SearchBar from '@/components/SearchBar';
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  articles: number;
-}
 
 interface Announcement {
   id: string;
@@ -35,8 +27,6 @@ export default function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
@@ -53,10 +43,6 @@ export default function Header() {
   useEffect(() => {
     // Check authentication status from backend
     checkAuthStatus();
-
-    // Fetch categories from backend
-    fetchCategories();
-
     // Fetch announcements from backend
     fetchAnnouncements();
   }, []);
@@ -86,23 +72,6 @@ export default function Header() {
       // User is not authenticated, clear local state
       setIsAuthenticated(false);
       setUserProfile(null);
-    }
-  };
-
-  // Fetch categories from API
-  const fetchCategories = async () => {
-    try {
-      setCategoriesLoading(true);
-      const response = await axios.get('/api/categories');
-      if (response.data.success) {
-        setCategories(response.data.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-      // Fallback to default categories
-      setCategories([]);
-    } finally {
-      setCategoriesLoading(false);
     }
   };
 
@@ -191,10 +160,9 @@ export default function Header() {
 
   const navLinks = [
     { name: 'Beranda', href: '/' },
-    ...categories.slice(0, 5).map(category => ({
-      name: category.name,
-      href: `/category/${category.slug}`
-    }))
+    { name: 'Berita', href: '/news' },
+    { name: 'Pengumuman', href: '/announcements' },
+    { name: 'Kategori', href: '/categories' }
   ];
 
   return (
@@ -255,28 +223,16 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
-            {categoriesLoading ? (
-              // Loading skeleton
-              <>
-                <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-14" />
-                <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-4 w-18" />
-              </>
-            ) : (
-              navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200 relative group"
-                >
-                  {link.name}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-yellow-500 transition-all duration-200 group-hover:w-full"></span>
-                </Link>
-              ))
-            )}
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200 relative group"
+              >
+                {link.name}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-yellow-500 transition-all duration-200 group-hover:w-full"></span>
+              </Link>
+            ))}
           </nav>
 
           {/* Right Side Actions */}
@@ -393,28 +349,16 @@ export default function Header() {
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t">
             <nav className="flex flex-col space-y-4">
-              {categoriesLoading ? (
-                // Loading skeleton for mobile
-                <>
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-4 w-18" />
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-22" />
-                </>
-              ) : (
-                navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.name}
-                  </Link>
-                ))
-              )}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-gray-300 hover:text-yellow-400 font-medium transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
 
               {/* Mobile Auth Section */}
               {isAuthenticated && userProfile ? (
