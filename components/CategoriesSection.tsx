@@ -12,6 +12,7 @@ import {
   Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import axios from 'axios';
 
@@ -102,9 +103,9 @@ export default function CategoriesSection() {
             {[...Array(8)].map((_, index) => (
               <div key={index} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse mx-auto mb-3"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded animate-pulse w-8 mx-auto"></div>
+                  <Skeleton className="w-12 h-12 rounded-full mx-auto mb-3" />
+                  <Skeleton className="h-4 mb-2" />
+                  <Skeleton className="h-3 w-8 mx-auto" />
                 </div>
               </div>
             ))}

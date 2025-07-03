@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Clock, TrendingUp, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
@@ -99,17 +100,17 @@ export default function HeroSection() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Loading skeleton for carousel */}
             <div className="lg:col-span-2">
-              <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-gray-200 animate-pulse aspect-[16/10]"></div>
+              <Skeleton className="relative overflow-hidden rounded-2xl shadow-2xl aspect-[16/10]" />
             </div>
             {/* Loading skeleton for sidebar */}
             <div className="space-y-6">
-              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+              <Skeleton className="h-8" />
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="flex space-x-4 p-4">
-                  <div className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse"></div>
+                  <Skeleton className="w-20 h-20 rounded-lg" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                    <Skeleton className="h-4" />
+                    <Skeleton className="h-4 w-3/4" />
                   </div>
                 </div>
               ))}

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, Menu, X, Bell, User, Globe, Clock, TrendingUp, LogOut, Settings, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import AuthDialog from '@/components/AuthDialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -337,12 +338,12 @@ export default function Header() {
             {categoriesLoading ? (
               // Loading skeleton
               <>
-                <div className="h-4 w-12 bg-gray-600 rounded animate-pulse"></div>
-                <div className="h-4 w-16 bg-gray-600 rounded animate-pulse"></div>
-                <div className="h-4 w-20 bg-gray-600 rounded animate-pulse"></div>
-                <div className="h-4 w-14 bg-gray-600 rounded animate-pulse"></div>
-                <div className="h-4 w-12 bg-gray-600 rounded animate-pulse"></div>
-                <div className="h-4 w-18 bg-gray-600 rounded animate-pulse"></div>
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-4 w-18" />
               </>
             ) : (
               navLinks.map((link) => (
@@ -603,12 +604,12 @@ export default function Header() {
               {categoriesLoading ? (
                 // Loading skeleton for mobile
                 <>
-                  <div className="h-4 w-20 bg-gray-600 rounded animate-pulse"></div>
-                  <div className="h-4 w-24 bg-gray-600 rounded animate-pulse"></div>
-                  <div className="h-4 w-28 bg-gray-600 rounded animate-pulse"></div>
-                  <div className="h-4 w-18 bg-gray-600 rounded animate-pulse"></div>
-                  <div className="h-4 w-16 bg-gray-600 rounded animate-pulse"></div>
-                  <div className="h-4 w-22 bg-gray-600 rounded animate-pulse"></div>
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-18" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-22" />
                 </>
               ) : (
                 navLinks.map((link) => (

@@ -15,6 +15,7 @@ import {
   ArrowUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import axios from 'axios';
 import Image from 'next/image';
 import { Settings } from '@/lib/validations';
@@ -135,12 +136,12 @@ export default function Footer() {
               {categoriesLoading ? (
                 // Loading skeleton
                 <>
-                  <li><div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div></li>
-                  <li><div className="h-4 w-24 bg-gray-700 rounded animate-pulse"></div></li>
-                  <li><div className="h-4 w-18 bg-gray-700 rounded animate-pulse"></div></li>
-                  <li><div className="h-4 w-22 bg-gray-700 rounded animate-pulse"></div></li>
-                  <li><div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div></li>
-                  <li><div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div></li>
+                  <li><Skeleton className="h-4 w-20" /></li>
+                  <li><Skeleton className="h-4 w-24" /></li>
+                  <li><Skeleton className="h-4 w-18" /></li>
+                  <li><Skeleton className="h-4 w-22" /></li>
+                  <li><Skeleton className="h-4 w-16" /></li>
+                  <li><Skeleton className="h-4 w-20" /></li>
                 </>
               ) : (
                 categories.map((category) => (

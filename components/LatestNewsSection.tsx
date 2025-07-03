@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Clock, MessageCircle, Share2, BookmarkPlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
@@ -90,21 +91,21 @@ export default function LatestNewsSection() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <div className="h-8 bg-gray-200 rounded animate-pulse w-48 mb-4"></div>
-              <div className="h-6 bg-gray-200 rounded animate-pulse w-96"></div>
+              <Skeleton className="h-8 w-48 mb-4" />
+              <Skeleton className="h-6 w-96" />
             </div>
-            <div className="h-10 bg-gray-200 rounded animate-pulse w-32"></div>
+            <Skeleton className="h-10 w-32" />
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="h-48 bg-gray-200 animate-pulse"></div>
+                <Skeleton className="h-48" />
                 <div className="p-6">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-3"></div>
-                  <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                  <Skeleton className="h-4 mb-3" />
+                  <Skeleton className="h-6 mb-3" />
+                  <Skeleton className="h-4 mb-2" />
+                  <Skeleton className="h-4 w-3/4" />
                 </div>
               </div>
             ))}
