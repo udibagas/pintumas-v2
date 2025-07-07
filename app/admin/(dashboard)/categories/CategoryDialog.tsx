@@ -15,12 +15,11 @@ import {
   DialogDescription,
   DialogContent,
   DialogFooter,
+  DialogClose
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import axios from 'axios';
 import { generateSlug } from '@/lib/utils';
-import { Category } from '@prisma/client';
-import { DialogClose } from '@radix-ui/react-dialog';
+import { useStore } from './store';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -32,21 +31,20 @@ const categorySchema = z.object({
 
 type CategoryFormData = z.infer<typeof categorySchema>;
 
-interface CategoryDialogProps {
-  category?: Category;
-  isEdit?: boolean;
-  isOpen: boolean;
-  handleOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
-}
-
-export default function CategoryDialog({ category, isOpen, handleOpenChange, onSuccess }: CategoryDialogProps) {
+export default function CategoryDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    item: category,
+    isFormOpen,
+    setIsFormOpen,
+    createItem,
+    updateItem,
+    setItem
+  } = useStore();
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     reset,
     formState: { errors },
@@ -69,7 +67,7 @@ export default function CategoryDialog({ category, isOpen, handleOpenChange, onS
     })
   }, [category]);
 
-  const watchName = watch('name');
+  // const watchName = watch('name');
   const isEdit = Boolean(category?.id);
 
   // Update slug when name changes (only if not editing)
@@ -84,19 +82,12 @@ export default function CategoryDialog({ category, isOpen, handleOpenChange, onS
     try {
       setIsSubmitting(true);
 
-      const url = `/api/admin/categories${isEdit ? `/${category?.id}` : ''}`;
-
       const response = isEdit
-        ? await axios.put(url, data)
-        : await axios.post(url, data);
+        ? await updateItem(category?.id as string, data)
+        : await createItem(data);
 
-      if (response.data.success) {
-        toast.success(isEdit ? 'Category updated successfully!' : 'Category created successfully!');
-        reset();
-        onSuccess?.();
-      } else {
-        toast.error(response.data.error || 'Something went wrong');
-      }
+      toast.success(isEdit ? 'Category updated successfully!' : 'Category created successfully!');
+      reset();
     } catch (error) {
       console.error('Error saving category:', error);
       toast.error('Failed to save category');
@@ -106,7 +97,7 @@ export default function CategoryDialog({ category, isOpen, handleOpenChange, onS
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) reset(); }}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -190,14 +181,14 @@ export default function CategoryDialog({ category, isOpen, handleOpenChange, onS
         </form>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Batal</Button>
+            <Button variant="outline" onClick={() => setItem(undefined)}>Batal</Button>
           </DialogClose>
           <Button
             type="submit"
             disabled={isSubmitting}
             form='category-form'
           >
-            {isSubmitting ? 'Saving...' : 'Simpan Kategori'}
+            {isSubmitting ? 'Menyimpan...' : 'Simpan Kategori'}
           </Button>
         </DialogFooter>
       </DialogContent>

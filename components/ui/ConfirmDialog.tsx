@@ -10,26 +10,20 @@ import {
   AlertDialogDescription,
 } from '@/components/ui/alert-dialog';
 
-interface DeleteAlertDialogProps {
+interface ConfirmDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
   description?: string;
-  onConfirm: (id?: string) => void;
-  onCancel?: () => void;
-  confirmLabel?: string;
-  cancelLabel?: string;
+  onConfirm: () => void;
 }
 
-const DeleteAlertDialog: React.FC<DeleteAlertDialogProps> = ({
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   onOpenChange,
   title = 'Konfirmasi Hapus',
   description = 'Apakah Anda yakin ingin menghapus item ini? Tindakan ini tidak dapat dibatalkan.',
   onConfirm,
-  onCancel,
-  confirmLabel = 'Hapus',
-  cancelLabel = 'Batal',
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -39,12 +33,18 @@ const DeleteAlertDialog: React.FC<DeleteAlertDialogProps> = ({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction onClick={() => onConfirm} className='bg-destructive text-destructive-foreground hover:bg-destructive/90'>{confirmLabel}</AlertDialogAction>
+          <AlertDialogCancel>BATAL</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => onConfirm()}
+            className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+          >
+            HAPUS
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
-};
+}
 
-export default DeleteAlertDialog;
+export default ConfirmDialog;
+

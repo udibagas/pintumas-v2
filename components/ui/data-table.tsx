@@ -153,14 +153,14 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="border-b border-t">
         <Table>
-          <TableHeader>
+          <TableHeader className="border-b border-gray-200">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className=" text-gray-700 font-semibold border-b border-gray-200">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -175,11 +175,14 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row, idx) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
+                  className={
+                    `${onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''} ` +
+                    `${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`
+                  }
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (

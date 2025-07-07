@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import axios from 'axios'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import DeleteAlertDialog from '@/components/ui/DeleteAlertDialog'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 interface User {
   id: string
@@ -228,15 +228,11 @@ export default function UsersTable({ users }: UsersTableProps) {
           },
         ]}
       />
-      <DeleteAlertDialog
+
+      <ConfirmDialog
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}
-        title="Confirm Deletion"
-        description="Are you sure you want to delete this user? This action cannot be undone."
         onConfirm={handleDelete}
-        onCancel={() => setDialogOpen(false)}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
       />
     </>
   )

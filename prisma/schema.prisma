@@ -26,6 +26,8 @@ model User {
   announcements Announcement[]
   comments      Comment[]
   Media         Media[]
+  departmentId  String?
+  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   @@map("users")
 }
@@ -48,17 +50,18 @@ model Category {
 }
 
 model Post {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  summary     String?
-  content     String
-  imageUrl    String?
-  status      Status    @default(DRAFT)
-  featured    Boolean   @default(false)
-  views       Int       @default(0)
-  readTime    String?
-  publishedAt DateTime?
+  id           String    @id @default(cuid())
+  title        String
+  slug         String    @unique
+  summary      String?
+  content      String
+  imageUrl     String?
+  status       Status    @default(DRAFT)
+  featured     Boolean   @default(false)
+  views        Int       @default(0)
+  readTime     String?
+  publishedAt  DateTime?
+  departmentId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -71,6 +74,7 @@ model Post {
   comments   Comment[]
   tags       PostTag[]
   PostMedia  PostMedia[]
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   @@map("posts")
 }
@@ -127,6 +131,22 @@ model PostMedia {
   createdAt DateTime @default(now())
 
   @@unique([postId, mediaId]) // Prevent multiple attachments of same media to a post
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  imageUrl  String? // URL for department logo
+  link      String? // External link
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  posts Post[]
+  users User[]
+
+  @@map("departments")
 }
 
 enum MediaType {

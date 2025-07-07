@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import axios from 'axios'
 import { toast } from 'sonner'
-import DeleteAlertDialog from '@/components/ui/DeleteAlertDialog'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 interface Comment {
   id: string
@@ -223,11 +223,11 @@ export default function CommentsTable({ comments, onRefresh }: CommentsTableProp
         searchKey="author.name"
         searchPlaceholder="Search comments..."
       />
-      <DeleteAlertDialog
+
+      <ConfirmDialog
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}
         onConfirm={handleDelete}
-        onCancel={() => setDialogOpen(false)}
       />
     </>
   )

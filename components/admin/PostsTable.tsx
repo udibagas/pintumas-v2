@@ -16,7 +16,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
-import DeleteAlertDialog from '@/components/ui/DeleteAlertDialog'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 interface Post {
   id: string
@@ -215,15 +215,10 @@ export default function PostsTable({ posts }: PostsTableProps) {
           },
         ]}
       />
-      <DeleteAlertDialog
+      <ConfirmDialog
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}
-        title="Confirm Deletion"
-        description="Are you sure you want to delete this post? This action cannot be undone."
         onConfirm={handleDelete}
-        onCancel={() => setDialogOpen(false)}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
       />
     </>
   )

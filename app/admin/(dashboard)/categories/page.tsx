@@ -1,43 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import CategoriesTable from '@/components/admin/CategoriesTable';
-import axios from 'axios';
-import { Category } from '@prisma/client';
+import CategoriesTable from './CategoriesTable';
 import { Button } from '@/components/ui/button';
-import CategoryDialog from '@/components/admin/CategoryDialog';
-import { set } from 'date-fns';
-
-interface CategoryWithPostCount extends Category {
-  _count: {
-    posts: number
-  }
-}
+import CategoryDialog from './CategoryDialog';
+import { useStore } from './store';
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<CategoryWithPostCount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState<Category | undefined>(undefined)
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('/api/admin/categories');
-      if (response.data.success) {
-        setCategories(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { fetchItems, loading, setIsFormOpen } = useStore();
 
   useEffect(() => {
-    fetchCategories();
+    fetchItems();
   }, []);
 
   return (
@@ -60,27 +34,12 @@ export default function CategoriesPage() {
           {loading ? (
             <div className="text-center py-8">Loading categories...</div>
           ) : (
-            <CategoriesTable
-              categories={categories}
-              setCategory={setCategory}
-              setIsFormOpen={setIsFormOpen}
-              onRefresh={fetchCategories}
-            />
+            <CategoriesTable />
           )}
         </CardContent>
       </Card>
 
-      <CategoryDialog
-        category={category}
-        onSuccess={fetchCategories}
-        isOpen={isFormOpen}
-        handleOpenChange={(open) => {
-          setIsFormOpen(open)
-          if (!open) {
-            setCategory(undefined)
-          }
-        }}
-      />
+      <CategoryDialog />
     </div>
   );
 }
