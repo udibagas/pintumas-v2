@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -171,6 +171,9 @@ export default function DepartmentDialog({
           <DialogTitle>
             {department ? 'Edit Department' : 'Create Department'}
           </DialogTitle>
+          <DialogDescription>
+            {department ? 'Update the department details.' : 'Create a new department.'}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -269,15 +272,13 @@ export default function DepartmentDialog({
             </div>
 
             <DialogFooter>
-              <DialogClose>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleOpenChange(false)}
-                >
-                  Batal
-                </Button>
-              </DialogClose>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                Batal
+              </Button>
               <Button type="submit" disabled={form.formState.isSubmitting || uploading}>
                 {uploading ? 'Uploading...' : form.formState.isSubmitting ? 'Menyimpan...' : 'Simpan'}
               </Button>

@@ -2,6 +2,7 @@ import HeroSection from '@/components/HeroSection';
 import CategoriesSection from '@/components/CategoriesSection';
 import LatestNewsSection from '@/components/LatestNewsSection';
 import { Metadata } from 'next';
+import DepartmentsWidget from '@/components/DepartmentsWidget';
 
 export const metadata: Metadata = {
   title: 'Pintumas - Portal Berita Pelabuhan Tanjung Mas Semarang',
@@ -26,6 +27,7 @@ export default function Home() {
       <HeroSection />
       <CategoriesSection />
       <LatestNewsSection />
+      <DepartmentsWidget />
     </>
   );
 }
