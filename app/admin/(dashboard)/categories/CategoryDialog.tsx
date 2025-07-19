@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,10 +17,8 @@ import {
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import { generateSlug } from '@/lib/utils';
-import { CategoryWithPostCount } from './store';
-import { useCrudStore } from '@/store/crudStore';
+import { UseCrudType } from '@/hooks/useCrud';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -32,20 +30,15 @@ const categorySchema = z.object({
 
 type CategoryFormData = z.infer<typeof categorySchema>;
 
-export default function CategoryDialog() {
-  const useStore = useCrudStore<CategoryWithPostCount>(
-    "/api/admin/categories"
-  );
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export default function CategoryDialog({ hook }: { hook: UseCrudType }) {
   const {
-    item: category,
-    isFormOpen,
-    setIsFormOpen,
-    createItem,
-    updateItem,
-    setItem
-  } = useStore();
+    modalOpen,
+    setModalOpen,
+    editingData: category,
+    handleSubmit: onSubmit,
+    isSubmitting,
+    handleModalClose
+  } = hook;
 
   const {
     register,
@@ -59,7 +52,6 @@ export default function CategoryDialog() {
       name: category?.name || '',
       slug: category?.slug || '',
       description: category?.description || '',
-      color: category?.color || '#3B82F6'
     }
   });
 
@@ -68,11 +60,9 @@ export default function CategoryDialog() {
       name: category?.name || '',
       slug: category?.slug || '',
       description: category?.description || '',
-      color: category?.color || '#3B82F6'
     })
   }, [category, reset]);
 
-  // const watchName = watch('name');
   const isEdit = Boolean(category?.id);
 
   // Update slug when name changes (only if not editing)
@@ -83,26 +73,14 @@ export default function CategoryDialog() {
     }
   };
 
-  const onSubmit = async (data: CategoryFormData) => {
-    try {
-      setIsSubmitting(true);
-
-      const response = isEdit
-        ? await updateItem(category?.id as string, data)
-        : await createItem(data);
-
-      toast.success(isEdit ? 'Category updated successfully!' : 'Category created successfully!');
-      reset();
-    } catch (error) {
-      console.error('Error saving category:', error);
-      toast.error('Failed to save category');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) reset(); }}>
+    <Dialog open={modalOpen} onOpenChange={(open) => {
+      setModalOpen(open);
+      if (!open) {
+        handleModalClose();
+        reset();
+      }
+    }}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -160,43 +138,17 @@ export default function CategoryDialog() {
               <p className="text-sm text-red-500">{errors.description.message}</p>
             )}
           </div>
-
-          {/* <div className="space-y-2">
-            <Label htmlFor="color">Color</Label>
-            <div className="flex items-center gap-3">
-              <Input
-                id="color"
-                type="color"
-                {...register('color')}
-                className="w-16 h-10 p-1 rounded border"
-              />
-              <Input
-                {...register('color')}
-                placeholder="#3B82F6"
-                className={`flex-1 ${errors.color ? 'border-red-500' : ''}`}
-              />
-            </div>
-            {errors.color && (
-              <p className="text-sm text-red-500">{errors.color.message}</p>
-            )}
-            <p className="text-sm text-gray-500">
-              Hex color code for the category badge
-            </p>
-          </div> */}
         </form>
+
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" onClick={() => setItem(undefined)}>Batal</Button>
+            <Button variant="outline" onClick={() => handleModalClose()}>Batal</Button>
           </DialogClose>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            form='category-form'
-          >
+          <Button type="submit" form='category-form'>
             {isSubmitting ? 'Menyimpan...' : 'Simpan Kategori'}
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }

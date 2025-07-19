@@ -1,21 +1,19 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/ui/data-table'
 import { Edit, Trash2, ArrowUpDown } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { CategoryWithPostCount } from './store'
-import { useCrudStore } from '@/store/crudStore'
+import { CategoryWithPostCount } from './types'
+import { UseCrudType } from '@/hooks/useCrud'
 
-export default function CategoriesTable() {
-  const useStore = useCrudStore<CategoryWithPostCount>(
-    "/api/admin/categories"
-  );
+export default function CategoriesTable({ hook }: { hook: UseCrudType }) {
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | number | null>(null)
-  const { items, isDeleteConfirmOpen, setItem, setIsFormOpen, deleteItem, setIsDeleteConfirmOpen } = useStore()
+  const { setModalOpen, setEditingData, useFetch, isDeleteConfirmOpen, setDeleteConfirmOpen, handleDelete } = hook
+  const { data = [] } = useFetch<CategoryWithPostCount[]>()
 
   const columns: ColumnDef<CategoryWithPostCount>[] = [
     {
@@ -91,8 +89,8 @@ export default function CategoriesTable() {
             <Button
               variant="ghost"
               onClick={() => {
-                setIsFormOpen(true)
-                setItem(category)
+                setModalOpen(true)
+                setEditingData(category)
               }}
               className="cursor-pointer text-blue-600 hover:bg-blue-100 text-xs"
             >
@@ -102,7 +100,7 @@ export default function CategoriesTable() {
               variant="ghost"
               onClick={() => {
                 setDeleteCategoryId(category.id)
-                setIsDeleteConfirmOpen(true)
+                setDeleteConfirmOpen(true)
               }}
               className="cursor-pointer text-red-600 hover:bg-red-100 text-xs"
             >
@@ -118,15 +116,15 @@ export default function CategoriesTable() {
     <>
       <DataTable
         columns={columns}
-        data={items}
+        data={data}
         searchKey="name"
         searchPlaceholder="Search categories..."
       />
 
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
-        onOpenChange={setIsDeleteConfirmOpen}
-        onConfirm={() => deleteItem(deleteCategoryId as string)}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={() => handleDelete(deleteCategoryId as string)}
       />
     </>
   )

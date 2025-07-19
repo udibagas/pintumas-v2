@@ -12,10 +12,7 @@ export async function GET() {
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: categories,
-    });
+    return NextResponse.json(categories);
   } catch (error) {
     console.error("Error fetching categories:", error);
     return NextResponse.json(

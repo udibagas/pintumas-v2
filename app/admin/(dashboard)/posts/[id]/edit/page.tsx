@@ -33,29 +33,22 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Edit Post</h1>
-        <p className="text-gray-600">Update article content and settings</p>
-      </div>
-
-      <PostForm
-        categories={categories}
-        tags={tags}
-        mode="edit"
-        initialData={{
-          id: post.id,
-          title: post.title,
-          slug: post.slug,
-          summary: post.summary || '',
-          content: post.content,
-          status: post.status,
-          featured: post.featured,
-          categoryId: post.categoryId,
-          tagIds: post.tags.map(tag => tag.id),
-          imageUrl: post.imageUrl || ''
-        }}
-      />
-    </div>
+    <PostForm
+      categories={categories}
+      tags={tags}
+      mode="edit"
+      initialData={{
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        summary: post.summary || '',
+        content: post.content,
+        status: post.status,
+        featured: post.featured,
+        categoryId: post.categoryId,
+        tagIds: post.tags.map(tag => tag.id),
+        imageUrl: post.imageUrl || ''
+      }}
+    />
   );
 }

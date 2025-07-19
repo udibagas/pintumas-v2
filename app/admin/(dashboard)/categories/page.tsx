@@ -1,22 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import CategoriesTable from './CategoriesTable';
 import { Button } from '@/components/ui/button';
 import CategoryDialog from './CategoryDialog';
-import { CategoryWithPostCount } from './store';
-import { useCrudStore } from '@/store/crudStore';
+import { useCrud } from '@/hooks/useCrud';
+import { CategoryWithPostCount } from './types';
 
 export default function CategoriesPage() {
-  const useStore = useCrudStore<CategoryWithPostCount>(
-    "/api/admin/categories"
-  );
-  const { fetchItems, loading, setIsFormOpen } = useStore();
-
-  useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+  const hook = useCrud<CategoryWithPostCount>('/api/admin/categories');
+  const { setModalOpen } = hook;
 
   return (
     <div className="space-y-6">
@@ -29,21 +22,17 @@ export default function CategoriesPage() {
                 Manage your categories here. You can create, edit, or delete categories.
               </CardDescription>
             </div>
-            <Button variant="default" onClick={() => setIsFormOpen(true)}>
+            <Button variant="default" onClick={() => setModalOpen(true)}>
               Tambah Kategori
             </Button>
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          {loading ? (
-            <div className="text-center py-8">Loading categories...</div>
-          ) : (
-            <CategoriesTable />
-          )}
+          <CategoriesTable hook={hook} />
         </CardContent>
       </Card>
 
-      <CategoryDialog />
+      <CategoryDialog hook={hook} />
     </div>
   );
 }
