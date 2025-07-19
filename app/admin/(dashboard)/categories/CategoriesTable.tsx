@@ -47,21 +47,6 @@ export default function CategoriesTable({ hook }: { hook: UseCrudType }) {
         </div>
       ),
     },
-    // {
-    //   accessorKey: 'color',
-    //   header: 'Color',
-    //   cell: ({ row }) => (
-    //     <div className="flex items-center gap-2">
-    //       <div
-    //         className={`w-4 h-4 rounded-full ${row.getValue('color') || 'bg-gray-300'
-    //           }`}
-    //       />
-    //       <span className="text-sm text-gray-600">
-    //         {row.getValue('color') || 'No color'}
-    //       </span>
-    //     </div>
-    //   ),
-    // },
     {
       accessorKey: '_count.posts',
       header: ({ column }) => (
