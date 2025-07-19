@@ -164,7 +164,7 @@ export default function NewsGridClient({ initialArticles }: NewsGridClientProps)
                 Loading More Articles...
               </>
             ) : (
-              'Load More Articles'
+              'Muat Lebih Banyak'
             )}
           </Button>
         ) : (

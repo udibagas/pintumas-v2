@@ -28,6 +28,7 @@ model User {
   Media         Media[]
   departmentId  String?
   department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  appsId        String?
 
   @@map("users")
 }
@@ -214,6 +215,17 @@ model Settings {
   updatedAt DateTime @updatedAt
 
   @@map("settings")
+}
+
+model Apps {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  iconUrl   String? // URL for app icon
+  link      String? // External link to app
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("apps")
 }
 
 enum Role {

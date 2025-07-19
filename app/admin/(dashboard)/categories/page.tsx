@@ -5,14 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import CategoriesTable from './CategoriesTable';
 import { Button } from '@/components/ui/button';
 import CategoryDialog from './CategoryDialog';
-import { useStore } from './store';
+import { CategoryWithPostCount } from './store';
+import { useCrudStore } from '@/store/crudStore';
 
 export default function CategoriesPage() {
+  const useStore = useCrudStore<CategoryWithPostCount>(
+    "/api/admin/categories"
+  );
   const { fetchItems, loading, setIsFormOpen } = useStore();
 
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   return (
     <div className="space-y-6">

@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { generateSlug } from '@/lib/utils';
-import { useStore } from './store';
+import { CategoryWithPostCount } from './store';
+import { useCrudStore } from '@/store/crudStore';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -32,6 +33,10 @@ const categorySchema = z.object({
 type CategoryFormData = z.infer<typeof categorySchema>;
 
 export default function CategoryDialog() {
+  const useStore = useCrudStore<CategoryWithPostCount>(
+    "/api/admin/categories"
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     item: category,
@@ -65,7 +70,7 @@ export default function CategoryDialog() {
       description: category?.description || '',
       color: category?.color || '#3B82F6'
     })
-  }, [category]);
+  }, [category, reset]);
 
   // const watchName = watch('name');
   const isEdit = Boolean(category?.id);

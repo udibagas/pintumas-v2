@@ -1,6 +1,7 @@
 import HeroSection from '@/components/HeroSection';
 import CategoriesSection from '@/components/CategoriesSection';
 import LatestNewsSection from '@/components/LatestNewsSection';
+import AppsSection from '@/components/AppsSection';
 import { Metadata } from 'next';
 import DepartmentsWidget from '@/components/DepartmentsWidget';
 
@@ -25,9 +26,10 @@ export default function Home() {
   return (
     <>
       <HeroSection />
-      <CategoriesSection />
+      <AppsSection />
       <LatestNewsSection />
-      <DepartmentsWidget />
+      {/* <CategoriesSection /> */}
+      {/* <DepartmentsWidget /> */}
     </>
   );
 }

@@ -14,6 +14,7 @@ import {
   BarChart3,
   Megaphone,
   Building2,
+  AppWindow,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -58,6 +59,12 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       name: 'Departments',
       href: '/admin/departments',
       icon: Building2,
+      roles: ['ADMIN'],
+    },
+    {
+      name: 'Apps',
+      href: '/admin/apps',
+      icon: AppWindow,
       roles: ['ADMIN'],
     },
     {
