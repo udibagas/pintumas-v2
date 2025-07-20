@@ -28,34 +28,8 @@ export function verifyToken(token: string): any {
   }
 }
 
-// Edge-compatible version for middleware
-export async function verifyTokenEdge(token: string): Promise<any> {
-  try {
-    // For Edge Runtime, we'll use a simpler approach
-    // You might want to use a different JWT library or implement your own
-    const [header, payload, signature] = token.split(".");
-
-    if (!header || !payload || !signature) {
-      return null;
-    }
-
-    // Decode the payload (this is not secure verification, just parsing)
-    const decodedPayload = JSON.parse(atob(payload));
-
-    // Check expiration
-    if (
-      decodedPayload.exp &&
-      decodedPayload.exp < Math.floor(Date.now() / 1000)
-    ) {
-      return null;
-    }
-
-    return decodedPayload;
-  } catch (error) {
-    console.error("Token verification error:", error);
-    return null;
-  }
-}
+// Re-export Edge-compatible function for backward compatibility
+export { verifyTokenEdgeSimple as verifyTokenEdge } from "./auth-edge";
 
 export async function getCurrentUser() {
   try {
