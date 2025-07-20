@@ -100,7 +100,7 @@ export default function HeroSection() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Loading skeleton for carousel */}
             <div className="lg:col-span-2">
-              <Skeleton className="relative overflow-hidden rounded-2xl shadow-2xl aspect-[16/10]" />
+              <Skeleton className="relative overflow-hidden rounded-2xl shadow-2xl aspect-16/10" />
             </div>
             {/* Loading skeleton for sidebar */}
             <div className="space-y-6">
@@ -149,9 +149,9 @@ export default function HeroSection() {
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
                 {featuredStories.map((story) => (
-                  <div key={story.id} className="w-full flex-shrink-0 relative group">
+                  <div key={story.id} className="w-full shrink-0 relative group">
                     <Link href={`/post/${story.slug}`} className="block">
-                      <div className="aspect-[16/10] overflow-hidden">
+                      <div className="aspect-16/10 overflow-hidden">
                         <Image
                           src={story.image}
                           alt={story.title}
@@ -160,7 +160,7 @@ export default function HeroSection() {
                           priority={currentSlide === 0} // Only prioritize the first slide
                         />
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
                       <div className="absolute bottom-0 left-0 right-0 p-8">
                         <div className="flex items-center space-x-4 mb-4">
                           <Badge className="text-white font-semibold"
@@ -255,7 +255,7 @@ export default function HeroSection() {
                 <button
                   key={story.id}
                   onClick={() => goToSlide(index)}
-                  className={`flex-shrink-0 relative overflow-hidden rounded-lg transition-all duration-200 ${index === currentSlide
+                  className={`shrink-0 relative overflow-hidden rounded-lg transition-all duration-200 ${index === currentSlide
                     ? 'ring-2 ring-yellow-500 ring-offset-2 scale-105'
                     : 'opacity-70 hover:opacity-100 hover:scale-105'
                     }`}
@@ -291,7 +291,7 @@ export default function HeroSection() {
               <Link key={index} href={`/post/${story.slug}`} className="block">
                 <div className="group cursor-pointer">
                   <div className="flex space-x-4 p-4 rounded-xl hover:bg-yellow-50 transition-colors duration-200">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="w-20 h-20 relative rounded-lg overflow-hidden">
                         <Image
                           src={story.image}

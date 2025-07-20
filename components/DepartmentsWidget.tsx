@@ -66,7 +66,7 @@ export default function DepartmentsWidget() {
                       className="rounded-full object-contain p-2"
                     />
                   ) : (
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
+                    <div className="w-16 h-16 bg-linear-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
                       <Building2 className="h-8 w-8 text-blue-600" />
                     </div>
                   )}

@@ -85,7 +85,7 @@ export default function Comments({ postId, initialComments }: CommentsProps) {
             alt="Your avatar"
             width={36}
             height={36}
-            className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+            className="w-9 h-9 rounded-full object-cover shrink-0"
           />
           <div className="flex-1">
             <Input
@@ -121,7 +121,7 @@ export default function Comments({ postId, initialComments }: CommentsProps) {
                 alt={commentItem.author.name}
                 width={36}
                 height={36}
-                className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                className="w-9 h-9 rounded-full object-cover shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="bg-gray-100 rounded-2xl px-4 py-3">

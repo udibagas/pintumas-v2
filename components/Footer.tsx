@@ -179,7 +179,7 @@ export default function Footer() {
               )}
               {settings?.contactInfo?.address && (
                 <div className="flex items-start text-sm text-gray-300">
-                  <MapPin className="h-4 w-4 mr-3 text-yellow-500 mt-0.5 flex-shrink-0" />
+                  <MapPin className="h-4 w-4 mr-3 text-yellow-500 mt-0.5 shrink-0" />
                   <span>{settings.contactInfo.address}</span>
                 </div>
               )}

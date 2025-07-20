@@ -170,7 +170,7 @@ export default function Header() {
       {/* Breaking News Ticker */}
       <div className="bg-red-600 text-white py-2 overflow-hidden">
         <div className="flex items-center">
-          <span className="bg-yellow-500 text-black px-3 py-1 text-sm font-bold mr-4 flex-shrink-0">
+          <span className="bg-yellow-500 text-black px-3 py-1 text-sm font-bold mr-4 shrink-0">
             {announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'breaking' ? 'BERITA UTAMA' :
               announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'alert' ? 'PERINGATAN' :
                 announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'event' ? 'EVENT' :

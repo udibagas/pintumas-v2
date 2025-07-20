@@ -101,7 +101,7 @@ export default function CategoriesSection() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             {/* Loading skeleton */}
             {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div key={index} className="bg-white rounded-xl p-4 shadow-xs border border-gray-100">
                 <div className="text-center">
                   <Skeleton className="w-12 h-12 rounded-full mx-auto mb-3" />
                   <Skeleton className="h-4 mb-2" />
@@ -125,7 +125,7 @@ export default function CategoriesSection() {
 
               return (
                 <Link key={category.id} href={`/category/${category.slug}`}>
-                  <div className="group cursor-pointer bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-yellow-300">
+                  <div className="group cursor-pointer bg-white rounded-xl p-4 shadow-xs hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-yellow-300">
                     <div className="text-center">
                       <div className={`${color} w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform duration-200`}>
                         <IconComponent className="h-6 w-6 text-white" />

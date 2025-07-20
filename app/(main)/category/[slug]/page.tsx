@@ -255,7 +255,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
           </div>
           <Link href={`/post/${featuredArticle.slug}`} className="block">
             <div className="relative overflow-hidden rounded-2xl shadow-2xl group cursor-pointer">
-              <div className="aspect-[16/9] lg:aspect-[21/9] overflow-hidden">
+              <div className="aspect-video lg:aspect-21/9 overflow-hidden">
                 <Image
                   width={800}
                   height={450}
@@ -264,7 +264,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
               <div className="absolute bottom-0 left-0 right-0 p-8">
                 <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4 leading-tight group-hover:text-yellow-300 transition-colors duration-200">
                   {featuredArticle.title}

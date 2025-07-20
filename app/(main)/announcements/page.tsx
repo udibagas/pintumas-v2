@@ -133,7 +133,7 @@ function getBadgeVariant(type: string) {
     case 'warning':
       return 'secondary';
     case 'success':
-      return 'outline';
+      return 'outline-solid';
     case 'urgent':
       return 'destructive';
     default:

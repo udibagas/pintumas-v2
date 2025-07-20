@@ -76,7 +76,7 @@ export default function DepartmentsList() {
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
                 {/* Logo */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {department.imageUrl ? (
                     <Image
                       src={department.imageUrl}
@@ -86,7 +86,7 @@ export default function DepartmentsList() {
                       className="rounded-full object-cover border-2 border-gray-100 group-hover:border-blue-200 transition-colors"
                     />
                   ) : (
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center border-2 border-gray-100 group-hover:border-blue-200 transition-colors">
+                    <div className="w-16 h-16 bg-linear-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center border-2 border-gray-100 group-hover:border-blue-200 transition-colors">
                       <Building2 className="h-8 w-8 text-blue-600" />
                     </div>
                   )}

@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand Section */}
         <div className="text-center mb-8">
@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
           <p className="text-sm text-gray-600">Administrative Dashboard</p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+        <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-xs">
           <CardHeader className="text-center pb-6">
             <CardTitle className="text-xl font-semibold text-gray-800">Welcome Back</CardTitle>
             <CardDescription className="text-gray-600">

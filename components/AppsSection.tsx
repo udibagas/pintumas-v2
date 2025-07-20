@@ -57,7 +57,7 @@ export default function AppsSection() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div key={index} className="bg-white rounded-xl p-4 shadow-xs border border-gray-100">
                 <div className="text-center">
                   <Skeleton className="w-12 h-12 rounded-full mx-auto mb-3" />
                   <Skeleton className="h-4 mb-2" />
@@ -116,7 +116,7 @@ export default function AppsSection() {
       </div>
     );
 
-    const baseClasses = "bg-white rounded-xl p-4 shadow-sm border border-gray-100";
+    const baseClasses = "bg-white rounded-xl p-4 shadow-xs border border-gray-100";
 
     if (app.link) {
       return (

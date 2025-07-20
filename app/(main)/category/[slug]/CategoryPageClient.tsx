@@ -113,7 +113,7 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
         </div>
         <div className="flex items-center space-x-2">
           <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            variant={viewMode === 'grid' ? 'default' : 'outline-solid'}
             size="sm"
             onClick={() => setViewMode('grid')}
             className={viewMode === 'grid' ? 'bg-yellow-500 hover:bg-yellow-600 text-black' : ''}
@@ -121,7 +121,7 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
             <Grid className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={viewMode === 'list' ? 'default' : 'outline-solid'}
             size="sm"
             onClick={() => setViewMode('list')}
             className={viewMode === 'list' ? 'bg-yellow-500 hover:bg-yellow-600 text-black' : ''}
@@ -265,7 +265,7 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
           <Button
             onClick={handleLoadMore}
             disabled={isLoading}
-            className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            className="bg-linear-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
             {isLoading ? (
               <>
@@ -299,7 +299,7 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
                 </Button>
               </Link>
               <Link href="/news">
-                <Button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white">
+                <Button className="bg-linear-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white">
                   Lihat Berita Terbaru
                 </Button>
               </Link>

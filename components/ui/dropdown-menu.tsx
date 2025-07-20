@@ -238,14 +238,6 @@ function DropdownMenuSubContent({
   )
 }
 
-const ForwardedDropdownMenuItem = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof DropdownMenuItem>>(
-  (props, ref) => (
-    <DropdownMenuItem ref={ref} {...props} />
-  )
-)
-
-ForwardedDropdownMenuItem.displayName = 'ForwardedDropdownMenuItem'
-
 export {
   DropdownMenu,
   DropdownMenuPortal,
@@ -262,5 +254,4 @@ export {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-  ForwardedDropdownMenuItem
 }

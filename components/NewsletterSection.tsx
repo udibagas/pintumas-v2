@@ -19,9 +19,9 @@ export default function NewsletterSection() {
   };
 
   return (
-    <section className="py-16 bg-gradient-to-br from-yellow-500 to-yellow-600">
+    <section className="py-16 bg-linear-to-br from-yellow-500 to-yellow-600">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 lg:p-12">
+        <div className="bg-white/10 backdrop-blur-xs rounded-3xl p-8 lg:p-12">
           <div className="mb-8">
             <div className="bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
               <Mail className="h-10 w-10 text-white" />
@@ -54,7 +54,7 @@ export default function NewsletterSection() {
                 </Button>
               </form>
             ) : (
-              <div className="bg-white/20 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="bg-white/20 rounded-2xl p-6 backdrop-blur-xs">
                 <CheckCircle className="h-12 w-12 text-white mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">
                   Successfully Subscribed!

@@ -414,7 +414,7 @@ export default async function SinglePost({ params }: { params: { slug: string } 
         <div className="bg-gray-50 rounded-2xl p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Tentang Penulis</h3>
           <div className="flex items-start space-x-4">
-            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+            <div className="w-16 h-16 rounded-full overflow-hidden shrink-0">
               <Image
                 src={post.author.avatar || '/images/default-avatar.png'}
                 alt={post.author.name}
@@ -449,7 +449,7 @@ export default async function SinglePost({ params }: { params: { slug: string } 
           <div className="grid md:grid-cols-3 gap-6">
             {relatedPosts.map((relatedPost) => (
               <Link key={relatedPost.id} href={`/post/${relatedPost.slug}`} className="group">
-                <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 group-hover:shadow-md transition-shadow duration-200">
+                <div className="bg-white rounded-lg overflow-hidden shadow-xs border border-gray-200 group-hover:shadow-md transition-shadow duration-200">
                   {relatedPost.imageUrl && (
                     <div className="aspect-video overflow-hidden">
                       <Image
