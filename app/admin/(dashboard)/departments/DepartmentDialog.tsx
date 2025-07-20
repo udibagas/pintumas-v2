@@ -89,12 +89,28 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
       const previewUrl = URL.createObjectURL(file);
       setPreviewImage(previewUrl);
+
+      // Upload file immediately
+      try {
+        setUploading(true);
+        const uploadedUrl = await uploadFile(file);
+        setValue('imageUrl', uploadedUrl);
+        setPreviewImage(uploadedUrl); // Update to use the uploaded URL
+        setSelectedFile(null); // Clear selected file since it's uploaded
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        // Revert preview on error
+        setPreviewImage(department?.imageUrl || '');
+        setSelectedFile(null);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -111,22 +127,11 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
 
   const handleFormSubmit = async (data: DepartmentFormData) => {
     try {
-      setUploading(true);
-
-      let imageUrl = data.imageUrl;
-
-      if (selectedFile) {
-        imageUrl = await uploadFile(selectedFile);
-        setValue('imageUrl', imageUrl);
-      }
-
-      await onSubmit({ ...data, imageUrl });
+      await onSubmit(data);
       setSelectedFile(null);
       setPreviewImage('');
     } catch (error) {
       console.error('Error submitting form:', error);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -151,6 +156,9 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6" id="department-form">
+          {/* Hidden input for imageUrl */}
+          <input type="hidden" {...register('imageUrl')} />
+
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -215,14 +223,21 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
+                  disabled={uploading}
                   className={errors.imageUrl ? 'border-red-500' : ''}
                 />
                 {errors.imageUrl && (
                   <p className="text-sm text-red-500">{errors.imageUrl.message}</p>
                 )}
-                <p className="text-sm text-gray-500 mt-1">
-                  Upload a logo for the department (PNG, JPG, or GIF)
-                </p>
+                {uploading ? (
+                  <p className="text-sm text-blue-600 mt-1">
+                    Uploading logo...
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Upload a logo for the department (PNG, JPG, or GIF)
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -233,7 +248,7 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
             <Button variant="outline" onClick={() => handleModalClose()}>Batal</Button>
           </DialogClose>
           <Button type="submit" form='department-form' disabled={isSubmitting || uploading}>
-            {isSubmitting || uploading ? 'Menyimpan...' : 'Simpan Department'}
+            {isSubmitting ? 'Menyimpan...' : uploading ? 'Mengupload...' : 'Simpan Department'}
           </Button>
         </DialogFooter>
       </DialogContent>

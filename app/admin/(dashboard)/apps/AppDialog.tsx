@@ -68,12 +68,28 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
 
   const isEdit = Boolean(app?.id);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
       const previewUrl = URL.createObjectURL(file);
       setPreviewImage(previewUrl);
+
+      // Upload file immediately
+      try {
+        setUploading(true);
+        const uploadedUrl = await uploadFile(file);
+        setValue('iconUrl', uploadedUrl);
+        setPreviewImage(uploadedUrl); // Update to use the uploaded URL
+        setSelectedFile(null); // Clear selected file since it's uploaded
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        // Revert preview on error
+        setPreviewImage(app?.iconUrl || '');
+        setSelectedFile(null);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -90,22 +106,11 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
 
   const handleFormSubmit = async (data: AppFormData) => {
     try {
-      setUploading(true);
-
-      let iconUrl = data.iconUrl;
-
-      if (selectedFile) {
-        iconUrl = await uploadFile(selectedFile);
-        setValue('iconUrl', iconUrl);
-      }
-
-      await onSubmit({ ...data, iconUrl });
+      await onSubmit(data);
       setSelectedFile(null);
       setPreviewImage('');
     } catch (error) {
       console.error('Error submitting form:', error);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -130,6 +135,9 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6" id="app-form">
+          {/* Hidden input for iconUrl */}
+          <input type="hidden" {...register('iconUrl')} />
+
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -160,14 +168,21 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
+                  disabled={uploading}
                   className={errors.iconUrl ? 'border-red-500' : ''}
                 />
                 {errors.iconUrl && (
                   <p className="text-sm text-red-500">{errors.iconUrl.message}</p>
                 )}
-                <p className="text-sm text-gray-500 mt-1">
-                  Upload an icon for the app (PNG, JPG, or GIF)
-                </p>
+                {uploading ? (
+                  <p className="text-sm text-blue-600 mt-1">
+                    Uploading icon...
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Upload an icon for the app (PNG, JPG, or GIF)
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -191,7 +206,7 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
             <Button variant="outline" onClick={() => handleModalClose()}>Cancel</Button>
           </DialogClose>
           <Button type="submit" form='app-form' disabled={isSubmitting || uploading}>
-            {isSubmitting || uploading ? 'Saving...' : 'Save App'}
+            {isSubmitting ? 'Saving...' : uploading ? 'Uploading...' : 'Save App'}
           </Button>
         </DialogFooter>
       </DialogContent >
