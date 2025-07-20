@@ -1,6 +1,7 @@
-import { prisma } from '@/lib/prisma'
-import TagForm from '@/components/admin/TagForm'
-import { notFound } from 'next/navigation'
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface EditTagPageProps {
   params: {
@@ -8,14 +9,13 @@ interface EditTagPageProps {
   }
 }
 
-export default async function EditTagPage({ params }: EditTagPageProps) {
-  const tag = await prisma.tag.findUnique({
-    where: { id: params.id },
-  })
+export default function EditTagPage({ params }: EditTagPageProps) {
+  const router = useRouter();
 
-  if (!tag) {
-    notFound()
-  }
+  useEffect(() => {
+    // Redirect to main tags page - the modal will handle editing
+    router.replace('/admin/tags');
+  }, [router]);
 
-  return <TagForm initialData={tag} isEdit />
+  return null;
 }

@@ -1,88 +1,38 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { AppsTable } from "@/components/admin/AppsTable";
-import { AppDialog } from "@/components/admin/AppDialog";
-import { appsStore } from "./store";
-import type { Apps } from "@prisma/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import AppsTable from './AppsTable';
+import { Button } from '@/components/ui/button';
+import AppDialog from './AppDialog';
+import { useCrud } from '@/hooks/useCrud';
+import { AppsData } from './types';
 
 export default function AppsPage() {
-  const {
-    items: apps,
-    loading,
-    fetchItems,
-    createItem,
-    updateItem,
-    deleteItem,
-  } = appsStore();
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingApp, setEditingApp] = useState<Apps | undefined>(undefined);
-
-  useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
-
-  const handleCreate = async (data: any) => {
-    await createItem(data);
-    setDialogOpen(false);
-  };
-
-  const handleEdit = (app: Apps) => {
-    setEditingApp(app);
-    setDialogOpen(true);
-  };
-
-  const handleUpdate = async (data: any) => {
-    if (editingApp) {
-      await updateItem(editingApp.id, data);
-      setDialogOpen(false);
-      setEditingApp(undefined);
-    }
-  };
-
-  const handleDelete = async (app: Apps) => {
-    await deleteItem(app.id);
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setEditingApp(undefined);
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const hook = useCrud<AppsData>('/api/admin/apps');
+  const { setModalOpen } = hook;
 
   return (
-    <div className="space-y-6 rounded-lg p-6 bg-white shadow-md">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Apps</h1>
-          <p className="text-muted-foreground">
-            Manage application links and icons
-          </p>
-        </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add App
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Apps</CardTitle>
+              <CardDescription>
+                Manage your applications here. You can create, edit, or delete apps.
+              </CardDescription>
+            </div>
+            <Button variant="default" onClick={() => setModalOpen(true)}>
+              Tambah App
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <AppsTable hook={hook} />
+        </CardContent>
+      </Card>
 
-      <AppsTable
-        data={apps as Apps[]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <AppDialog
-        app={editingApp}
-        open={dialogOpen}
-        onOpenChange={handleDialogClose}
-        onSubmit={editingApp ? handleUpdate : handleCreate}
-      />
+      <AppDialog hook={hook} />
     </div>
   );
 }

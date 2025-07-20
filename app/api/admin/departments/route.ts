@@ -6,7 +6,7 @@ export async function GET() {
     const departments = await prisma.department.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ success: true, data: departments });
+    return NextResponse.json(departments);
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Failed to fetch departments" },

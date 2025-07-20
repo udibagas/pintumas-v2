@@ -12,49 +12,18 @@ function createSlug(name: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const search = searchParams.get("search") || "";
-
-    const skip = (page - 1) * limit;
-
-    const where: any = {};
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { slug: { contains: search, mode: "insensitive" } },
-      ];
-    }
-
-    const [tags, total] = await Promise.all([
-      prisma.tag.findMany({
-        where,
-        include: {
-          _count: {
-            select: {
-              posts: true,
-            },
+    const tags = await prisma.tag.findMany({
+      include: {
+        _count: {
+          select: {
+            posts: true,
           },
         },
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.tag.count({ where }),
-    ]);
-
-    return NextResponse.json({
-      success: true,
-      data: tags,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
       },
+      orderBy: { name: "asc" },
     });
+
+    return NextResponse.json(tags);
   } catch (error) {
     console.error("Error fetching tags:", error);
     return NextResponse.json(

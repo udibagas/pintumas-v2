@@ -1,18 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { toast } from 'sonner';
-import axios from 'axios';
-import Image from 'next/image';
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogContent,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 import { generateSlug } from '@/lib/utils';
+import { UseCrudType } from '@/hooks/useCrud';
+import Image from 'next/image';
+import axios from 'axios';
 
 const departmentSchema = z.object({
   name: z.string()
@@ -32,92 +39,62 @@ const departmentSchema = z.object({
 
 type DepartmentFormData = z.infer<typeof departmentSchema>;
 
-interface Department {
-  id: string;
-  name: string;
-  slug: string;
-  imageUrl?: string;
-  link?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
+  const {
+    modalOpen,
+    setModalOpen,
+    editingData: department,
+    handleSubmit: onSubmit,
+    isSubmitting,
+    handleModalClose
+  } = hook;
 
-interface DepartmentDialogProps {
-  department?: Department;
-  isOpen: boolean;
-  handleOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
-}
-
-export default function DepartmentDialog({
-  department,
-  isOpen,
-  handleOpenChange,
-  onSuccess,
-}: DepartmentDialogProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState('');
 
-  const form = useForm<DepartmentFormData>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentSchema),
     defaultValues: {
-      name: '',
-      slug: '',
-      link: '',
-      imageUrl: '',
-    },
+      name: department?.name || '',
+      slug: department?.slug || '',
+      link: department?.link || '',
+      imageUrl: department?.imageUrl || '',
+    }
   });
 
   useEffect(() => {
-    if (department) {
-      form.reset({
-        name: department.name,
-        slug: department.slug,
-        link: department.link || '',
-        imageUrl: department.imageUrl || '',
-      });
-      setPreviewImage(department.imageUrl || '');
-    } else {
-      form.reset({
-        name: '',
-        slug: '',
-        link: '',
-        imageUrl: '',
-      });
-      setPreviewImage('');
-    }
-    setSelectedFile(null);
-  }, [department, isOpen, form]);
+    reset({
+      name: department?.name || '',
+      slug: department?.slug || '',
+      link: department?.link || '',
+      imageUrl: department?.imageUrl || '',
+    });
+    setPreviewImage(department?.imageUrl || '');
+  }, [department, reset]);
 
-  const handleNameChange = (value: string) => {
-    form.setValue('name', value);
-    if (!department) {
-      form.setValue('slug', generateSlug(value));
+  const isEdit = Boolean(department?.id);
+
+  // Update slug when name changes (only if not editing)
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    if (!isEdit) {
+      setValue('slug', generateSlug(name));
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size must be less than 5MB');
-        return;
-      }
-
       setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
     }
   };
 
@@ -132,159 +109,133 @@ export default function DepartmentDialog({
     return response.data.url;
   };
 
-  const onSubmit = async (data: DepartmentFormData) => {
+  const handleFormSubmit = async (data: DepartmentFormData) => {
     try {
-      let imageUrl = department?.imageUrl || '';
+      setUploading(true);
+
+      let imageUrl = data.imageUrl;
 
       if (selectedFile) {
-        setUploading(true);
         imageUrl = await uploadFile(selectedFile);
-        setUploading(false);
+        setValue('imageUrl', imageUrl);
       }
 
-      const submitData = {
-        ...data,
-        imageUrl: imageUrl || undefined,
-      };
-
-      if (department) {
-        await axios.put(`/api/admin/departments/${department.id}`, submitData);
-        toast.success('Department updated successfully!');
-      } else {
-        await axios.post('/api/admin/departments', submitData);
-        toast.success('Department created successfully!');
-      }
-
-      handleOpenChange(false);
-      onSuccess();
+      await onSubmit({ ...data, imageUrl });
+      setSelectedFile(null);
+      setPreviewImage('');
     } catch (error) {
-      toast.error(`Failed to ${department ? 'update' : 'create'} department`);
+      console.error('Error submitting form:', error);
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={modalOpen} onOpenChange={(open) => {
+      setModalOpen(open);
+      if (!open) {
+        handleModalClose();
+        reset();
+        setSelectedFile(null);
+        setPreviewImage('');
+      }
+    }}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {department ? 'Edit Department' : 'Create Department'}
+            {isEdit ? 'Edit Department' : 'Create New Department'}
           </DialogTitle>
           <DialogDescription>
-            {department ? 'Update the department details.' : 'Create a new department.'}
+            {isEdit ? 'Update department information' : 'Add a new department'}
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Department name"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        handleNameChange(e.target.value);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="department-slug"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6" id="department-form">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name *</Label>
+            <Input
+              id="name"
+              {...register('name')}
+              onChange={(e) => {
+                register('name').onChange(e);
+                handleNameChange(e);
+              }}
+              placeholder="Department Name"
+              className={errors.name ? 'border-red-500' : ''}
             />
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+            )}
+          </div>
 
-            <FormField
-              control={form.control}
-              name="link"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>External Link (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://example.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label htmlFor="slug">Slug *</Label>
+            <Input
+              id="slug"
+              {...register('slug')}
+              placeholder="department-slug"
+              className={errors.slug ? 'border-red-500' : ''}
             />
+            {errors.slug && (
+              <p className="text-sm text-red-500">{errors.slug.message}</p>
+            )}
+            <p className="text-sm text-gray-500">
+              URL-friendly version of the name. Will be auto-generated from name.
+            </p>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="logo">Logo (Optional)</Label>
-              <Input
-                id="logo"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
+          <div className="space-y-2">
+            <Label htmlFor="link">External Link</Label>
+            <Input
+              id="link"
+              {...register('link')}
+              placeholder="https://example.com (optional)"
+              className={errors.link ? 'border-red-500' : ''}
+            />
+            {errors.link && (
+              <p className="text-sm text-red-500">{errors.link.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="logo">Logo</Label>
+            <div className="flex items-center space-x-4">
               {previewImage && (
-                <div className="mt-2 space-y-2">
-                  <div className="relative inline-block">
-                    <Image
-                      src={previewImage}
-                      alt="Preview"
-                      width={80}
-                      height={80}
-                      className="rounded-lg object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute -top-2 -right-2 h-6 w-6 p-0"
-                      onClick={() => {
-                        setPreviewImage('');
-                        setSelectedFile(null);
-                        const fileInput = document.getElementById('logo') as HTMLInputElement;
-                        if (fileInput) fileInput.value = '';
-                      }}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500">Click × to remove image</p>
-                </div>
+                <Image
+                  src={previewImage}
+                  alt="Preview"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-full object-cover border"
+                />
               )}
+              <div className="flex-1">
+                <Input
+                  id="logo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className={errors.imageUrl ? 'border-red-500' : ''}
+                />
+                {errors.imageUrl && (
+                  <p className="text-sm text-red-500">{errors.imageUrl.message}</p>
+                )}
+                <p className="text-sm text-gray-500 mt-1">
+                  Upload a logo for the department (PNG, JPG, or GIF)
+                </p>
+              </div>
             </div>
+          </div>
+        </form>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
-                Batal
-              </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting || uploading}>
-                {uploading ? 'Uploading...' : form.formState.isSubmitting ? 'Menyimpan...' : 'Simpan'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" onClick={() => handleModalClose()}>Batal</Button>
+          </DialogClose>
+          <Button type="submit" form='department-form' disabled={isSubmitting || uploading}>
+            {isSubmitting || uploading ? 'Menyimpan...' : 'Simpan Department'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

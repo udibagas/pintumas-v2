@@ -1,6 +1,7 @@
-import { prisma } from '@/lib/prisma'
-import UserForm from '@/components/admin/UserForm'
-import { notFound } from 'next/navigation'
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface EditUserPageProps {
   params: {
@@ -8,26 +9,13 @@ interface EditUserPageProps {
   }
 }
 
-export default async function EditUserPage({ params }: EditUserPageProps) {
-  const user = await prisma.user.findUnique({
-    where: { id: params.id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      avatar: true,
-      bio: true,
-    },
-  })
+export default function EditUserPage({ params }: EditUserPageProps) {
+  const router = useRouter();
 
-  if (!user) {
-    notFound()
-  }
+  useEffect(() => {
+    // Redirect to main users page with edit mode for this user
+    router.replace(`/admin/users?edit=${params.id}`);
+  }, [router, params.id]);
 
-  return <UserForm initialData={{
-    ...user,
-    avatar: user.avatar || undefined,
-    bio: user.bio || undefined,
-  }} isEdit />
+  return null;
 }
