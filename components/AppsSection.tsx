@@ -27,13 +27,8 @@ export default function AppsSection() {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('/api/admin/apps');
-
-      if (response.data.success) {
-        setApps(response.data.data);
-      } else {
-        throw new Error('Failed to fetch apps');
-      }
+      const { data } = await axios.get('/api/admin/apps');
+      setApps(data);
     } catch (err: any) {
       console.error('Error fetching apps:', err);
       setError('Failed to load apps');
