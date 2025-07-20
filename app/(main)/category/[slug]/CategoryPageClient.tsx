@@ -113,7 +113,7 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
         </div>
         <div className="flex items-center space-x-2">
           <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline-solid'}
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('grid')}
             className={viewMode === 'grid' ? 'bg-yellow-500 hover:bg-yellow-600 text-black' : ''}
@@ -121,7 +121,7 @@ export default function CategoryPageClient({ initialPosts, categorySlug }: Categ
             <Grid className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline-solid'}
+            variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
             className={viewMode === 'list' ? 'bg-yellow-500 hover:bg-yellow-600 text-black' : ''}

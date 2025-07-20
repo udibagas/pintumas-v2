@@ -12,11 +12,12 @@ function createSlug(name: string): string {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const tag = await prisma.tag.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         _count: {
           select: {
@@ -48,9 +49,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name } = body;
 
@@ -60,7 +62,7 @@ export async function PUT(
     const existingTag = await prisma.tag.findFirst({
       where: {
         AND: [
-          { id: { not: params.id } },
+          { id: { not: id } },
           {
             OR: [{ name: { equals: name, mode: "insensitive" } }, { slug }],
           },
@@ -76,7 +78,7 @@ export async function PUT(
     }
 
     const tag = await prisma.tag.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name,
         slug,
@@ -105,11 +107,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.tag.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({

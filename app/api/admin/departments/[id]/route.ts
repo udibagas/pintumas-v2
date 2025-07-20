@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const department = await prisma.department.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!department) {
@@ -28,12 +29,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { name, slug, imageUrl, link } = await request.json();
     const department = await prisma.department.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { name, slug, imageUrl, link },
     });
     return NextResponse.json({ success: true, data: department });
@@ -47,11 +49,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const department = await prisma.department.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
     return NextResponse.json({ success: true, data: department });
   } catch (error) {

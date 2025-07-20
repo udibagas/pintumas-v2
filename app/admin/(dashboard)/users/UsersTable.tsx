@@ -16,13 +16,15 @@ export default function UsersTable({ hook }: { hook: UseCrudType }) {
   const { setModalOpen, setEditingData, useFetch, isDeleteConfirmOpen, setDeleteConfirmOpen, handleDelete } = hook
   const { data = [] } = useFetch<UserWithCounts[]>()
 
+  type RoleKey = 'ADMIN' | 'MODERATOR' | 'USER';
+
   const getRoleBadge = (role: string) => {
-    const roleConfig = {
+    const roleConfig: Record<RoleKey, { color: string; label: string; icon: React.ElementType }> = {
       ADMIN: { color: 'bg-red-100 text-red-800', label: 'Admin', icon: Crown },
       MODERATOR: { color: 'bg-blue-100 text-blue-800', label: 'Moderator', icon: Shield },
       USER: { color: 'bg-gray-100 text-gray-800', label: 'User', icon: UserIcon },
     }
-    const config = roleConfig[role] || roleConfig.USER
+    const config = roleConfig[(role as RoleKey)] || roleConfig.USER
     const Icon = config.icon
     return (
       <Badge className={`${config.color} flex items-center gap-1`}>

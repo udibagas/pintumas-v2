@@ -1,8 +1,13 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
@@ -10,7 +15,6 @@ export const metadata: Metadata = {
   description: 'Portal berita terpercaya dengan informasi terkini seputar Pelabuhan Tanjung Mas, perdagangan maritim, logistik, dan berita terbaru lainnya.',
   keywords: 'berita, pelabuhan tanjung mas, maritim, logistik, perdagangan, shipping, semarang, jawa tengah, indonesia',
   authors: [{ name: 'Tim Pintumas' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
     title: 'Pintumas - Portal Berita Pelabuhan Tanjung Mas',
