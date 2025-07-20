@@ -4,9 +4,9 @@ import AnnouncementForm from '@/components/admin/AnnouncementForm';
 import axios from 'axios';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 async function getAnnouncement(id: string) {
@@ -30,7 +30,8 @@ export const metadata: Metadata = {
 };
 
 export default async function EditAnnouncementPage({ params }: PageProps) {
-  const announcement = await getAnnouncement(params.id);
+  const { id } = await params;
+  const announcement = await getAnnouncement(id);
 
   if (!announcement) {
     notFound();

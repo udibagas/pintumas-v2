@@ -61,11 +61,12 @@ interface Post {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   try {
+    const { slug } = await params;
     const post = await prisma.post.findUnique({
       where: {
-        slug: params.slug,
+        slug,
         status: 'PUBLISHED'
       },
       include: {
@@ -289,8 +290,8 @@ async function getRelatedPosts(categoryId: string, currentPostId: string) {
   }
 }
 
-export default async function SinglePost({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug);
+export default async function SinglePost({ params }: { params: Promise<{ slug: string }> }) {
+  const post = await getPost((await params).slug);
 
   if (!post) {
     notFound();

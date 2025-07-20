@@ -5,15 +5,16 @@ import PostForm from '@/components/admin/PostForm';
 export const dynamic = 'force-dynamic';
 
 interface EditPostPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
+  const { id } = await params;
   const [post, categories, tags] = await Promise.all([
     prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         author: true,
         category: true,

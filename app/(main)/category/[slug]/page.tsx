@@ -45,10 +45,11 @@ interface CategoryData {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   try {
+    const { slug } = await params;
     const category = await prisma.category.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         _count: {
           select: {
@@ -193,8 +194,9 @@ async function getCategoryData(slug: string): Promise<CategoryData | null> {
   }
 }
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
-  const categoryData = await getCategoryData(params.slug);
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const categoryData = await getCategoryData(slug);
 
   if (!categoryData) {
     return (
@@ -296,7 +298,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
       )}
 
       {/* Articles List with Client-side Interactions */}
-      <CategoryPageClient initialPosts={posts} categorySlug={params.slug} />
+      <CategoryPageClient initialPosts={posts} categorySlug={slug} />
 
     </div>
   );

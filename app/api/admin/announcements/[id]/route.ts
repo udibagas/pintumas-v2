@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET /api/admin/announcements/[id] - Get specific announcement
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const announcement = await prisma.announcement.findUnique({
       where: {
-        id: params.id,
+        id,
       },
       include: {
         author: {
@@ -55,11 +56,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PUT /api/admin/announcements/[id] - Update announcement
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const data = await request.json();
 
     const announcement = await prisma.announcement.update({
       where: {
-        id: params.id,
+        id,
       },
       data: {
         ...data,
@@ -100,9 +102,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/admin/announcements/[id] - Delete announcement
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     await prisma.announcement.delete({
       where: {
-        id: params.id,
+        id,
       },
     });
 
