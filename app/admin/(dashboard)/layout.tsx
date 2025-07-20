@@ -11,7 +11,7 @@ export default function AdminLayout({ children, }: { children: React.ReactNode }
     <div className="min-h-screen bg-gray-50">
       <AdminHeader user={{ id: '1', name: 'Bagas', role: 'admin', email: 'admin@mail.com' }} />
       <div className="flex">
-        <AdminSidebar userRole={'admin'} />
+        <AdminSidebar userRole={'ADMIN'} />
         <main className="flex-1 p-6">
           <QueryClientProvider client={queryClient}>
             {children}
