@@ -38,57 +38,45 @@ export default function AppsSection() {
     }
   };
 
-  if (loading) {
-    return (
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Aplikasi
-            </h2>
-            <p className="text-gray-600">
-              Akses berbagai aplikasi yang tersedia
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white rounded-xl p-4 shadow-xs border border-gray-100">
-                <div className="text-center">
-                  <Skeleton className="w-12 h-12 rounded-full mx-auto mb-3" />
-                  <Skeleton className="h-4 mb-2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Common section wrapper component
+  const SectionWrapper = ({ children }: { children: React.ReactNode }) => (
+    <section className="py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {children}
+      </div>
+    </section>
+  );
 
-  if (error) {
-    return (
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-8">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={fetchApps} variant="outline">
-              Coba Lagi
-            </Button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Common header component
+  const SectionHeader = ({ title, description }: { title: string; description: string }) => (
+    <div className="text-center mb-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
+      <p className="text-gray-600">{description}</p>
+    </div>
+  );
 
-  if (apps.length === 0) {
-    return null; // Don't render section if no apps
-  }
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="bg-white rounded-xl p-4 shadow-xs border border-gray-100">
+      <div className="text-center">
+        <Skeleton className="w-12 h-12 rounded-full mx-auto mb-3" />
+        <Skeleton className="h-4 mb-2" />
+      </div>
+    </div>
+  );
 
+  // App card component
   const AppCard = ({ app }: { app: App }) => {
+    const isActive = !!app.link;
+    const baseClasses = "bg-white rounded-xl p-4 shadow-xs border border-gray-100";
+
+    const iconBgClass = isActive ? 'bg-blue-100 group-hover:scale-105' : 'bg-gray-100';
+    const iconColorClass = isActive ? 'text-blue-600' : 'text-gray-400';
+    const titleColorClass = isActive ? 'text-gray-900 group-hover:text-blue-700' : 'text-gray-500';
+
     const cardContent = (
       <div className="text-center">
-        <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-200 ${app.link ? 'bg-blue-100 group-hover:scale-105' : 'bg-gray-100'
-          }`}>
+        <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-200 ${iconBgClass}`}>
           {app.iconUrl ? (
             <Image
               src={app.iconUrl}
@@ -98,25 +86,22 @@ export default function AppsSection() {
               className="w-16 h-16 rounded object-cover"
             />
           ) : (
-            <AppWindow className={`h-6 w-6 ${app.link ? 'text-blue-600' : 'text-gray-400'}`} />
+            <AppWindow className={`h-6 w-6 ${iconColorClass}`} />
           )}
         </div>
-        <h3 className={`text-sm font-semibold transition-colors duration-200 ${app.link ? 'text-gray-900 group-hover:text-blue-700' : 'text-gray-500'
-          }`}>
+        <h3 className={`text-sm font-semibold transition-colors duration-200 ${titleColorClass}`}>
           {app.name}
         </h3>
-        {app.link && (
+        {isActive && (
           <ExternalLink className="h-3 w-3 text-gray-400 mx-auto mt-1 group-hover:text-blue-500" />
         )}
       </div>
     );
 
-    const baseClasses = "bg-white rounded-xl p-4 shadow-xs border border-gray-100";
-
-    if (app.link) {
+    if (isActive) {
       return (
         <a
-          href={app.link}
+          href={app.link!}
           target="_blank"
           rel="noopener noreferrer"
           className={`group cursor-pointer hover:shadow-md transition-all duration-200 hover:border-blue-300 block ${baseClasses}`}
@@ -133,24 +118,49 @@ export default function AppsSection() {
     );
   };
 
-  return (
-    <section className="py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Layanan
-          </h2>
-          <p className="text-gray-600">
-            Akses berbagai layanan yang tersedia
-          </p>
-        </div>
+  // Early return for no apps
+  if (!loading && !error && apps.length === 0) {
+    return null;
+  }
 
-        <div className="flex flex-wrap justify-center gap-4">
-          {apps.map((app) => (
-            <AppCard key={app.id} app={app} />
-          ))}
+  return (
+    <SectionWrapper>
+      {loading && (
+        <>
+          <SectionHeader
+            title="Layanan"
+            description="Memuat layanan yang tersedia..."
+          />
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            {[...Array(8)].map((_, index) => (
+              <LoadingSkeleton key={index} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {error && (
+        <div className="text-center py-8">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchApps} variant="outline">
+            Coba Lagi
+          </Button>
         </div>
-      </div>
-    </section>
+      )}
+
+      {!loading && !error && apps.length > 0 && (
+        <>
+          <SectionHeader
+            title="Layanan"
+            description="Akses berbagai layanan yang tersedia"
+          />
+          <div className="flex flex-wrap justify-center gap-4">
+            {apps.map((app) => (
+              <AppCard key={app.id} app={app} />
+            ))}
+          </div>
+        </>
+      )}
+    </SectionWrapper>
   );
 }
