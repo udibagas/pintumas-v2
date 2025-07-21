@@ -121,6 +121,7 @@ export default function UserDialog({ hook }: { hook: UseCrudType }) {
       }
 
       await onSubmit(submitData);
+      reset();
       setSelectedFile(null);
       setPreviewImage('');
     } catch (error) {

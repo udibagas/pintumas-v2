@@ -107,6 +107,7 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
   const handleFormSubmit = async (data: AppFormData) => {
     try {
       await onSubmit(data);
+      reset();
       setSelectedFile(null);
       setPreviewImage('');
     } catch (error) {

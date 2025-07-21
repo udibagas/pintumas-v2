@@ -128,6 +128,7 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
   const handleFormSubmit = async (data: DepartmentFormData) => {
     try {
       await onSubmit(data);
+      reset();
       setSelectedFile(null);
       setPreviewImage('');
     } catch (error) {

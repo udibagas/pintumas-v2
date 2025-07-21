@@ -86,7 +86,7 @@ export default function TagDialog({ hook }: { hook: UseCrudType }) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" id="tag-form">
+        <form onSubmit={handleSubmit(async (values) => { await onSubmit(values); reset() })} className="space-y-6" id="tag-form">
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
