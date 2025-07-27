@@ -78,16 +78,10 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
     },
   })
 
-  const { watch, setValue } = form
-
-  // Auto-generate slug from title
-  const watchedTitle = watch('title')
-  const watchedSlug = watch('slug')
+  const { setValue } = form
 
   const handleTitleChange = (title: string) => {
-    if (!watchedSlug || watchedSlug === generateSlug(form.getValues('title'))) {
-      setValue('slug', generateSlug(title))
-    }
+    setValue('slug', generateSlug(title))
   }
 
   // Handle image file selection
