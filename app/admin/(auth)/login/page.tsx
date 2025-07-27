@@ -47,8 +47,8 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         {/* Logo/Brand Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4 shadow-lg">
-            <Shield className="h-8 w-8 text-white" />
+          <div className="inline-flex items-center justify-center w-32 h-32 bg-gray-600 rounded-full mb-4 shadow-lg">
+            <Image src="/images/pintumas.png" alt="PINTUMAS Logo" width={32} height={32} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">PINTUMAS</h1>
           <p className="text-sm text-gray-600">Administrative Dashboard</p>
@@ -112,7 +112,7 @@ export default function AdminLoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                className="h-11 w-full shadow-lg hover:shadow-xl transition-all duration-200"
                 disabled={isLoading}
               >
                 {isLoading ? (
