@@ -430,3 +430,36 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Table responsive utilities */
+@layer utilities {
+  .table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table-cell-truncate {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  @media (max-width: 768px) {
+    .table-mobile-stack td {
+      display: block;
+      text-align: left;
+      border: none;
+      padding: 0.5rem 1rem;
+    }
+    
+    .table-mobile-stack td:before {
+      content: attr(data-label) ": ";
+      font-weight: bold;
+      display: inline-block;
+      min-width: 100px;
+    }
+  }
+}

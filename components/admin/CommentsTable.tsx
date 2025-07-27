@@ -220,7 +220,7 @@ export default function CommentsTable({ comments, onRefresh }: CommentsTableProp
       <DataTable
         columns={columns}
         data={comments}
-        searchKey="author.name"
+        searchKey="content"
         searchPlaceholder="Search comments..."
       />
 

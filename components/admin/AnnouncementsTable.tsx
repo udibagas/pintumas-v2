@@ -1,19 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +17,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit, Trash2, Plus, Search, Filter, Eye, EyeOff } from 'lucide-react';
+import { DataTable } from '@/components/ui/data-table';
+import { Edit, Trash2, Plus, Eye, EyeOff, ArrowUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import axios from 'axios';
 import Link from 'next/link';
@@ -56,97 +48,38 @@ interface AnnouncementPost {
   };
 }
 
-interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
-}
-
 export default function AnnouncementsTable() {
   const router = useRouter();
   const [announcements, setAnnouncements] = useState<AnnouncementPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    page: 1,
-    limit: 10,
-    total: 0,
-    pages: 0,
-  });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [activeFilter, setActiveFilter] = useState('');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-      });
-
-      if (searchQuery) params.append('search', searchQuery);
-      if (typeFilter) params.append('type', typeFilter);
-      if (activeFilter) params.append('status', activeFilter);
-
-      const response = await axios.get(`/api/admin/announcements?${params}`);
+      const response = await axios.get('/api/admin/announcements');
 
       if (response.data.success) {
         setAnnouncements(response.data.data);
-        setPagination(response.data.pagination);
       }
     } catch (error) {
       console.error('Error fetching announcements:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const params = new URLSearchParams({
-          page: pagination.page.toString(),
-          limit: pagination.limit.toString(),
-        });
+    fetchAnnouncements();
+  }, [fetchAnnouncements]);
 
-        if (searchQuery) params.append('search', searchQuery);
-        if (typeFilter) params.append('type', typeFilter);
-        if (activeFilter) params.append('status', activeFilter);
-
-        const response = await axios.get(`/api/admin/announcements?${params}`);
-
-        if (response.data.success) {
-          setAnnouncements(response.data.data);
-          setPagination(response.data.pagination);
-        }
-      } catch (error) {
-        console.error('Error fetching announcements:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [pagination.page, pagination.limit, searchQuery, typeFilter, activeFilter]);
-
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     try {
       await axios.delete(`/api/admin/announcements/${id}`);
       fetchAnnouncements();
-      setDeleteId(null);
     } catch (error) {
       console.error('Error deleting announcement:', error);
     }
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPagination(prev => ({ ...prev, page: 1 }));
-    fetchAnnouncements();
-  };
+  }, [fetchAnnouncements]);
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -176,6 +109,191 @@ export default function AnnouncementsTable() {
     }
   };
 
+  const columns: ColumnDef<AnnouncementPost>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'title',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0 font-semibold"
+            >
+              Title
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const announcement = row.original;
+          return (
+            <div className="min-w-0">
+              <div className="font-medium truncate">{announcement.title}</div>
+              {announcement.summary && (
+                <div className="text-sm text-gray-500 mt-1 line-clamp-2">
+                  {announcement.summary}
+                </div>
+              )}
+            </div>
+          );
+        },
+        size: 500,
+      },
+      {
+        accessorKey: 'announcementType',
+        header: 'Type',
+        cell: ({ row }) => {
+          const type = row.getValue('announcementType') as string;
+          return (
+            <Badge className={getTypeColor(type)}>
+              {type}
+            </Badge>
+          );
+        },
+        filterFn: (row, id, value) => {
+          return value.includes(row.getValue(id));
+        },
+        size: 100,
+      },
+      {
+        accessorKey: 'priority',
+        header: 'Priority',
+        cell: ({ row }) => {
+          const priority = row.getValue('priority') as number;
+          const priorityInfo = getPriorityLabel(priority);
+          return (
+            <Badge className={priorityInfo.color}>
+              {priorityInfo.label}
+            </Badge>
+          );
+        },
+        size: 80,
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => {
+          const status = row.getValue('status') as string;
+          return (
+            <div className="flex items-center gap-2">
+              {status === 'PUBLISHED' ? (
+                <Eye className="h-4 w-4 text-green-600" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-gray-400" />
+              )}
+              <span className={status === 'PUBLISHED' ? 'text-green-600' : 'text-gray-400'}>
+                {status === 'PUBLISHED' ? 'Published' : 'Draft'}
+              </span>
+            </div>
+          );
+        },
+        filterFn: (row, id, value) => {
+          return value.includes(row.getValue(id));
+        },
+        size: 100,
+      },
+      {
+        accessorKey: 'author.name',
+        header: 'Author',
+        cell: ({ row }) => {
+          return (
+            <div className="truncate max-w-32">
+              {row.original.author.name}
+            </div>
+          );
+        },
+        size: 120,
+      },
+      {
+        accessorKey: 'createdAt',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0 font-semibold"
+            >
+              Created
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const date = row.getValue('createdAt') as string;
+          return format(new Date(date), 'MMM d, yyyy');
+        },
+        size: 120,
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => {
+          const announcement = row.original;
+          return (
+            <div className="flex items-center justify-end gap-2">
+              <Link href={`/admin/announcements/${announcement.id}/edit`}>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </Link>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete &quot;{announcement.title}&quot;? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleDelete(announcement.id)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          );
+        },
+        size: 100,
+        enableSorting: false,
+      },
+    ],
+    [handleDelete]
+  );
+
+  const filterableColumns = [
+    {
+      id: 'announcementType',
+      title: 'Type',
+      options: [
+        { label: 'Info', value: 'INFO' },
+        { label: 'Breaking', value: 'BREAKING' },
+        { label: 'Alert', value: 'ALERT' },
+        { label: 'Event', value: 'EVENT' },
+        { label: 'Maintenance', value: 'MAINTENANCE' },
+      ],
+    },
+    {
+      id: 'status',
+      title: 'Status',
+      options: [
+        { label: 'Published', value: 'PUBLISHED' },
+        { label: 'Draft', value: 'DRAFT' },
+      ],
+    },
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -190,210 +308,18 @@ export default function AnnouncementsTable() {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Filters */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
-          <form onSubmit={handleSearch} className="flex gap-2 flex-1">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search announcements..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button type="submit" variant="outline">
-              Search
-            </Button>
-          </form>
-
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="INFO">Info</SelectItem>
-                  <SelectItem value="BREAKING">Breaking</SelectItem>
-                  <SelectItem value="ALERT">Alert</SelectItem>
-                  <SelectItem value="EVENT">Event</SelectItem>
-                  <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-                </SelectContent>
-              </Select>
-              {typeFilter && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTypeFilter('')}
-                  className="h-8 w-8 p-0"
-                >
-                  ×
-                </Button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Select value={activeFilter} onValueChange={setActiveFilter}>
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PUBLISHED">Published</SelectItem>
-                  <SelectItem value="DRAFT">Draft</SelectItem>
-                </SelectContent>
-              </Select>
-              {activeFilter && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setActiveFilter('')}
-                  className="h-8 w-8 p-0"
-                >
-                  ×
-                </Button>
-              )}
-            </div>
+        {loading ? (
+          <div className="text-center py-8">
+            Loading announcements...
           </div>
-        </div>
-
-        {/* Table */}
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    Loading announcements...
-                  </TableCell>
-                </TableRow>
-              ) : announcements.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    No announcements found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                announcements.map((announcement) => {
-                  const priorityInfo = getPriorityLabel(announcement.priority);
-                  return (
-                    <TableRow key={announcement.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{announcement.title}</div>
-                          {announcement.content && (
-                            <div className="text-sm text-gray-500 mt-1 line-clamp-2">
-                              {announcement.content}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getTypeColor(announcement.announcementType)}>
-                          {announcement.announcementType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={priorityInfo.color}>
-                          {priorityInfo.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {announcement.status === 'PUBLISHED' ? (
-                            <Eye className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <EyeOff className="h-4 w-4 text-gray-400" />
-                          )}
-                          <span className={announcement.status === 'PUBLISHED' ? 'text-green-600' : 'text-gray-400'}>
-                            {announcement.status === 'PUBLISHED' ? 'Published' : 'Draft'}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{announcement.author.name}</TableCell>
-                      <TableCell>
-                        {format(new Date(announcement.createdAt), 'MMM d, yyyy')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link href={`/admin/announcements/${announcement.id}/edit`}>
-                            <Button variant="outline" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
-
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete &quot;{announcement.title}&quot;? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(announcement.id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Pagination */}
-        {pagination.pages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-gray-500">
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-              {pagination.total} announcements
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page <= 1}
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page >= pagination.pages}
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={announcements}
+            searchKey="title"
+            searchPlaceholder="Search announcements..."
+            filterableColumns={filterableColumns}
+          />
         )}
       </CardContent>
     </Card>

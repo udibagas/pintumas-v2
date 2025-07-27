@@ -78,11 +78,11 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4 gap-4">
+    <div className="w-full max-w-full overflow-hidden">
+      <div className="flex items-center py-4 gap-4 justify-between flex-wrap">
         {/* Search Input */}
         {searchKey && (
-          <div className="relative flex-1 max-w-sm">
+          <div className="relative flex-1 max-w-sm min-w-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder={searchPlaceholder}
@@ -95,118 +95,134 @@ export function DataTable<TData, TValue>({
           </div>
         )}
 
-        {/* Filterable Columns */}
-        {filterableColumns.map((filterColumn) => (
-          <DropdownMenu key={filterColumn.id}>
+        <div className='flex items-center gap-4 flex-wrap'>
+          {/* Filterable Columns */}
+          {filterableColumns.map((filterColumn) => (
+            <DropdownMenu key={filterColumn.id}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                  {filterColumn.title}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {filterColumn.options.map((option) => (
+                  <DropdownMenuCheckboxItem
+                    key={option.value}
+                    className="capitalize"
+                    checked={
+                      (table.getColumn(filterColumn.id)?.getFilterValue() as string) === option.value
+                    }
+                    onCheckedChange={(checked) =>
+                      table.getColumn(filterColumn.id)?.setFilterValue(checked ? option.value : '')
+                    }
+                  >
+                    {option.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ))}
+
+          {/* Column Visibility */}
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
-                {filterColumn.title}
-                <ChevronDown className="ml-2 h-4 w-4" />
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {filterColumn.options.map((option) => (
-                <DropdownMenuCheckboxItem
-                  key={option.value}
-                  className="capitalize"
-                  checked={
-                    (table.getColumn(filterColumn.id)?.getFilterValue() as string) === option.value
-                  }
-                  onCheckedChange={(checked) =>
-                    table.getColumn(filterColumn.id)?.setFilterValue(checked ? option.value : '')
-                  }
-                >
-                  {option.label}
-                </DropdownMenuCheckboxItem>
-              ))}
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  )
+                })}
             </DropdownMenuContent>
           </DropdownMenu>
-        ))}
-
-        {/* Column Visibility */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        </div>
       </div>
 
       {/* Table */}
-      <div className="border-b border-t">
-        <Table>
-          <TableHeader className="border-b border-gray-200">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className=" text-gray-700 font-semibold border-b border-gray-200">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, idx) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={
-                    `${onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''} ` +
-                    `${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`
-                  }
-                  onClick={() => onRowClick?.(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className='p-4'>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+      <div className="border-b border-t overflow-hidden">
+        <div className="overflow-x-auto max-w-full">
+          <Table>
+            <TableHeader className="border-b border-gray-200">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    const width = header.column.columnDef.size;
+                    return (
+                      <TableHead
+                        key={header.id}
+                        className="text-gray-700 font-semibold border-b border-gray-200 min-w-0"
+                        style={width ? { width: `${width}px` } : undefined}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      </TableHead>
+                    )
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row, idx) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={
+                      `${onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''} ` +
+                      `${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`
+                    }
+                    onClick={() => onRowClick?.(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      const width = cell.column.columnDef.size;
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          className='p-4 min-w-0'
+                          style={width ? { width: `${width}px` } : undefined}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      )
+                    })}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}
