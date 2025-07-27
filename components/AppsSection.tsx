@@ -76,14 +76,14 @@ export default function AppsSection() {
 
     const cardContent = (
       <div className="text-center">
-        <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-200 ${iconBgClass}`}>
+        <div className={`w-48 h-48 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-200 ${iconBgClass}`}>
           {app.iconUrl ? (
             <Image
               src={app.iconUrl}
               alt={app.name}
               width={32}
               height={32}
-              className="w-16 h-16 rounded object-cover"
+              className="w-32 h-32 object-contain"
             />
           ) : (
             <AppWindow className={`h-6 w-6 ${iconColorClass}`} />
