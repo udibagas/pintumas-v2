@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -11,11 +11,12 @@ import {
   FolderOpen,
   Tags,
   Settings,
-  BarChart3,
   Megaphone,
   Building2,
   AppWindow,
+  PlusCircle,
 } from 'lucide-react'
+import { Button } from '../ui/button'
 
 interface AdminSidebarProps {
   userRole: string
@@ -91,9 +92,15 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
     item.roles.includes(userRole)
   )
 
+  const router = useRouter();
+
   return (
     <div className="w-64 bg-white border-r border-gray-200 min-h-screen">
       <nav className="p-4 space-y-2">
+        <Button className="w-full" onClick={() => router.push('/admin/posts/new')}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create New Post
+        </Button>
         {filteredNavigation.map((item) => {
           const isActive = pathname === item.href
           return (

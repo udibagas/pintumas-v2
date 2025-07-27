@@ -71,7 +71,6 @@ export const PostSchema = z.object({
   content: z.string().min(50, "Content must be at least 50 characters"),
   imageUrl: z
     .string()
-    .url("Please enter a valid URL")
     .optional()
     .or(z.literal("")),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),

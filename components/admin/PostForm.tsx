@@ -116,22 +116,29 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await axios.post('/api/media', formData, {
+      const { data } = await axios.post('/api/media', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
 
-      const imageUrl = response.data.url
+      const imageUrl = data.url
       // Update the form field with the uploaded image URL
       setValue('imageUrl', imageUrl)
       toast.success('Gambar berhasil diunggah!')
+
+      console.log('Image uploaded successfully:', imageUrl)
+
+      // Clear the input
+      e.target.value = ''
     } catch (error) {
       console.error('Error uploading image:', error)
       toast.error('Gagal mengunggah gambar')
       // Reset on error
       setImageFile(null)
       setImagePreview('')
+      setValue('imageUrl', '')
+      e.target.value = ''
     } finally {
       setIsUploadingImage(false)
     }
@@ -145,6 +152,7 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
   }
 
   const onSubmit = async (data: PostForm) => {
+    console.log('Submitting post data:', data)
     setIsLoading(true)
     setError(null)
     setSuccess(null)
@@ -173,14 +181,30 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
     }
   }
 
-  const handleSaveAsDraft = () => {
-    form.setValue('status', 'DRAFT')
-    form.handleSubmit(onSubmit)()
+  const handleSaveAsDraft = async () => {
+    console.log('Save as draft clicked')
+    setError(null)
+    setSuccess(null)
+
+    // Get current form values and override status
+    const currentValues = form.getValues()
+    const draftData = { ...currentValues, status: 'DRAFT' as const }
+
+    console.log('Draft data:', draftData)
+    await onSubmit(draftData)
   }
 
-  const handlePublish = () => {
-    form.setValue('status', 'PUBLISHED')
-    form.handleSubmit(onSubmit)()
+  const handlePublish = async () => {
+    console.log('Publish clicked')
+    setError(null)
+    setSuccess(null)
+
+    // Get current form values and override status
+    const currentValues = form.getValues()
+    const publishData = { ...currentValues, status: 'PUBLISHED' as const }
+
+    console.log('Publish data:', publishData)
+    await onSubmit(publishData)
   }
 
   return (
@@ -471,28 +495,33 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                 type="button"
                 variant="outline"
                 onClick={handleSaveAsDraft}
-                disabled={isLoading}
+                disabled={isLoading || isUploadingImage}
                 className="flex-1"
               >
                 <Save className="w-4 h-4 mr-2" />
-                Simpan sebagai Draf
+                {isLoading ? 'Menyimpan...' : 'Simpan sebagai Draf'}
               </Button>
 
               <Button
                 type="button"
                 onClick={handlePublish}
-                disabled={isLoading}
+                disabled={isLoading || isUploadingImage}
                 className="flex-1"
               >
                 <Eye className="w-4 h-4 mr-2" />
-                {mode === 'create' ? 'Terbitkan' : 'Perbarui & Terbitkan'}
+                {isLoading
+                  ? 'Menerbitkan...'
+                  : mode === 'create'
+                    ? 'Terbitkan'
+                    : 'Perbarui & Terbitkan'
+                }
               </Button>
 
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => router.push('/admin/posts')}
-                disabled={isLoading}
+                disabled={isLoading || isUploadingImage}
               >
                 Batal
               </Button>
