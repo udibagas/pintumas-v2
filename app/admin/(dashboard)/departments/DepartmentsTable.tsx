@@ -86,28 +86,30 @@ export default function DepartmentsTable({ hook }: { hook: UseCrudType }) {
         const department = row.original;
 
         return (
-          <>
+          <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
+              size={'sm'}
+              variant="outline"
               onClick={() => {
                 setModalOpen(true);
                 setEditingData(department);
               }}
-              className="cursor-pointer text-blue-600 hover:bg-blue-100 text-xs"
+              className="cursor-pointer"
             >
               <Edit className="h-4 w-4" />
             </Button>
             <Button
-              variant="ghost"
+              size={'sm'}
+              variant="outline"
               onClick={() => {
                 setDeleteDepartmentId(department.id);
                 setDeleteConfirmOpen(true);
               }}
-              className="cursor-pointer text-red-600 hover:bg-red-100 text-xs"
+              className="cursor-pointer text-red-500 hover:text-red-600 text-xs"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
-          </>
+          </div>
         );
       },
     },

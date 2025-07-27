@@ -27,8 +27,8 @@ export default function UsersTable({ hook }: { hook: UseCrudType }) {
     const config = roleConfig[(role as RoleKey)] || roleConfig.USER
     const Icon = config.icon
     return (
-      <Badge className={`${config.color} flex items-center gap-1`}>
-        <Icon className="h-3 w-3" />
+      <Badge className={`${config.color}`}>
+        <Icon className="h-3 w-3 mr-2" />
         {config.label}
       </Badge>
     )
@@ -84,34 +84,37 @@ export default function UsersTable({ hook }: { hook: UseCrudType }) {
     },
     {
       id: 'actions',
+      size: 100,
       enableHiding: false,
       header: 'Aksi',
       cell: ({ row }) => {
         const user = row.original
 
         return (
-          <>
+          <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
+              size={'sm'}
+              variant="outline"
               onClick={() => {
                 setModalOpen(true)
                 setEditingData(user)
               }}
-              className="cursor-pointer text-blue-600 hover:bg-blue-100 text-xs"
+              className="cursor-pointer"
             >
               <Edit className="h-4 w-4" />
             </Button>
             <Button
-              variant="ghost"
+              size={'sm'}
+              variant="outline"
               onClick={() => {
                 setDeleteUserId(user.id)
                 setDeleteConfirmOpen(true)
               }}
-              className="cursor-pointer text-red-600 hover:bg-red-100 text-xs"
+              className="cursor-pointer text-red-500 hover:text-red-600 "
             >
               <Trash2 className="h-4 w-4" />
             </Button>
-          </>
+          </div>
         )
       },
     },
