@@ -185,7 +185,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
       }
     } catch (err: any) {
       console.error('Error saving post:', err)
-      setError(err.response?.data?.error || 'Gagal menyimpan artikel')
+      setError(err.response?.data?.error || 'Gagal menyimpan informasi')
     } finally {
       setIsLoading(false)
     }
@@ -226,8 +226,8 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
         </h1>
         <p className="text-gray-600 mt-2">
           {mode === 'create'
-            ? 'Isi detail di bawah ini untuk membuat artikel baru.'
-            : 'Perbarui detail di bawah ini untuk mengedit artikel.'
+            ? 'Isi detail di bawah ini untuk membuat informasi baru.'
+            : 'Perbarui detail di bawah ini untuk mengedit informasi.'
           }
         </p>
       </div>
@@ -265,7 +265,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="Masukkan judul artikel"
+                            placeholder="Masukkan judul informasi"
                             className="text-lg"
                             onChange={(e) => {
                               field.onChange(e)
@@ -286,7 +286,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
                       <FormItem>
                         <FormLabel>URL Slug</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="slug-artikel" />
+                          <Input {...field} placeholder="slug-informasi" />
                         </FormControl>
                         <FormDescription>
                           Versi URL yang ramah dari judul
@@ -307,12 +307,12 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
                           <Textarea
                             value={field.value}
                             onChange={field.onChange}
-                            placeholder="Ringkasan singkat artikel (opsional)"
+                            placeholder="Ringkasan singkat informasi (opsional)"
                             className="min-h-[100px]"
                           />
                         </FormControl>
                         <FormDescription>
-                          Ringkasan akan ditampilkan di daftar artikel
+                          Ringkasan akan ditampilkan di daftar informasi
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

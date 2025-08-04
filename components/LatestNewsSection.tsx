@@ -264,7 +264,7 @@ export default function LatestNewsSection() {
           <div className="flex items-center justify-center mb-8">
             <div className="bg-white rounded-full px-4 py-2 shadow-md">
               <span className="text-sm text-gray-600">
-                Menampilkan <span className="font-semibold text-yellow-600">{articles.length}</span> dari <span className="font-semibold">{pagination.total}</span> artikel
+                Menampilkan <span className="font-semibold text-yellow-600">{articles.length}</span> dari <span className="font-semibold">{pagination.total}</span> informasi
               </span>
             </div>
           </div>
@@ -295,7 +295,7 @@ export default function LatestNewsSection() {
             <div className="text-gray-500">
               <p className="text-lg font-medium mb-2">Anda telah mencapai akhir!</p>
               <p className="text-sm">
-                Menampilkan semua {articles.length} artikel. Periksa kembali nanti untuk berita lebih lanjut.
+                Menampilkan semua {articles.length} informasi. Periksa kembali nanti untuk berita lebih lanjut.
               </p>
               <Link href="/news" className="inline-block mt-4">
                 <Button variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50">

@@ -53,7 +53,7 @@ export default function CookiePolicyPage() {
         <ul className="list-disc pl-6 mb-6">
           <li>Mengingat pilihan bahasa Anda</li>
           <li>Menyimpan preferensi tampilan</li>
-          <li>Mengingat artikel yang disimpan</li>
+          <li>Mengingat informasi yang disimpan</li>
           <li>Personalisasi konten berdasarkan minat</li>
         </ul>
 

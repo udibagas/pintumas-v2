@@ -53,7 +53,7 @@ export default function SocialShare({
 
   return (
     <div className="bg-gray-50 rounded-2xl p-6 my-8">
-      <h3 className="font-semibold text-gray-900 mb-4">Bagikan artikel ini</h3>
+      <h3 className="font-semibold text-gray-900 mb-4">Bagikan informasi ini</h3>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <Button
           onClick={shareToFacebook}

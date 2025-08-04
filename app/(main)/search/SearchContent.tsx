@@ -217,7 +217,7 @@ export default function SearchContent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Pencarian</h1>
           <p className="text-gray-600">
-            Temukan artikel, berita, dan konten yang Anda cari
+            Temukan informasi, berita, dan konten yang Anda cari
           </p>
         </div>
 
@@ -457,7 +457,7 @@ export default function SearchContent() {
                         Tidak ada hasil ditemukan
                       </h3>
                       <p className="text-gray-600">
-                        Tidak ada artikel yang cocok dengan pencarian Anda untuk {"\"" + searchQuery + "\""}.
+                        Tidak ada informasi yang cocok dengan pencarian Anda untuk {"\"" + searchQuery + "\""}.
                         Coba gunakan kata kunci yang berbeda atau lebih umum.
                       </p>
                       <div className="space-y-2">

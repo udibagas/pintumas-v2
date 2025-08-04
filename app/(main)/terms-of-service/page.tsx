@@ -36,7 +36,7 @@ export default function TermsOfServicePage() {
           Platform kami menyediakan layanan berita dan informasi yang mencakup:
         </p>
         <ul className="list-disc pl-6 mb-6">
-          <li>Akses ke artikel berita dan konten editorial</li>
+          <li>Akses ke informasi berita dan konten editorial</li>
           <li>Fitur pencarian dan kategorisasi konten</li>
           <li>Kemampuan untuk membuat akun pengguna</li>
           <li>Fitur berbagi dan interaksi sosial</li>
