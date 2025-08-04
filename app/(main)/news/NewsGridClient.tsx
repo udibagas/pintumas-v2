@@ -15,9 +15,6 @@ interface Article {
   slug: string;
   summary: string;
   image: string;
-  category: string;
-  categorySlug: string;
-  categoryColor?: string;
   author: string;
   publishedAt: string | Date;
   readTime: string;
@@ -97,8 +94,8 @@ export default function NewsGridClient({ initialArticles }: NewsGridClientProps)
                 </div>
                 <div className="absolute top-4 left-4">
                   <Badge className="text-white font-semibold"
-                    style={{ backgroundColor: article.categoryColor || '#3B82F6' }}>
-                    {article.category}
+                    style={{ backgroundColor: '#3B82F6' }}>
+                    Nama App
                   </Badge>
                 </div>
               </div>

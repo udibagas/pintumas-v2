@@ -160,8 +160,9 @@ export default function Header() {
 
   const navLinks = [
     { name: 'Beranda', href: '/' },
-    { name: 'Berita', href: '/news' },
-    { name: 'Kategori', href: '/categories' },
+    { name: 'Informasi', href: '/news' },
+    { name: 'Layanan', href: '/services' },
+    { name: 'Peraturan', href: '/regulations' },
     { name: 'Pengumuman', href: '/announcements' },
   ];
 

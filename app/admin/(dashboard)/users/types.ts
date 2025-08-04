@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { User, Department } from "@prisma/client";
 
 export type { User };
 
@@ -7,4 +7,5 @@ export interface UserWithCounts extends User {
     posts: number;
     comments: number;
   };
+  department?: Department | null;
 }

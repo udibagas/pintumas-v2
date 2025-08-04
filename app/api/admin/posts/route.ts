@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
     const posts = await prisma.post.findMany({
       include: {
         author: { select: { id: true, name: true, email: true } },
-        category: { select: { id: true, name: true, color: true } },
+        department: { select: { id: true, name: true } },
+        app: { select: { id: true, name: true } },
         _count: { select: { comments: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -53,7 +54,8 @@ export async function POST(request: NextRequest) {
         readTime: validatedData.readTime,
         publishedAt: validatedData.status === "PUBLISHED" ? new Date() : null,
         authorId: validatedData.authorId,
-        categoryId: validatedData.categoryId,
+        departmentId: validatedData.departmentId,
+        appId: validatedData.appId,
       },
     });
 

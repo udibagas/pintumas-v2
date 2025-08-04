@@ -32,6 +32,7 @@ const userSchema = z.object({
   }),
   bio: z.string().optional(),
   avatar: z.string().optional(),
+  departmentId: z.string().optional().nullable(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -49,6 +50,20 @@ export default function UserDialog({ hook }: { hook: UseCrudType }) {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState('');
+  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
+
+  // Fetch departments
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await axios.get('/api/admin/departments');
+        setDepartments(response.data);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const {
     register,
@@ -66,6 +81,7 @@ export default function UserDialog({ hook }: { hook: UseCrudType }) {
       role: user?.role || 'USER',
       bio: user?.bio || '',
       avatar: user?.avatar || '',
+      departmentId: user?.departmentId || null,
     }
   });
 
@@ -77,6 +93,7 @@ export default function UserDialog({ hook }: { hook: UseCrudType }) {
       role: user?.role || 'USER',
       bio: user?.bio || '',
       avatar: user?.avatar || '',
+      departmentId: user?.departmentId || null,
     });
     setPreviewImage(user?.avatar || '');
   }, [user, reset]);
@@ -209,6 +226,26 @@ export default function UserDialog({ hook }: { hook: UseCrudType }) {
             </Select>
             {errors.role && (
               <p className="text-sm text-red-500">{errors.role.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="department">Department</Label>
+            <Select onValueChange={(value) => setValue('departmentId', value === 'none' ? null : value)} defaultValue={watch('departmentId') || 'none'}>
+              <SelectTrigger className={errors.departmentId ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select a department (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Department</SelectItem>
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id}>
+                    {dept.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.departmentId && (
+              <p className="text-sm text-red-500">{errors.departmentId.message}</p>
             )}
           </div>
 

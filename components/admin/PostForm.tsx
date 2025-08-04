@@ -28,7 +28,13 @@ import { generateSlug } from '@/lib/utils'
 import Image from 'next/image'
 import { toast } from 'sonner'
 
-interface Category {
+interface Department {
+  id: string
+  name: string
+  slug: string
+}
+
+interface App {
   id: string
   name: string
   slug: string
@@ -41,7 +47,8 @@ interface Tag {
 }
 
 interface PostFormProps {
-  categories: Category[]
+  departments: Department[]
+  apps: App[]
   tags: Tag[]
   mode: 'create' | 'edit'
   initialData?: Partial<PostForm & { id: string }>
@@ -54,7 +61,7 @@ function calculateReadTime(content: string): string {
   return `${readTime} min read`
 }
 
-export default function PostForm({ categories, tags, mode, initialData }: PostFormProps) {
+export default function PostForm({ departments, apps, tags, mode, initialData }: PostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +79,8 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
       content: initialData?.content || '',
       status: initialData?.status || 'DRAFT',
       featured: initialData?.featured || false,
-      categoryId: initialData?.categoryId || '',
+      departmentId: initialData?.departmentId || '',
+      appId: initialData?.appId || '',
       tagIds: initialData?.tagIds || [],
       imageUrl: initialData?.imageUrl || '',
     },
@@ -318,23 +326,23 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Category */}
+              {/* Department */}
               <FormField
                 control={form.control}
-                name="categoryId"
+                name="departmentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kategori</FormLabel>
+                    <FormLabel>Department</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Pilih kategori" />
+                          <SelectValue placeholder="Select department" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
+                        {departments.map((department) => (
+                          <SelectItem key={department.id} value={department.id}>
+                            {department.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -344,6 +352,34 @@ export default function PostForm({ categories, tags, mode, initialData }: PostFo
                 )}
               />
 
+              {/* App */}
+              <FormField
+                control={form.control}
+                name="appId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>App</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select app" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {apps.map((app) => (
+                          <SelectItem key={app.id} value={app.id}>
+                            {app.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Status */}
               <FormField
                 control={form.control}

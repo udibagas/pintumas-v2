@@ -8,13 +8,13 @@ import {
   FileText,
   MessageSquare,
   Users,
-  FolderOpen,
   Tags,
   Settings,
   Megaphone,
   Building2,
   AppWindow,
   PlusCircle,
+  Scale,
 } from 'lucide-react'
 import { Button } from '../ui/button'
 
@@ -33,40 +33,40 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       roles: ['ADMIN', 'MODERATOR'],
     },
     {
-      name: 'Posts',
+      name: 'Informasi',
       href: '/admin/posts',
       icon: FileText,
       roles: ['ADMIN', 'MODERATOR'],
     },
     {
-      name: 'Comments',
+      name: 'Komentar',
       href: '/admin/comments',
       icon: MessageSquare,
       roles: ['ADMIN', 'MODERATOR'],
     },
     {
-      name: 'Announcements',
+      name: 'Pengumuman',
       href: '/admin/announcements',
       icon: Megaphone,
       roles: ['ADMIN', 'MODERATOR'],
     },
     {
-      name: 'Categories',
-      href: '/admin/categories',
-      icon: FolderOpen,
-      roles: ['ADMIN'],
-    },
-    {
-      name: 'Departments',
+      name: 'Instansi',
       href: '/admin/departments',
       icon: Building2,
       roles: ['ADMIN'],
     },
     {
-      name: 'Apps',
+      name: 'Layanan',
       href: '/admin/apps',
       icon: AppWindow,
       roles: ['ADMIN'],
+    },
+    {
+      name: 'Peraturan',
+      href: '/admin/regulations',
+      icon: Scale,
+      roles: ['ADMIN', 'MODERATOR'],
     },
     {
       name: 'Tags',
@@ -99,7 +99,7 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       <nav className="p-4 space-y-2">
         <Button className="w-full" onClick={() => router.push('/admin/posts/new')}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Post
+          Buat Informasi
         </Button>
         {filteredNavigation.map((item) => {
           const isActive = pathname === item.href

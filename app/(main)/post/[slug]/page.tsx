@@ -33,12 +33,6 @@ interface Post {
     avatar: string | null;
     bio: string | null;
   };
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-    color: string | null;
-  };
   tags: Array<{
     id: string;
     tag: {
@@ -75,11 +69,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             name: true
           }
         },
-        category: {
-          select: {
-            name: true
-          }
-        },
         tags: {
           include: {
             tag: {
@@ -110,16 +99,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const description = post.summary ||
       (textContent.length > 160 ? textContent.substring(0, 157) + '...' : textContent) ||
-      `Baca berita terbaru tentang ${post.category.name} di Pintumas.`;
+      `Baca informasi terbaru tentang "Layanan" di Pintumas.`;
 
     const keywords = post.tags.map(tag => tag.tag.name).join(', ');
 
     return {
       title: `${post.title} - Pintumas`,
       description,
-      keywords: keywords || post.category.name,
+      keywords: keywords,
       authors: [{ name: post.author.name }],
-      category: post.category.name,
       openGraph: {
         title: post.title,
         description,
@@ -129,7 +117,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         publishedTime: post.publishedAt?.toISOString() || post.createdAt.toISOString(),
         modifiedTime: post.updatedAt.toISOString(),
         authors: [post.author.name],
-        section: post.category.name,
+        section: 'Layanan',
         tags: post.tags.map(tag => tag.tag.name),
         images: post.imageUrl ? [
           {
@@ -161,7 +149,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       },
       other: {
         'article:author': post.author.name,
-        'article:section': post.category.name,
+        'article:section': 'Layanan',
         'article:published_time': post.publishedAt?.toISOString() || post.createdAt.toISOString(),
         'article:modified_time': post.updatedAt.toISOString(),
         'article:tag': keywords,
@@ -206,14 +194,6 @@ async function getPost(slug: string): Promise<Post | null> {
             email: true,
             avatar: true,
             bio: true
-          }
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            color: true
           }
         },
         tags: {
@@ -261,7 +241,6 @@ async function getRelatedPosts(categoryId: string, currentPostId: string) {
   try {
     const posts = await prisma.post.findMany({
       where: {
-        categoryId,
         id: { not: currentPostId },
         status: 'PUBLISHED'
       },
@@ -272,12 +251,6 @@ async function getRelatedPosts(categoryId: string, currentPostId: string) {
             name: true
           }
         },
-        category: {
-          select: {
-            name: true,
-            color: true
-          }
-        }
       },
       orderBy: { createdAt: 'desc' },
       take: 3
@@ -315,9 +288,9 @@ export default async function SinglePost({ params }: { params: Promise<{ slug: s
         <div className="flex items-center space-x-3 mb-4">
           <Badge
             className="text-white font-semibold"
-            style={{ backgroundColor: post.category.color || '#3B82F6' }}
+            style={{ backgroundColor: '#3B82F6' }}
           >
-            {post.category.name}
+            Layanan
           </Badge>
           {post.featured && (
             <Badge className="bg-yellow-500 text-black font-semibold">Featured</Badge>
@@ -465,9 +438,9 @@ export default async function SinglePost({ params }: { params: Promise<{ slug: s
                   <div className="p-4">
                     <Badge
                       className="text-white text-xs mb-2"
-                      style={{ backgroundColor: relatedPost.category.color || '#3B82F6' }}
+                      style={{ backgroundColor: '#3B82F6' }}
                     >
-                      {relatedPost.category.name}
+                      Layanan
                     </Badge>
                     <h4 className="font-semibold text-gray-900 group-hover:text-yellow-600 transition-colors duration-200 line-clamp-2 mb-2">
                       {relatedPost.title}

@@ -12,9 +12,6 @@ export default async function PostsPage() {
       author: {
         select: { id: true, name: true, email: true }
       },
-      category: {
-        select: { id: true, name: true, color: true }
-      },
       _count: {
         select: { comments: true }
       }
@@ -59,7 +56,7 @@ export default async function PostsPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -73,7 +70,7 @@ export default async function PostsPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -87,7 +84,7 @@ export default async function PostsPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">

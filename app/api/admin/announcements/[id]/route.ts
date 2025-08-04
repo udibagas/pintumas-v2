@@ -23,13 +23,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             email: true,
           },
         },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
       },
     });
 
@@ -74,13 +67,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             id: true,
             name: true,
             email: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
           },
         },
       },

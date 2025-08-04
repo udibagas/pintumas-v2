@@ -28,26 +28,8 @@ model User {
   Media         Media[]
   departmentId  String?
   department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  appsId        String?
 
   @@map("users")
-}
-
-model Category {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?
-  color       String?
-  articles    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  posts         Post[]
-  announcements Announcement[]
-
-  @@map("categories")
 }
 
 model Post {
@@ -63,6 +45,8 @@ model Post {
   readTime     String?
   publishedAt  DateTime?
   departmentId String?
+  appId        String? // Optional app association, can be null
+  app          Apps?     @relation(fields: [appId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -70,8 +54,6 @@ model Post {
   // Relations
   authorId   String
   author     User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  categoryId String
-  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   comments   Comment[]
   tags       PostTag[]
   PostMedia  PostMedia[]
@@ -81,27 +63,24 @@ model Post {
 }
 
 model Announcement {
-  id               String           @id @default(cuid())
-  title            String
-  summary          String?
-  content          String
-  announcementType AnnouncementType @default(INFO)
-  priority         Int              @default(1) // 1=low, 2=medium, 3=high, 4=urgent
-  status           Status           @default(PUBLISHED)
-  startDate        DateTime? // When to start showing
-  endDate          DateTime? // When to stop showing
-  linkUrl          String? // Optional external link
-  linkText         String? // Text for the link
-  views            Int              @default(0)
+  id        String    @id @default(cuid())
+  title     String
+  summary   String?
+  content   String
+  status    Status    @default(PUBLISHED)
+  startDate DateTime? // When to start showing
+  endDate   DateTime? // When to stop showing
+  linkUrl   String? // Optional external link
+  linkText  String? // Text for the link
+  views     Int       @default(0)
+  imageUrl  String? // Optional image URL
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  authorId   String
-  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  categoryId String? // Optional category for announcements
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("announcements")
 }
@@ -144,8 +123,10 @@ model Department {
   updatedAt DateTime @updatedAt
 
   // Relations
-  posts Post[]
-  users User[]
+  posts          Post[]
+  users          User[]
+  DepartmentApps DepartmentApps[]
+  Regulations    Regulations[]
 
   @@map("departments")
 }
@@ -155,14 +136,6 @@ enum MediaType {
   VIDEO
   DOCUMENT // PDFs, Word files
   AUDIO
-}
-
-enum AnnouncementType {
-  INFO // General information
-  BREAKING // Breaking news
-  ALERT // Important alerts
-  EVENT // Event announcements
-  MAINTENANCE // System maintenance
 }
 
 model Tag {
@@ -218,14 +191,45 @@ model Settings {
 }
 
 model Apps {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  iconUrl   String? // URL for app icon
-  link      String? // External link to app
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String           @id @default(cuid())
+  name           String           @unique
+  iconUrl        String? // URL for app icon
+  link           String? // External link to app
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Post           Post[]
+  DepartmentApps DepartmentApps[]
+  description    String? // Optional description of the app
 
   @@map("apps")
+}
+
+model DepartmentApps {
+  id           String @id @default(cuid())
+  departmentId String
+  appId        String
+
+  // Relations
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  app        Apps       @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([departmentId, appId])
+  @@map("department_apps")
+}
+
+model Regulations {
+  id            String   @id @default(cuid())
+  title         String
+  content       String
+  departmentId  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  attachmentUrl String? // Optional URL for a related document or file
+
+  // Relations
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  @@map("regulations")
 }
 
 enum Role {

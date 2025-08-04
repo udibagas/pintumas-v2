@@ -55,66 +55,58 @@ async function main() {
 
   console.log("Created test user:", testUser.email);
 
-  // Create categories
-  const categories = [
+  // Create departments
+  const departments = [
     {
-      name: "Business",
-      slug: "business",
-      description: "Business news and market trends",
-      color: "bg-blue-500",
+      name: "IT & Digital Innovation",
+      slug: "it-digital-innovation",
     },
     {
-      name: "Technology",
-      slug: "technology",
-      description: "Latest tech developments",
-      color: "bg-purple-500",
+      name: "Operations & Logistics",
+      slug: "operations-logistics",
     },
     {
-      name: "Health",
-      slug: "health",
-      description: "Health and wellness news",
-      color: "bg-green-500",
+      name: "Finance & Administration",
+      slug: "finance-administration",
     },
     {
-      name: "World",
-      slug: "world",
-      description: "Global news and international affairs",
-      color: "bg-indigo-500",
+      name: "Customer Service",
+      slug: "customer-service",
     },
     {
-      name: "Sports",
-      slug: "sports",
-      description: "Sports news and updates",
-      color: "bg-orange-500",
-    },
-    {
-      name: "Science",
-      slug: "science",
-      description: "Scientific discoveries and research",
-      color: "bg-teal-500",
-    },
-    {
-      name: "Politics",
-      slug: "politics",
-      description: "Political news and government updates",
-      color: "bg-red-500",
-    },
-    {
-      name: "Culture",
-      slug: "culture",
-      description: "Arts, culture, and entertainment",
-      color: "bg-pink-500",
+      name: "Human Resources",
+      slug: "human-resources",
     },
   ];
 
-  for (const categoryData of categories) {
-    const category = await prisma.category.upsert({
-      where: { slug: categoryData.slug },
+  const createdDepartments = [];
+  for (const deptData of departments) {
+    const department = await prisma.department.upsert({
+      where: { slug: deptData.slug },
       update: {},
-      create: categoryData,
+      create: deptData,
     });
-    console.log("Created category:", category.name);
+    createdDepartments.push(department);
+    console.log("Created department:", department.name);
   }
+
+  // Assign users to departments
+  await prisma.user.update({
+    where: { id: admin.id },
+    data: { departmentId: createdDepartments[0].id }, // IT & Digital Innovation
+  });
+
+  await prisma.user.update({
+    where: { id: moderator.id },
+    data: { departmentId: createdDepartments[3].id }, // Customer Service
+  });
+
+  await prisma.user.update({
+    where: { id: testUser.id },
+    data: { departmentId: createdDepartments[1].id }, // Operations & Logistics
+  });
+
+  console.log("Assigned users to departments");
 
   // Create tags
   const tags = [
@@ -137,255 +129,295 @@ async function main() {
   }
 
   // Create sample posts
-  const techCategory = await prisma.category.findUnique({
-    where: { slug: "technology" },
-  });
-  const businessCategory = await prisma.category.findUnique({
-    where: { slug: "business" },
-  });
+  const samplePosts = [
+    {
+      title: "The Future of Artificial Intelligence in Indonesia",
+      slug: "future-ai-indonesia",
+      summary:
+        "Exploring how AI technologies are transforming various industries across Indonesia.",
+      content:
+        "Artificial Intelligence (AI) is rapidly becoming a cornerstone of technological advancement in Indonesia. From healthcare to finance, AI is revolutionizing how businesses operate and serve their customers. This comprehensive analysis explores the current state of AI adoption in Indonesia, the challenges faced by organizations, and the promising opportunities that lie ahead. As the government continues to invest in digital infrastructure and education, Indonesia is positioning itself as a leader in AI innovation within Southeast Asia.",
+      imageUrl:
+        "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=600",
+      status: "PUBLISHED" as const,
+      featured: true,
+      readTime: "5 min read",
+      publishedAt: new Date(),
+      authorId: admin.id,
+      departmentId: createdDepartments[0].id, // IT & Digital Innovation
+    },
+    {
+      title: "Indonesian Startups Securing Record Funding in 2024",
+      slug: "indonesian-startups-record-funding-2024",
+      summary:
+        "Local startups are attracting unprecedented investment from both domestic and international investors.",
+      content:
+        "The Indonesian startup ecosystem is experiencing remarkable growth, with record-breaking funding rounds throughout 2024. This surge in investment confidence reflects the maturity of the local tech scene and the growing recognition of Indonesia's market potential. Key sectors driving this growth include fintech, e-commerce, healthcare technology, and sustainable solutions. Investors are particularly interested in startups that address local challenges while having the potential to scale regionally.",
+      imageUrl:
+        "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600",
+      status: "PUBLISHED" as const,
+      featured: false,
+      readTime: "4 min read",
+      publishedAt: new Date(),
+      authorId: moderator.id,
+      departmentId: createdDepartments[0].id, // IT & Digital Innovation
+    },
+    {
+      title: "Digital Banking Revolution in Southeast Asia",
+      slug: "digital-banking-revolution-southeast-asia",
+      summary:
+        "How digital-first banks are reshaping the financial landscape across the region.",
+      content:
+        "Digital banking is transforming the financial services landscape across Southeast Asia, with Indonesia leading many innovative initiatives. Traditional banks are rapidly digitizing their services while new digital-native banks are capturing market share with user-friendly interfaces and innovative financial products. This transformation is particularly significant in Indonesia, where a large portion of the population remains underbanked, creating enormous opportunities for financial inclusion through digital channels.",
+      imageUrl:
+        "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=600",
+      status: "DRAFT" as const,
+      featured: false,
+      readTime: "6 min read",
+      authorId: admin.id,
+      departmentId: createdDepartments[2].id, // Finance & Administration
+    },
+  ];
 
-  if (techCategory && businessCategory) {
-    const samplePosts = [
-      {
-        title: "The Future of Artificial Intelligence in Indonesia",
-        slug: "future-ai-indonesia",
-        summary:
-          "Exploring how AI technologies are transforming various industries across Indonesia.",
-        content:
-          "Artificial Intelligence (AI) is rapidly becoming a cornerstone of technological advancement in Indonesia. From healthcare to finance, AI is revolutionizing how businesses operate and serve their customers. This comprehensive analysis explores the current state of AI adoption in Indonesia, the challenges faced by organizations, and the promising opportunities that lie ahead. As the government continues to invest in digital infrastructure and education, Indonesia is positioning itself as a leader in AI innovation within Southeast Asia.",
-        imageUrl:
-          "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=600",
-        status: "PUBLISHED" as const,
-        featured: true,
-        readTime: "5 min read",
-        publishedAt: new Date(),
-        authorId: admin.id,
-        categoryId: techCategory.id,
-      },
-      {
-        title: "Indonesian Startups Securing Record Funding in 2024",
-        slug: "indonesian-startups-record-funding-2024",
-        summary:
-          "Local startups are attracting unprecedented investment from both domestic and international investors.",
-        content:
-          "The Indonesian startup ecosystem is experiencing remarkable growth, with record-breaking funding rounds throughout 2024. This surge in investment confidence reflects the maturity of the local tech scene and the growing recognition of Indonesia's market potential. Key sectors driving this growth include fintech, e-commerce, healthcare technology, and sustainable solutions. Investors are particularly interested in startups that address local challenges while having the potential to scale regionally.",
-        imageUrl:
-          "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600",
-        status: "PUBLISHED" as const,
-        featured: false,
-        readTime: "4 min read",
-        publishedAt: new Date(),
-        authorId: moderator.id,
-        categoryId: businessCategory.id,
-      },
-      {
-        title: "Digital Banking Revolution in Southeast Asia",
-        slug: "digital-banking-revolution-southeast-asia",
-        summary:
-          "How digital-first banks are reshaping the financial landscape across the region.",
-        content:
-          "Digital banking is transforming the financial services landscape across Southeast Asia, with Indonesia leading many innovative initiatives. Traditional banks are rapidly digitizing their services while new digital-native banks are capturing market share with user-friendly interfaces and innovative financial products. This transformation is particularly significant in Indonesia, where a large portion of the population remains underbanked, creating enormous opportunities for financial inclusion through digital channels.",
-        imageUrl:
-          "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=600",
-        status: "DRAFT" as const,
-        featured: false,
-        readTime: "6 min read",
-        authorId: admin.id,
-        categoryId: businessCategory.id,
-      },
-    ];
-
-    for (const postData of samplePosts) {
-      const media = await prisma.media.create({
-        data: {
-          url:
-            "https://picsum.photos/600/400?random=" +
-            Math.floor(Math.random() * 1000),
-          caption: `Gambar contoh ${postData.title}`,
-          type: "IMAGE",
-          width: 600,
-          height: 400,
-          filename: `example-${postData.slug}.jpg`,
-        },
-      });
-
-      const post = await prisma.post.upsert({
-        where: { slug: postData.slug },
-        update: {},
-        create: { ...postData, PostMedia: { create: { mediaId: media.id } } },
-      });
-      console.log("Created post:", post.title);
-    }
-
-    // Create sample announcements
-    const announcements = [
-      {
-        title: "Pelabuhan Tanjung Mas Raih Penghargaan Pelabuhan Terbaik 2024",
-        summary:
-          "Pelabuhan Tanjung Mas berhasil meraih penghargaan sebagai pelabuhan terbaik kategori efisiensi operasional tahun 2024.",
-        content:
-          "Pelabuhan Tanjung Mas kembali membuktikan keunggulannya dengan meraih penghargaan sebagai pelabuhan terbaik kategori efisiensi operasional tahun 2024. Penghargaan ini diberikan berdasarkan penilaian terhadap kinerja operasional, inovasi teknologi, dan pelayanan kepada pengguna jasa pelabuhan.",
-        status: "PUBLISHED" as const,
-        announcementType: "BREAKING" as const,
-        priority: 4,
-        linkUrl: null,
-        linkText: "Baca Selengkapnya",
-        authorId: admin.id,
-        categoryId: businessCategory.id,
-      },
-      {
-        title: "Sistem Baru Online Tracking Container Diluncurkan",
-        summary:
-          "Mulai hari ini, tracking container dapat dilakukan secara real-time melalui sistem digital terbaru kami.",
-        content:
-          "Pelabuhan Tanjung Mas meluncurkan sistem tracking container online yang memungkinkan pengguna untuk memantau posisi dan status container secara real-time. Sistem ini menggunakan teknologi GPS dan IoT untuk memberikan informasi yang akurat dan up-to-date.",
-        status: "PUBLISHED" as const,
-        announcementType: "INFO" as const,
-        priority: 3,
-        linkUrl: "/tracking",
-        linkText: "Coba Sekarang",
-        authorId: admin.id,
-        categoryId: techCategory.id,
-      },
-      {
-        title: "Peningkatan Keamanan Cyber Security Pelabuhan",
-        summary:
-          "Implementasi sistem keamanan siber terbaru untuk melindungi data dan operasional pelabuhan.",
-        content:
-          "Dalam upaya meningkatkan keamanan data dan operasional, Pelabuhan Tanjung Mas mengimplementasikan sistem keamanan siber terbaru. Sistem ini meliputi firewall canggih, sistem deteksi intrusi, dan enkripsi data end-to-end.",
-        status: "PUBLISHED" as const,
-        announcementType: "ALERT" as const,
-        priority: 3,
-        authorId: moderator.id,
-        categoryId: techCategory.id,
-      },
-      {
-        title: "Event Pelabuhan Terbuka untuk Masyarakat - 15 Juli 2024",
-        summary:
-          "Bergabunglah dengan kami dalam acara pelabuhan terbuka yang akan menampilkan inovasi terbaru dan teknologi pelabuhan.",
-        content:
-          "Pelabuhan Tanjung Mas mengundang masyarakat untuk mengikuti acara pelabuhan terbuka pada tanggal 15 Juli 2024. Acara ini akan menampilkan teknologi terbaru, tur fasilitas pelabuhan, dan presentasi mengenai peran pelabuhan dalam ekonomi nasional.",
-        status: "PUBLISHED" as const,
-        announcementType: "EVENT" as const,
-        priority: 2,
-        startDate: new Date("2024-07-01"),
-        endDate: new Date("2024-07-15"),
-        linkUrl: "/events/pelabuhan-terbuka-2024",
-        linkText: "Daftar Sekarang",
-        authorId: admin.id,
-        categoryId: businessCategory.id,
-      },
-      {
-        title: "Maintenance Sistem Informasi - 30 Juni 2024",
-        summary:
-          "Sistem informasi pelabuhan akan mengalami maintenance pada tanggal 30 Juni 2024 pukul 01:00 - 05:00 WIB.",
-        content:
-          "Untuk meningkatkan kinerja dan keamanan sistem, kami akan melakukan maintenance rutin pada sistem informasi pelabuhan. Selama periode maintenance, beberapa layanan online mungkin tidak dapat diakses.",
-        status: "PUBLISHED" as const,
-        announcementType: "MAINTENANCE" as const,
-        priority: 2,
-        startDate: new Date("2024-06-29"),
-        endDate: new Date("2024-06-30"),
-        authorId: admin.id,
-        categoryId: techCategory.id,
-      },
-    ];
-
-    for (const announcementData of announcements) {
-      const announcement = await prisma.announcement.create({
-        data: announcementData,
-      });
-      console.log(`Created announcement: ${announcement.title}`);
-    }
-
-    console.log("Created sample announcements");
-
-    // Create sample comments
-    const posts = await prisma.post.findMany({ take: 3 });
-
-    const sampleComments = [
-      {
-        content:
-          "Great article! Really insightful analysis. Thanks for sharing this valuable information.",
-        status: "APPROVED" as const,
-      },
-      {
-        content:
-          "I found this very helpful. Looking forward to more content like this.",
-        status: "APPROVED" as const,
-      },
-      {
-        content:
-          "Interesting perspective on this topic. Well written and informative.",
-        status: "APPROVED" as const,
-      },
-      {
-        content:
-          "This is exactly what I was looking for. Thank you for the detailed explanation.",
-        status: "APPROVED" as const,
-      },
-      {
-        content:
-          "Excellent work! The insights provided here are really valuable.",
-        status: "APPROVED" as const,
-      },
-    ];
-
-    for (const post of posts) {
-      for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-        const commentData =
-          sampleComments[Math.floor(Math.random() * sampleComments.length)];
-        await prisma.comment.create({
-          data: {
-            ...commentData,
-            postId: post.id,
-            authorId: i % 2 === 0 ? admin.id : moderator.id,
-          },
-        });
-      }
-    }
-
-    console.log("Created sample comments");
-
-    // Create default settings
-    console.log("Creating default settings...");
-
-    await prisma.settings.upsert({
-      where: { key: "contact_info" },
-      update: {},
-      create: {
-        key: "contact_info",
-        value: {
-          address:
-            "Jl. Coaster No. 7, Tanjung Mas, Semarang Utara, Kota Semarang, Jawa Tengah 50174",
-          phone: "+62 (24) 3520073",
-          email: "info@pintumas.id",
-          workingHours: "Senin - Jumat: 08:00 - 17:00 WIB",
-          fax: "+62 (24) 3520074",
-        },
+  for (const postData of samplePosts) {
+    const media = await prisma.media.create({
+      data: {
+        url:
+          "https://picsum.photos/600/400?random=" +
+          Math.floor(Math.random() * 1000),
+        caption: `Gambar contoh ${postData.title}`,
+        type: "IMAGE",
+        width: 600,
+        height: 400,
+        filename: `example-${postData.slug}.jpg`,
       },
     });
 
-    await prisma.settings.upsert({
-      where: { key: "social_media" },
+    const post = await prisma.post.upsert({
+      where: { slug: postData.slug },
       update: {},
-      create: {
-        key: "social_media",
-        value: {
-          facebook: "https://facebook.com/pintumas",
-          twitter: "https://twitter.com/pintumas",
-          instagram: "https://instagram.com/pintumas",
-          linkedin: "https://linkedin.com/company/pintumas",
-          youtube: "https://youtube.com/@pintumas",
-          tiktok: "",
-        },
-      },
+      create: { ...postData, PostMedia: { create: { mediaId: media.id } } },
     });
-
-    console.log("Created default settings");
-
-    console.log("Database seed completed successfully!");
+    console.log("Created post:", post.title);
   }
+
+  // Create sample announcements
+  const announcements = [
+    {
+      title: "Pelabuhan Tanjung Mas Raih Penghargaan Pelabuhan Terbaik 2024",
+      summary:
+        "Pelabuhan Tanjung Mas berhasil meraih penghargaan sebagai pelabuhan terbaik kategori efisiensi operasional tahun 2024.",
+      content:
+        "Pelabuhan Tanjung Mas kembali membuktikan keunggulannya dengan meraih penghargaan sebagai pelabuhan terbaik kategori efisiensi operasional tahun 2024. Penghargaan ini diberikan berdasarkan penilaian terhadap kinerja operasional, inovasi teknologi, dan pelayanan kepada pengguna jasa pelabuhan.",
+      status: "PUBLISHED" as const,
+      announcementType: "BREAKING" as const,
+      priority: 4,
+      linkUrl: null,
+      linkText: "Baca Selengkapnya",
+      authorId: admin.id,
+    },
+    {
+      title: "Sistem Baru Online Tracking Container Diluncurkan",
+      summary:
+        "Mulai hari ini, tracking container dapat dilakukan secara real-time melalui sistem digital terbaru kami.",
+      content:
+        "Pelabuhan Tanjung Mas meluncurkan sistem tracking container online yang memungkinkan pengguna untuk memantau posisi dan status container secara real-time. Sistem ini menggunakan teknologi GPS dan IoT untuk memberikan informasi yang akurat dan up-to-date.",
+      status: "PUBLISHED" as const,
+      announcementType: "INFO" as const,
+      priority: 3,
+      linkUrl: "/tracking",
+      linkText: "Coba Sekarang",
+      authorId: admin.id,
+    },
+    {
+      title: "Peningkatan Keamanan Cyber Security Pelabuhan",
+      summary:
+        "Implementasi sistem keamanan siber terbaru untuk melindungi data dan operasional pelabuhan.",
+      content:
+        "Dalam upaya meningkatkan keamanan data dan operasional, Pelabuhan Tanjung Mas mengimplementasikan sistem keamanan siber terbaru. Sistem ini meliputi firewall canggih, sistem deteksi intrusi, dan enkripsi data end-to-end.",
+      status: "PUBLISHED" as const,
+      announcementType: "ALERT" as const,
+      priority: 3,
+      authorId: moderator.id,
+    },
+    {
+      title: "Event Pelabuhan Terbuka untuk Masyarakat - 15 Juli 2024",
+      summary:
+        "Bergabunglah dengan kami dalam acara pelabuhan terbuka yang akan menampilkan inovasi terbaru dan teknologi pelabuhan.",
+      content:
+        "Pelabuhan Tanjung Mas mengundang masyarakat untuk mengikuti acara pelabuhan terbuka pada tanggal 15 Juli 2024. Acara ini akan menampilkan teknologi terbaru, tur fasilitas pelabuhan, dan presentasi mengenai peran pelabuhan dalam ekonomi nasional.",
+      status: "PUBLISHED" as const,
+      announcementType: "EVENT" as const,
+      priority: 2,
+      startDate: new Date("2024-07-01"),
+      endDate: new Date("2024-07-15"),
+      linkUrl: "/events/pelabuhan-terbuka-2024",
+      linkText: "Daftar Sekarang",
+      authorId: admin.id,
+    },
+    {
+      title: "Maintenance Sistem Informasi - 30 Juni 2024",
+      summary:
+        "Sistem informasi pelabuhan akan mengalami maintenance pada tanggal 30 Juni 2024 pukul 01:00 - 05:00 WIB.",
+      content:
+        "Untuk meningkatkan kinerja dan keamanan sistem, kami akan melakukan maintenance rutin pada sistem informasi pelabuhan. Selama periode maintenance, beberapa layanan online mungkin tidak dapat diakses.",
+      status: "PUBLISHED" as const,
+      announcementType: "MAINTENANCE" as const,
+      priority: 2,
+      startDate: new Date("2024-06-29"),
+      endDate: new Date("2024-06-30"),
+      authorId: admin.id,
+    },
+  ];
+
+  for (const announcementData of announcements) {
+    const announcement = await prisma.announcement.create({
+      data: announcementData,
+    });
+    console.log(`Created announcement: ${announcement.title}`);
+  }
+
+  console.log("Created sample announcements");
+
+  // Create sample comments
+  const posts = await prisma.post.findMany({ take: 3 });
+
+  const sampleComments = [
+    {
+      content:
+        "Great article! Really insightful analysis. Thanks for sharing this valuable information.",
+      status: "APPROVED" as const,
+    },
+    {
+      content:
+        "I found this very helpful. Looking forward to more content like this.",
+      status: "APPROVED" as const,
+    },
+    {
+      content:
+        "Interesting perspective on this topic. Well written and informative.",
+      status: "APPROVED" as const,
+    },
+    {
+      content:
+        "This is exactly what I was looking for. Thank you for the detailed explanation.",
+      status: "APPROVED" as const,
+    },
+    {
+      content:
+        "Excellent work! The insights provided here are really valuable.",
+      status: "APPROVED" as const,
+    },
+  ];
+
+  for (const post of posts) {
+    for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
+      const commentData =
+        sampleComments[Math.floor(Math.random() * sampleComments.length)];
+      await prisma.comment.create({
+        data: {
+          ...commentData,
+          postId: post.id,
+          authorId: i % 2 === 0 ? admin.id : moderator.id,
+        },
+      });
+    }
+  }
+
+  console.log("Created sample comments");
+
+  // Create sample regulations
+  const regulations = [
+    {
+      title: "Peraturan Kehadiran Pegawai",
+      content:
+        "Setiap pegawai wajib hadir tepat waktu sesuai dengan jam kerja yang telah ditetapkan. Keterlambatan akan dikenakan sanksi sesuai dengan peraturan yang berlaku. Pegawai yang tidak dapat hadir karena sakit atau keperluan mendadak wajib memberikan pemberitahuan kepada atasan langsung.",
+      departmentId: createdDepartments[0].id, // IT Department
+      attachmentUrl: "https://example.com/peraturan-kehadiran.pdf",
+    },
+    {
+      title: "Standar Operasional Prosedur Layanan Publik",
+      content:
+        "SOP ini mengatur tentang tata cara pelayanan publik yang harus dilaksanakan oleh setiap unit kerja. Pelayanan harus dilakukan dengan prinsip cepat, tepat, transparan, dan akuntabel. Setiap pegawai wajib mengikuti prosedur yang telah ditetapkan dalam memberikan layanan kepada masyarakat.",
+      departmentId: createdDepartments[1].id, // HR Department
+      attachmentUrl: null,
+    },
+    {
+      title: "Kebijakan Penggunaan Teknologi Informasi",
+      content:
+        "Kebijakan ini mengatur penggunaan teknologi informasi di lingkungan kerja. Setiap pegawai bertanggung jawab untuk menggunakan fasilitas IT dengan bijak dan sesuai dengan ketentuan yang berlaku. Dilarang menggunakan fasilitas IT untuk kepentingan pribadi yang tidak berkaitan dengan pekerjaan.",
+      departmentId: createdDepartments[0].id, // IT Department
+      attachmentUrl: "https://example.com/kebijakan-it.pdf",
+    },
+    {
+      title: "Peraturan Umum Organisasi",
+      content:
+        "Peraturan ini berlaku untuk seluruh pegawai tanpa terkecuali. Mencakup norma-norma dasar, etika kerja, dan aturan umum yang harus dipatuhi oleh setiap anggota organisasi. Pelanggaran terhadap peraturan ini akan dikenakan sanksi sesuai dengan tingkat kesalahan yang dilakukan.",
+      departmentId: null, // Applies to all departments
+      attachmentUrl: null,
+    },
+    {
+      title: "Prosedur Pengelolaan Dokumen",
+      content:
+        "SOP ini mengatur tentang tata cara pengelolaan dokumen resmi organisasi. Termasuk di dalamnya adalah prosedur pembuatan, distribusi, penyimpanan, dan pemusnahan dokumen. Setiap dokumen harus diberi kode klasifikasi dan disimpan sesuai dengan sistem kearsipan yang berlaku.",
+      departmentId: createdDepartments[2].id, // Public Relations
+      attachmentUrl: "https://example.com/prosedur-dokumen.pdf",
+    },
+  ];
+
+  for (const regulationData of regulations) {
+    const existingRegulation = await prisma.regulations.findFirst({
+      where: { title: regulationData.title },
+    });
+
+    if (!existingRegulation) {
+      const regulation = await prisma.regulations.create({
+        data: regulationData,
+      });
+      console.log("Created regulation:", regulation.title);
+    }
+  }
+
+  console.log("Created sample regulations");
+
+  // Create default settings
+  console.log("Creating default settings...");
+
+  await prisma.settings.upsert({
+    where: { key: "contact_info" },
+    update: {},
+    create: {
+      key: "contact_info",
+      value: {
+        address:
+          "Jl. Coaster No. 7, Tanjung Mas, Semarang Utara, Kota Semarang, Jawa Tengah 50174",
+        phone: "+62 (24) 3520073",
+        email: "info@pintumas.id",
+        workingHours: "Senin - Jumat: 08:00 - 17:00 WIB",
+        fax: "+62 (24) 3520074",
+      },
+    },
+  });
+
+  await prisma.settings.upsert({
+    where: { key: "social_media" },
+    update: {},
+    create: {
+      key: "social_media",
+      value: {
+        facebook: "https://facebook.com/pintumas",
+        twitter: "https://twitter.com/pintumas",
+        instagram: "https://instagram.com/pintumas",
+        linkedin: "https://linkedin.com/company/pintumas",
+        youtube: "https://youtube.com/@pintumas",
+        tiktok: "",
+      },
+    },
+  });
+
+  console.log("Created default settings");
+
+  console.log("Database seed completed successfully!");
 }
 
 main()

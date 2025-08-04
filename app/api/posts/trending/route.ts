@@ -11,13 +11,6 @@ export async function GET() {
         status: "PUBLISHED",
       },
       include: {
-        category: {
-          select: {
-            name: true,
-            slug: true,
-            color: true,
-          },
-        },
         author: {
           select: {
             name: true,
@@ -37,9 +30,6 @@ export async function GET() {
       image:
         post.imageUrl ||
         "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: post.category.name,
-      categorySlug: post.category.slug,
-      categoryColor: post.category.color,
       readTime: post.readTime || "5 min read",
       views: post.views,
       author: post.author.name,

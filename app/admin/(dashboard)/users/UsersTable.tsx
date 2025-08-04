@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,11 +10,26 @@ import { Edit, Trash2, ArrowUpDown, Shield, User as UserIcon, Crown } from 'luci
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { UserWithCounts } from './types'
 import { UseCrudType } from '@/hooks/useCrud'
+import axios from 'axios'
 
 export default function UsersTable({ hook }: { hook: UseCrudType }) {
   const [deleteUserId, setDeleteUserId] = useState<string | number | null>(null)
+  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([])
   const { setModalOpen, setEditingData, useFetch, isDeleteConfirmOpen, setDeleteConfirmOpen, handleDelete } = hook
   const { data = [] } = useFetch<UserWithCounts[]>()
+
+  // Fetch departments for filter
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await axios.get('/api/admin/departments')
+        setDepartments(response.data)
+      } catch (error) {
+        console.error('Error fetching departments:', error)
+      }
+    }
+    fetchDepartments()
+  }, [])
 
   type RoleKey = 'ADMIN' | 'MODERATOR' | 'USER';
 
@@ -70,6 +85,20 @@ export default function UsersTable({ hook }: { hook: UseCrudType }) {
       cell: ({ row }) => getRoleBadge(row.getValue('role')),
     },
     {
+      accessorKey: 'department',
+      header: 'Department',
+      cell: ({ row }) => {
+        const user = row.original;
+        return user.department ? (
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            {user.department.name}
+          </Badge>
+        ) : (
+          <span className="text-gray-500 text-sm">No department</span>
+        );
+      },
+    },
+    {
       id: 'activity',
       header: 'Activity',
       cell: ({ row }) => {
@@ -120,6 +149,29 @@ export default function UsersTable({ hook }: { hook: UseCrudType }) {
     },
   ]
 
+  const filterableColumns = [
+    {
+      id: 'role',
+      title: 'Role',
+      options: [
+        { label: 'Admin', value: 'ADMIN' },
+        { label: 'Moderator', value: 'MODERATOR' },
+        { label: 'User', value: 'USER' },
+      ],
+    },
+    {
+      id: 'department.name',
+      title: 'Department',
+      options: [
+        { label: 'No Department', value: 'null' },
+        ...departments.map(dept => ({
+          label: dept.name,
+          value: dept.name,
+        })),
+      ],
+    },
+  ]
+
   return (
     <>
       <DataTable
@@ -127,6 +179,7 @@ export default function UsersTable({ hook }: { hook: UseCrudType }) {
         data={data}
         searchKey="name"
         searchPlaceholder="Search users..."
+        filterableColumns={filterableColumns}
       />
 
       <ConfirmDialog

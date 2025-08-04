@@ -17,7 +17,15 @@ export async function GET(
         role: true,
         avatar: true,
         bio: true,
+        departmentId: true,
         createdAt: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
         _count: {
           select: {
             posts: true,
@@ -54,7 +62,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, email, password, role, avatar, bio } = body;
+    const { name, email, password, role, avatar, bio, departmentId } = body;
 
     const updateData: any = {
       name,
@@ -62,6 +70,7 @@ export async function PUT(
       role,
       avatar,
       bio,
+      departmentId: departmentId || null,
     };
 
     // Only update password if provided
@@ -79,7 +88,15 @@ export async function PUT(
         role: true,
         avatar: true,
         bio: true,
+        departmentId: true,
         createdAt: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
       },
     });
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,37 +11,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { DataTable } from '@/components/ui/data-table'
-import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown, Building, Smartphone } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-
-interface Post {
-  id: string
-  title: string
-  summary?: string | null
-  slug: string
-  status: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED'
-  createdAt: Date
-  author: {
-    name: string
-  }
-  category: {
-    name: string
-    color?: string | null
-  }
-  _count: {
-    comments: number
-  }
-}
+import { PostWithRelations } from '@/app/admin/(dashboard)/posts/types'
 
 interface PostsTableProps {
-  posts: Post[]
+  posts: PostWithRelations[]
 }
 
-const getStatusBadge = (status: Post['status']) => {
+const getStatusBadge = (status: PostWithRelations['status']) => {
   const statusConfig = {
     PUBLISHED: { color: 'bg-green-100 text-green-800', label: 'Published' },
     DRAFT: { color: 'bg-yellow-100 text-yellow-800', label: 'Draft' },
@@ -58,8 +40,27 @@ const getStatusBadge = (status: Post['status']) => {
 export default function PostsTable({ posts }: PostsTableProps) {
   const [isDialogOpen, setDialogOpen] = useState(false)
   const [deletePostId, setDeletePostId] = useState<string | null>(null)
+  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([])
+  const [apps, setApps] = useState<{ id: string; name: string }[]>([])
 
-  const columns: ColumnDef<Post>[] = useMemo(
+  // Fetch departments and apps for filtering
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [deptResponse, appsResponse] = await Promise.all([
+          axios.get('/api/admin/departments'),
+          axios.get('/api/admin/apps')
+        ])
+        setDepartments(deptResponse.data)
+        setApps(appsResponse.data)
+      } catch (error) {
+        console.error('Error fetching filter data:', error)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const columns: ColumnDef<PostWithRelations>[] = useMemo(
     () => [
       {
         accessorKey: 'title',
@@ -87,17 +88,34 @@ export default function PostsTable({ posts }: PostsTableProps) {
         cell: ({ row }) => row.original.author.name,
       },
       {
-        accessorKey: 'category.name',
-        header: 'Category',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-3 h-3 rounded-full ${row.original.category.color || 'bg-gray-300'
-                }`}
-            />
-            {row.original.category.name}
-          </div>
-        ),
+        accessorKey: 'department',
+        header: 'Department',
+        cell: ({ row }) => {
+          const post = row.original;
+          return post.department ? (
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              <Building className="w-3 h-3 mr-1" />
+              {post.department.name}
+            </Badge>
+          ) : (
+            <span className="text-gray-500 text-sm">No department</span>
+          );
+        },
+      },
+      {
+        accessorKey: 'app',
+        header: 'App',
+        cell: ({ row }) => {
+          const post = row.original;
+          return post.app ? (
+            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+              <Smartphone className="w-3 h-3 mr-1" />
+              {post.app.name}
+            </Badge>
+          ) : (
+            <span className="text-gray-500 text-sm">No app</span>
+          );
+        },
       },
       {
         accessorKey: 'status',
@@ -212,6 +230,16 @@ export default function PostsTable({ posts }: PostsTableProps) {
             id: 'status',
             title: 'Status',
             options: statusOptions,
+          },
+          {
+            id: 'department',
+            title: 'Department',
+            options: departments.map(dept => ({ label: dept.name, value: dept.id })),
+          },
+          {
+            id: 'app',
+            title: 'App',
+            options: apps.map(app => ({ label: app.name, value: app.id })),
           },
         ]}
       />

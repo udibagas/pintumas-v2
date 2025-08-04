@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const limit = Math.min(parseInt(searchParams.get("limit") || "12"), 50); // Max 50 items per request
     const offset = parseInt(searchParams.get("offset") || "0");
-    const category = searchParams.get("category");
     const sortBy = searchParams.get("sortBy") || "latest"; // latest, popular, trending
     const featured = searchParams.get("featured");
     const search = searchParams.get("q"); // Search query
@@ -20,12 +19,6 @@ export async function GET(request: NextRequest) {
     const where: any = {
       status: "PUBLISHED",
     };
-
-    if (category) {
-      where.category = {
-        slug: category,
-      };
-    }
 
     if (featured !== null) {
       where.featured = featured === "true";
@@ -49,14 +42,6 @@ export async function GET(request: NextRequest) {
           content: {
             contains: search,
             mode: "insensitive",
-          },
-        },
-        {
-          category: {
-            name: {
-              contains: search,
-              mode: "insensitive",
-            },
           },
         },
       ];
@@ -115,13 +100,6 @@ export async function GET(request: NextRequest) {
     const posts = await prisma.post.findMany({
       where,
       include: {
-        category: {
-          select: {
-            name: true,
-            slug: true,
-            color: true,
-          },
-        },
         author: {
           select: {
             name: true,
@@ -142,9 +120,6 @@ export async function GET(request: NextRequest) {
       image:
         post.imageUrl ||
         "https://images.pexels.com/photos/1108701/pexels-photo-1108701.jpeg?auto=compress&cs=tinysrgb&w=600",
-      category: post.category.name,
-      categorySlug: post.category.slug,
-      categoryColor: post.category.color,
       readTime: post.readTime || "5 min read",
       views: post.views || 0,
       author: post.author.name,

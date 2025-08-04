@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { PostSchema } from "@/lib/validations";
 import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(
@@ -14,23 +13,30 @@ export async function GET(
     }
 
     const { id } = await params;
-    const post = await prisma.post.findUnique({
+    const regulation = await prisma.regulations.findUnique({
       where: { id },
       include: {
-        author: { select: { id: true, name: true, email: true } },
-        department: { select: { id: true, name: true } },
-        app: { select: { id: true, name: true } },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
       },
     });
 
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    if (!regulation) {
+      return NextResponse.json(
+        { error: "Regulation not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ success: true, data: post });
+    return NextResponse.json({ success: true, data: regulation });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch post" },
+      { error: error.message || "Failed to fetch regulation" },
       { status: 500 }
     );
   }
@@ -47,37 +53,36 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const validatedData = PostSchema.parse({
-      ...body,
-      authorId: user.id,
-    });
+    const { title, content, departmentId, attachmentUrl } = body;
 
     const { id } = await params;
-    const post = await prisma.post.update({
+    const regulation = await prisma.regulations.update({
       where: { id },
       data: {
-        title: validatedData.title,
-        slug: validatedData.slug,
-        summary: validatedData.summary,
-        content: validatedData.content,
-        imageUrl: validatedData.imageUrl,
-        status: validatedData.status,
-        featured: validatedData.featured,
-        readTime: validatedData.readTime,
-        publishedAt: validatedData.status === "PUBLISHED" ? new Date() : null,
-        departmentId: validatedData.departmentId,
-        appId: validatedData.appId,
+        title,
+        content,
+        departmentId: departmentId || null,
+        attachmentUrl: attachmentUrl || null,
+      },
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Post updated successfully",
-      data: post,
+      message: "Regulation updated successfully",
+      data: regulation,
     });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to update post" },
+      { error: error.message || "Failed to update regulation" },
       { status: 500 }
     );
   }
@@ -94,17 +99,17 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    await prisma.post.delete({
+    await prisma.regulations.delete({
       where: { id },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Post deleted successfully",
+      message: "Regulation deleted successfully",
     });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to delete post" },
+      { error: error.message || "Failed to delete regulation" },
       { status: 500 }
     );
   }

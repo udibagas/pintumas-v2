@@ -403,7 +403,7 @@ export default function SearchContent() {
                         <div className="flex flex-wrap items-center gap-2">
                           <Link href={`/category/${result.category.slug}`}>
                             <Badge variant="secondary" className="hover:bg-blue-100">
-                              {result.category.name}
+                              Layanan
                             </Badge>
                           </Link>
 

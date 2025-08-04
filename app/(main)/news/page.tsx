@@ -33,9 +33,6 @@ interface Post {
   slug: string;
   summary: string;
   image: string;
-  category: string;
-  categorySlug: string;
-  categoryColor?: string;
   readTime: string;
   views: number;
   author: string;
@@ -56,13 +53,6 @@ async function getPosts() {
     const posts = await prisma.post.findMany({
       where,
       include: {
-        category: {
-          select: {
-            name: true,
-            slug: true,
-            color: true,
-          },
-        },
         author: {
           select: {
             name: true,
@@ -85,9 +75,6 @@ async function getPosts() {
       slug: post.slug,
       summary: post.summary || "",
       image: post.imageUrl || "/images/default-avatar.png",
-      category: post.category.name,
-      categorySlug: post.category.slug,
-      categoryColor: post.category.color || undefined,
       readTime: post.readTime || "5 min read",
       views: post.views || 0,
       author: post.author.name,
@@ -145,8 +132,8 @@ export default async function NewsPage() {
                   </div>
                   <div className="lg:w-1/2 p-8 lg:p-12">
                     <Badge className="text-white mb-4"
-                      style={{ backgroundColor: article.categoryColor || '#3B82F6' }}>
-                      {article.category}
+                      style={{ backgroundColor: '#3B82F6' }}>
+                      Layanan
                     </Badge>
                     <h3 className="text-3xl font-bold text-gray-900 mb-4 group-hover:text-yellow-700 transition-colors duration-200">
                       {article.title}

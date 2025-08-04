@@ -43,15 +43,8 @@ export async function GET(request: NextRequest) {
               email: true,
             },
           },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
         },
-        orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+        orderBy: [{ createdAt: "desc" }],
         skip,
         take: limit,
       }),
@@ -108,13 +101,6 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
           },
         },
       },

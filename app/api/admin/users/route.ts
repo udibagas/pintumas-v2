@@ -30,7 +30,15 @@ export async function GET(request: NextRequest) {
         role: true,
         avatar: true,
         bio: true,
+        departmentId: true,
         createdAt: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
         _count: {
           select: {
             posts: true,
@@ -54,7 +62,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, role, avatar, bio } = body;
+    const { name, email, password, role, avatar, bio, departmentId } = body;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -79,6 +87,7 @@ export async function POST(request: NextRequest) {
         role: role || "USER",
         avatar,
         bio,
+        departmentId: departmentId || null,
       },
       select: {
         id: true,
@@ -87,7 +96,15 @@ export async function POST(request: NextRequest) {
         role: true,
         avatar: true,
         bio: true,
+        departmentId: true,
         createdAt: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
       },
     });
 

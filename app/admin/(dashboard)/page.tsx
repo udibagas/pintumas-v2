@@ -20,7 +20,7 @@ export default async function AdminDashboard() {
     prisma.post.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
-      include: { author: true, category: true, _count: { select: { comments: true } } },
+      include: { author: true, _count: { select: { comments: true } } },
     }),
   ])
 
@@ -105,13 +105,12 @@ export default async function AdminDashboard() {
                       <span className="text-xs text-gray-400">
                         {post._count.comments} comments
                       </span>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        post.status === 'PUBLISHED' 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`text-xs px-2 py-1 rounded-full ${post.status === 'PUBLISHED'
+                          ? 'bg-green-100 text-green-800'
                           : post.status === 'DRAFT'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
                         {post.status}
                       </span>
                     </div>

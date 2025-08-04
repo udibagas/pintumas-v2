@@ -7,6 +7,8 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogHeader,
@@ -17,13 +19,16 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { UseCrudType } from '@/hooks/useCrud';
+import { DepartmentData } from './types';
 import Image from 'next/image';
 import axios from 'axios';
 
 const appSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
-  iconUrl: z.string().min(1, 'Icon is required'),
-  link: z.string().url('Please enter a valid URL').min(1, 'Link is required'),
+  iconUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  link: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  description: z.string().max(500, 'Description must be less than 500 characters').optional().or(z.literal('')),
+  departmentIds: z.array(z.string()).min(1, 'Please select at least one department'),
 });
 
 type AppFormData = z.infer<typeof appSchema>;
@@ -41,6 +46,8 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState('');
+  const [departments, setDepartments] = useState<DepartmentData[]>([]);
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
   const {
     register,
@@ -54,19 +61,66 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
       name: app?.name || '',
       iconUrl: app?.iconUrl || '',
       link: app?.link || '',
+      description: app?.description || '',
+      departmentIds: [],
     }
   });
 
+  // Fetch departments on component mount
   useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await axios.get('/api/admin/departments');
+        setDepartments(response.data);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    const currentDepartmentIds = app?.DepartmentApps?.map((d: any) => d.department.id) || [];
+    setSelectedDepartments(currentDepartmentIds);
+
     reset({
       name: app?.name || '',
       iconUrl: app?.iconUrl || '',
       link: app?.link || '',
+      description: app?.description || '',
+      departmentIds: currentDepartmentIds,
     });
     setPreviewImage(app?.iconUrl || '');
   }, [app, reset]);
 
   const isEdit = Boolean(app?.id);
+
+  const handleDepartmentChange = (departmentId: string, checked: boolean) => {
+    let newSelectedDepartments;
+    if (checked) {
+      newSelectedDepartments = [...selectedDepartments, departmentId];
+    } else {
+      newSelectedDepartments = selectedDepartments.filter(id => id !== departmentId);
+    }
+    setSelectedDepartments(newSelectedDepartments);
+    setValue('departmentIds', newSelectedDepartments);
+  };
+
+  const handleFormSubmit = async (data: AppFormData) => {
+    try {
+      const formData = {
+        ...data,
+        departmentIds: selectedDepartments,
+      };
+      await onSubmit(formData);
+      reset();
+      setSelectedFile(null);
+      setPreviewImage('');
+      setSelectedDepartments([]);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -102,17 +156,6 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
     });
 
     return response.data.url;
-  };
-
-  const handleFormSubmit = async (data: AppFormData) => {
-    try {
-      await onSubmit(data);
-      reset();
-      setSelectedFile(null);
-      setPreviewImage('');
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    }
   };
 
   return (
@@ -189,7 +232,7 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="link">Link *</Label>
+            <Label htmlFor="link">Link</Label>
             <Input
               id="link"
               {...register('link')}
@@ -198,6 +241,49 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
             />
             {errors.link && (
               <p className="text-sm text-red-500">{errors.link.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              {...register('description')}
+              placeholder="Brief description of the app"
+              className={errors.description ? 'border-red-500' : ''}
+              rows={3}
+            />
+            {errors.description && (
+              <p className="text-sm text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Departments *</Label>
+            <div className="max-h-40 overflow-y-auto border rounded-md p-3 space-y-2">
+              {departments.map((department) => (
+                <div key={department.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`dept-${department.id}`}
+                    checked={selectedDepartments.includes(department.id)}
+                    onCheckedChange={(checked) =>
+                      handleDepartmentChange(department.id, checked as boolean)
+                    }
+                  />
+                  <Label
+                    htmlFor={`dept-${department.id}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {department.name}
+                  </Label>
+                </div>
+              ))}
+              {departments.length === 0 && (
+                <p className="text-sm text-gray-500">No departments available</p>
+              )}
+            </div>
+            {errors.departmentIds && (
+              <p className="text-sm text-red-500">{errors.departmentIds.message}</p>
             )}
           </div>
         </form>

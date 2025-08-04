@@ -12,13 +12,6 @@ export async function GET() {
         featured: true,
       },
       include: {
-        category: {
-          select: {
-            name: true,
-            slug: true,
-            color: true,
-          },
-        },
         author: {
           select: {
             name: true,
@@ -40,9 +33,6 @@ export async function GET() {
       image:
         post.imageUrl ||
         "https://images.pexels.com/photos/1108701/pexels-photo-1108701.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      category: post.category.name,
-      categorySlug: post.category.slug,
-      categoryColor: post.category.color,
       readTime: post.readTime || "5 min read",
       views: post.views || Math.floor(Math.random() * 50000) + 1000, // Use actual views or fallback to mock
       author: post.author.name,

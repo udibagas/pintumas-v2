@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/ui/data-table'
-import { Edit, Trash2, ArrowUpDown, ExternalLink } from 'lucide-react'
+import { Edit, Trash2, ArrowUpDown, ExternalLink, Building } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { AppsData } from './types'
 import { UseCrudType } from '@/hooks/useCrud'
@@ -63,6 +64,48 @@ export default function AppsTable({ hook }: { hook: UseCrudType }) {
           </Button>
         </div>
       ),
+    },
+    {
+      accessorKey: 'DepartmentApps',
+      header: 'Departments',
+      cell: ({ row }) => {
+        const app = row.original;
+        const departments = app.DepartmentApps || [];
+
+        if (departments.length === 0) {
+          return <span className="text-gray-500 text-sm">No departments</span>;
+        }
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {departments.slice(0, 2).map((dept) => (
+              <Badge key={dept.department.id} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <Building className="w-3 h-3 mr-1" />
+                {dept.department.name}
+              </Badge>
+            ))}
+            {departments.length > 2 && (
+              <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+                +{departments.length - 2} more
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      cell: ({ row }) => {
+        const description = row.getValue('description') as string;
+        return description ? (
+          <span className="text-sm text-gray-600 max-w-[200px] truncate block">
+            {description}
+          </span>
+        ) : (
+          <span className="text-gray-500 text-sm">No description</span>
+        );
+      },
     },
     {
       id: 'actions',

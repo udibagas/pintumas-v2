@@ -17,12 +17,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       where: { id },
       include: {
         author: true,
-        category: true,
         tags: true
       }
-    }),
-    prisma.category.findMany({
-      orderBy: { name: 'asc' }
     }),
     prisma.tag.findMany({
       orderBy: { name: 'asc' }
@@ -46,7 +42,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         content: post.content,
         status: post.status,
         featured: post.featured,
-        categoryId: post.categoryId,
         tagIds: post.tags.map(tag => tag.id),
         imageUrl: post.imageUrl || ''
       }}
