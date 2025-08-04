@@ -122,7 +122,7 @@ export default function LatestNewsSection() {
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">{error}</p>
             <Button onClick={fetchInitialData} variant="outline">
-              Try Again
+              Coba Lagi
             </Button>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function LatestNewsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Berita Terkini</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Informasi Terkini</h2>
             <p className="text-lg text-gray-600">
               Tetap terkini dengan perkembangan terbaru dari Pelabuhan Tanjung Mas
             </p>

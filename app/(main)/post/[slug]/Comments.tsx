@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageCircle, Send, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import axios from 'axios';
 import { formatTimeAgo } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/use-auth';
+import Link from 'next/link';
 
 interface Comment {
   id: string;
@@ -30,10 +32,11 @@ export default function Comments({ postId, initialComments }: CommentsProps) {
   const [comment, setComment] = useState('');
   const [localComments, setLocalComments] = useState<Comment[]>(initialComments);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const { user, isLoading } = useAuth();
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!comment.trim() || isSubmittingComment) return;
+    if (!comment.trim() || isSubmittingComment || !user) return;
 
     setIsSubmittingComment(true);
 
@@ -44,23 +47,23 @@ export default function Comments({ postId, initialComments }: CommentsProps) {
       });
 
       if (response.data.success) {
-        // Add the new comment to local state (it will be pending moderation)
+        // Add the new comment to local state (accepted by default)
         const newComment: Comment = {
           id: response.data.data.id,
           content: comment.trim(),
-          status: 'PENDING',
+          status: 'APPROVED',
           createdAt: new Date(),
           author: {
-            id: 'current-user',
-            name: 'You',
-            avatar: null
+            id: user.id,
+            name: user.name || 'You',
+            avatar: user.avatar || null
           }
         };
         setLocalComments(prev => [newComment, ...prev]);
         setComment('');
 
         // Show success message
-        toast.success('Comment submitted successfully! It will appear after moderation.');
+        toast.success('Comment posted successfully!');
       } else {
         toast.error('Failed to submit comment. Please try again.');
       }
@@ -79,36 +82,53 @@ export default function Comments({ postId, initialComments }: CommentsProps) {
 
       {/* Comment Form */}
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
-        <form onSubmit={handleCommentSubmit} className="flex items-start space-x-3">
-          <Image
-            src="/images/default-avatar.png"
-            alt="Your avatar"
-            width={36}
-            height={36}
-            className="w-9 h-9 rounded-full object-cover shrink-0"
-          />
-          <div className="flex-1">
-            <Input
-              placeholder="Tulis komentar..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="text-sm"
-            />
-            {comment.trim() && (
-              <div className="mt-2">
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="bg-black hover:bg-gray-900 text-white font-medium px-4 rounded-md"
-                  disabled={isSubmittingComment}
-                >
-                  <Send />
-                  {isSubmittingComment ? 'Mengirim...' : 'Kirim'}
-                </Button>
-              </div>
-            )}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="text-gray-500">Loading...</div>
           </div>
-        </form>
+        ) : user ? (
+          <form onSubmit={handleCommentSubmit} className="flex items-start space-x-3">
+            <Image
+              src={user.avatar || "/images/default-avatar.png"}
+              alt="Your avatar"
+              width={36}
+              height={36}
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+            />
+            <div className="flex-1">
+              <Input
+                placeholder="Tulis komentar..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="text-sm"
+              />
+              {comment.trim() && (
+                <div className="mt-2">
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="bg-black hover:bg-gray-900 text-white font-medium px-4 rounded-md"
+                    disabled={isSubmittingComment}
+                  >
+                    <Send />
+                    {isSubmittingComment ? 'Mengirim...' : 'Kirim'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </form>
+        ) : (
+          <div className="text-center py-6">
+            <LogIn className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600 mb-4">Anda harus login untuk memberikan komentar</p>
+            <Link href="/auth/login">
+              <Button size="sm" className="bg-black hover:bg-gray-900 text-white">
+                <LogIn className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Comments List */}

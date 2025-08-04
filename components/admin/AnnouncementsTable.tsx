@@ -28,8 +28,6 @@ interface AnnouncementPost {
   title: string;
   summary: string | null;
   content: string;
-  announcementType: string;
-  priority: number;
   status: string;
   startDate: string | null;
   endDate: string | null;
@@ -81,34 +79,6 @@ export default function AnnouncementsTable() {
     }
   }, [fetchAnnouncements]);
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'BREAKING':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'ALERT':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'EVENT':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'MAINTENANCE':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getPriorityLabel = (priority: number) => {
-    switch (priority) {
-      case 4:
-        return { label: 'Urgent', color: 'bg-red-100 text-red-800' };
-      case 3:
-        return { label: 'High', color: 'bg-orange-100 text-orange-800' };
-      case 2:
-        return { label: 'Medium', color: 'bg-yellow-100 text-yellow-800' };
-      default:
-        return { label: 'Low', color: 'bg-gray-100 text-gray-800' };
-    }
-  };
-
   const columns: ColumnDef<AnnouncementPost>[] = useMemo(
     () => [
       {
@@ -139,36 +109,6 @@ export default function AnnouncementsTable() {
           );
         },
         size: 500,
-      },
-      {
-        accessorKey: 'announcementType',
-        header: 'Type',
-        cell: ({ row }) => {
-          const type = row.getValue('announcementType') as string;
-          return (
-            <Badge className={getTypeColor(type)}>
-              {type}
-            </Badge>
-          );
-        },
-        filterFn: (row, id, value) => {
-          return value.includes(row.getValue(id));
-        },
-        size: 100,
-      },
-      {
-        accessorKey: 'priority',
-        header: 'Priority',
-        cell: ({ row }) => {
-          const priority = row.getValue('priority') as number;
-          const priorityInfo = getPriorityLabel(priority);
-          return (
-            <Badge className={priorityInfo.color}>
-              {priorityInfo.label}
-            </Badge>
-          );
-        },
-        size: 80,
       },
       {
         accessorKey: 'department',
@@ -286,17 +226,6 @@ export default function AnnouncementsTable() {
   );
 
   const filterableColumns = [
-    {
-      id: 'announcementType',
-      title: 'Type',
-      options: [
-        { label: 'Info', value: 'INFO' },
-        { label: 'Breaking', value: 'BREAKING' },
-        { label: 'Alert', value: 'ALERT' },
-        { label: 'Event', value: 'EVENT' },
-        { label: 'Maintenance', value: 'MAINTENANCE' },
-      ],
-    },
     {
       id: 'status',
       title: 'Status',

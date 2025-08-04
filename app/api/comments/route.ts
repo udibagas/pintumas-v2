@@ -101,13 +101,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create comment (status will be PENDING by default for moderation)
+    // Create comment (approved by default for immediate visibility)
     const comment = await prisma.comment.create({
       data: {
         content: content.trim(),
         postId: postId,
         authorId: guestUser.id,
-        status: "PENDING",
+        status: "APPROVED",
       },
       include: {
         author: {
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: comment,
-        message: "Comment submitted successfully and is pending moderation",
+        message: "Comment posted successfully",
       },
       { status: 201 }
     );
