@@ -5,18 +5,24 @@ import PostForm from '@/components/admin/PostForm'
 export const dynamic = 'force-dynamic'
 
 export default async function NewPostPage() {
-  const categories = await prisma.category.findMany({
-    orderBy: { name: 'asc' }
-  })
 
   const tags = await prisma.tag.findMany({
     orderBy: { name: 'asc' }
   })
 
+  const departments = await prisma.department.findMany({
+    orderBy: { name: 'asc' }
+  })
+
+  const apps = await prisma.apps.findMany({
+    orderBy: { name: 'asc' }
+  })
+
   return (
     <PostForm
-      categories={categories}
       tags={tags}
+      departments={departments}
+      apps={apps}
       mode="create"
     />
   )

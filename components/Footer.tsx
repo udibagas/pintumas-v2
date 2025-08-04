@@ -20,38 +20,38 @@ import axios from 'axios';
 import Image from 'next/image';
 import { Settings } from '@/lib/validations';
 
-interface Category {
+interface Department {
   id: string;
   name: string;
   slug: string;
-  articles: number;
+  posts: number;
 }
 
 export default function Footer() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(true);
   const [settings, setSettings] = useState<Settings | null>(null);
 
-  // Fetch categories from backend
+  // Fetch departments from backend
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchDepartments = async () => {
       try {
-        setCategoriesLoading(true);
-        const response = await axios.get('/api/categories');
+        setDepartmentsLoading(true);
+        const response = await axios.get('/api/departments');
         if (response.data.success) {
-          // Take only first 6 categories for footer
-          setCategories(response.data.data);
+          // Take only first 6 departments for footer
+          setDepartments(response.data.data);
         }
       } catch (error) {
-        console.error('Failed to fetch categories:', error);
-        // Fallback to default categories if API fails
-        setCategories([]);
+        console.error('Failed to fetch departments:', error);
+        // Fallback to default departments if API fails
+        setDepartments([]);
       } finally {
-        setCategoriesLoading(false);
+        setDepartmentsLoading(false);
       }
     };
 
-    fetchCategories();
+    fetchDepartments();
   }, []);
 
   // Fetch settings from backend
@@ -129,11 +129,11 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* News Categories */}
+          {/* Departments List */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">Kategori Berita</h3>
+            <h3 className="text-lg font-semibold mb-6">Departemen</h3>
             <ul className="space-y-3">
-              {categoriesLoading ? (
+              {departmentsLoading ? (
                 // Loading skeleton
                 <>
                   <li><Skeleton className="h-4 w-20" /></li>
@@ -144,15 +144,15 @@ export default function Footer() {
                   <li><Skeleton className="h-4 w-20" /></li>
                 </>
               ) : (
-                categories.map((category) => (
-                  <li key={category.id}>
+                departments.map((department) => (
+                  <li key={department.id}>
                     <Link
-                      href={`/category/${category.slug}`}
+                      href={`/department/${department.slug}`}
                       className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm flex items-center justify-between"
                     >
-                      <span>{category.name}</span>
-                      {category.articles > 0 && (
-                        <span className="text-xs text-gray-500">({category.articles})</span>
+                      <span>{department.name}</span>
+                      {department.posts > 0 && (
+                        <span className="text-xs text-gray-500">({department.posts})</span>
                       )}
                     </Link>
                   </li>

@@ -18,6 +18,7 @@ import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { PostWithRelations } from '@/app/admin/(dashboard)/posts/types'
+import { useAuth } from '@/hooks/use-auth'
 
 interface PostsTableProps {
   posts: PostWithRelations[]

@@ -63,17 +63,19 @@ model Post {
 }
 
 model Announcement {
-  id        String    @id @default(cuid())
-  title     String
-  summary   String?
-  content   String
-  status    Status    @default(PUBLISHED)
-  startDate DateTime? // When to start showing
-  endDate   DateTime? // When to stop showing
-  linkUrl   String? // Optional external link
-  linkText  String? // Text for the link
-  views     Int       @default(0)
-  imageUrl  String? // Optional image URL
+  id           String      @id @default(cuid())
+  title        String
+  summary      String?
+  content      String
+  status       Status      @default(PUBLISHED)
+  startDate    DateTime? // When to start showing
+  endDate      DateTime? // When to stop showing
+  linkUrl      String? // Optional external link
+  linkText     String? // Text for the link
+  views        Int         @default(0)
+  imageUrl     String? // Optional image URL
+  departmentId String? // Optional department association
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,11 +116,24 @@ model PostMedia {
 }
 
 model Department {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String   @unique
-  imageUrl  String? // URL for department logo
-  link      String? // External link
+  id       String  @id @default(cuid())
+  name     String  @unique
+  slug     String  @unique
+  imageUrl String? // URL for department logo
+  link     String? // External link
+
+  // Contact Information
+  phone   String? // Department phone number
+  email   String? // Department email
+  address String? // Department address
+
+  // Social Media Accounts
+  facebook  String? // Facebook URL
+  twitter   String? // Twitter URL
+  instagram String? // Instagram URL
+  youtube   String? // YouTube URL
+  linkedin  String? // LinkedIn URL
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -127,6 +142,7 @@ model Department {
   users          User[]
   DepartmentApps DepartmentApps[]
   Regulations    Regulations[]
+  Announcement   Announcement[]
 
   @@map("departments")
 }

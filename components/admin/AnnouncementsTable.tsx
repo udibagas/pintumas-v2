@@ -41,11 +41,11 @@ interface AnnouncementPost {
     name: string;
     email: string;
   };
-  category: {
+  department?: {
     id: string;
     name: string;
     slug: string;
-  };
+  } | null;
 }
 
 export default function AnnouncementsTable() {
@@ -169,6 +169,19 @@ export default function AnnouncementsTable() {
           );
         },
         size: 80,
+      },
+      {
+        accessorKey: 'department',
+        header: 'Department',
+        cell: ({ row }) => {
+          const department = row.original.department;
+          return (
+            <div className="truncate max-w-32">
+              {department?.name || 'No Department'}
+            </div>
+          );
+        },
+        size: 120,
       },
       {
         accessorKey: 'status',

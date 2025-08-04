@@ -24,8 +24,6 @@ export async function GET() {
         id: true,
         title: true,
         summary: true,
-        announcementType: true,
-        priority: true,
         linkUrl: true,
         linkText: true,
         createdAt: true,
@@ -36,7 +34,6 @@ export async function GET() {
         },
       },
       orderBy: [
-        { priority: "desc" }, // Higher priority first
         { createdAt: "desc" }, // Latest first
       ],
       take: 5, // Limit to 5 announcements for the ticker
@@ -47,8 +44,6 @@ export async function GET() {
       id: announcement.id,
       text: announcement.title,
       content: announcement.summary,
-      type: announcement.announcementType?.toLowerCase() || "info",
-      priority: announcement.priority,
       linkUrl: announcement.linkUrl || null, // Use provided linkUrl or null
       linkText: announcement.linkText || "Read More",
       createdAt: announcement.createdAt,

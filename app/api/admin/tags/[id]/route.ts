@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 function createSlug(name: string): string {
   return name
@@ -52,6 +53,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Add authorization check for updating tags
+    const user = await getCurrentUser();
+    if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { name } = body;
@@ -110,6 +117,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Add authorization check for deleting tags
+    const user = await getCurrentUser();
+    if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     await prisma.tag.delete({
       where: { id: id },

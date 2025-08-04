@@ -14,8 +14,15 @@ export async function GET(
     }
 
     const { id } = await params;
+
+    // Build where clause based on user role
+    const whereClause =
+      user.role === "MODERATOR"
+        ? { id, authorId: user.id } // Moderators can only access their own posts
+        : { id }; // Admins can access any post
+
     const post = await prisma.post.findUnique({
-      where: { id },
+      where: whereClause,
       include: {
         author: { select: { id: true, name: true, email: true } },
         department: { select: { id: true, name: true } },
@@ -46,13 +53,32 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
+
+    // Check if post exists and user has permission to update it
+    const existingPost = await prisma.post.findUnique({
+      where: { id },
+      select: { id: true, authorId: true },
+    });
+
+    if (!existingPost) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Moderators can only update their own posts
+    if (user.role === "MODERATOR" && existingPost.authorId !== user.id) {
+      return NextResponse.json(
+        { error: "Forbidden: You can only update your own posts" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = PostSchema.parse({
       ...body,
-      authorId: user.id,
+      authorId: existingPost.authorId, // Keep original author
     });
 
-    const { id } = await params;
     const post = await prisma.post.update({
       where: { id },
       data: {
@@ -94,6 +120,25 @@ export async function DELETE(
     }
 
     const { id } = await params;
+
+    // Check if post exists and user has permission to delete it
+    const existingPost = await prisma.post.findUnique({
+      where: { id },
+      select: { id: true, authorId: true },
+    });
+
+    if (!existingPost) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Moderators can only delete their own posts
+    if (user.role === "MODERATOR" && existingPost.authorId !== user.id) {
+      return NextResponse.json(
+        { error: "Forbidden: You can only delete your own posts" },
+        { status: 403 }
+      );
+    }
+
     await prisma.post.delete({
       where: { id },
     });

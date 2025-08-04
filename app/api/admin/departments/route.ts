@@ -17,9 +17,36 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, slug, imageUrl, link } = await request.json();
+    const {
+      name,
+      slug,
+      imageUrl,
+      link,
+      phone,
+      email,
+      address,
+      facebook,
+      twitter,
+      instagram,
+      youtube,
+      linkedin,
+    } = await request.json();
+
     const department = await prisma.department.create({
-      data: { name, slug, imageUrl, link },
+      data: {
+        name,
+        slug,
+        imageUrl,
+        link,
+        phone,
+        email,
+        address,
+        facebook,
+        twitter,
+        instagram,
+        youtube,
+        linkedin,
+      },
     });
     return NextResponse.json(
       { success: true, data: department },

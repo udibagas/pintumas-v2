@@ -17,13 +17,13 @@ export default function DepartmentsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Departments</CardTitle>
+              <CardTitle>Instansi</CardTitle>
               <CardDescription>
-                Manage your departments here. You can create, edit, or delete departments.
+                Kelola instansi Anda di sini. Anda dapat membuat, mengedit, atau menghapus instansi.
               </CardDescription>
             </div>
             <Button variant="default" onClick={() => setModalOpen(true)}>
-              Tambah Department
+              Tambah Instansi
             </Button>
           </div>
         </CardHeader>

@@ -325,10 +325,10 @@ export default function SearchContent() {
                   <>
                     Menampilkan <span className="font-semibold">{searchResults.length}</span> dari{' '}
                     <span className="font-semibold">{totalResults}</span> hasil untuk{' '}
-                    <span className="font-semibold">"{searchQuery}"</span>
+                    <span className="font-semibold">{"\"" + searchQuery + "\""} </span>
                   </>
                 ) : (
-                  <>Tidak ada hasil untuk <span className="font-semibold">"{searchQuery}"</span></>
+                  <>Tidak ada hasil untuk <span className="font-semibold">{"\"" + searchQuery + "\""} </span></>
                 )}
               </p>
 
@@ -457,7 +457,7 @@ export default function SearchContent() {
                         Tidak ada hasil ditemukan
                       </h3>
                       <p className="text-gray-600">
-                        Tidak ada artikel yang cocok dengan pencarian Anda untuk "{searchQuery}".
+                        Tidak ada artikel yang cocok dengan pencarian Anda untuk {"\"" + searchQuery + "\""}.
                         Coba gunakan kata kunci yang berbeda atau lebih umum.
                       </p>
                       <div className="space-y-2">

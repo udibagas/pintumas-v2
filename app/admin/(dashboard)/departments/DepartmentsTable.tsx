@@ -121,7 +121,7 @@ export default function DepartmentsTable({ hook }: { hook: UseCrudType }) {
         columns={columns}
         data={data}
         searchKey="name"
-        searchPlaceholder="Search departments..."
+        searchPlaceholder="Cari instansi..."
       />
 
       <ConfirmDialog

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 function createSlug(name: string): string {
   return name
@@ -35,6 +36,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Add authorization check for creating tags
+    const user = await getCurrentUser();
+    if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { name } = body;
 

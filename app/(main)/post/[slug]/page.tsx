@@ -26,6 +26,8 @@ interface Post {
   publishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  departmentId: string | null;
+  appId: string | null;
   author: {
     id: string;
     name: string;
@@ -33,6 +35,15 @@ interface Post {
     avatar: string | null;
     bio: string | null;
   };
+  department?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  app?: {
+    id: string;
+    name: string;
+  } | null;
   tags: Array<{
     id: string;
     tag: {
@@ -69,6 +80,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             name: true
           }
         },
+        department: {
+          select: {
+            name: true
+          }
+        },
         tags: {
           include: {
             tag: {
@@ -99,9 +115,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const description = post.summary ||
       (textContent.length > 160 ? textContent.substring(0, 157) + '...' : textContent) ||
-      `Baca informasi terbaru tentang "Layanan" di Pintumas.`;
+      `Baca informasi terbaru tentang "${post.department?.name || 'berita umum'}" di Pintumas.`;
 
     const keywords = post.tags.map(tag => tag.tag.name).join(', ');
+    const sectionName = post.department?.name || 'Umum';
 
     return {
       title: `${post.title} - Pintumas`,
@@ -117,7 +134,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         publishedTime: post.publishedAt?.toISOString() || post.createdAt.toISOString(),
         modifiedTime: post.updatedAt.toISOString(),
         authors: [post.author.name],
-        section: 'Layanan',
+        section: sectionName,
         tags: post.tags.map(tag => tag.tag.name),
         images: post.imageUrl ? [
           {
@@ -149,7 +166,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       },
       other: {
         'article:author': post.author.name,
-        'article:section': 'Layanan',
+        'article:section': sectionName,
         'article:published_time': post.publishedAt?.toISOString() || post.createdAt.toISOString(),
         'article:modified_time': post.updatedAt.toISOString(),
         'article:tag': keywords,
@@ -196,6 +213,19 @@ async function getPost(slug: string): Promise<Post | null> {
             bio: true
           }
         },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true
+          }
+        },
+        app: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
         tags: {
           include: {
             tag: {
@@ -237,12 +267,15 @@ async function getPost(slug: string): Promise<Post | null> {
   }
 }
 
-async function getRelatedPosts(categoryId: string, currentPostId: string) {
+async function getRelatedPosts(departmentId: string | null, currentPostId: string) {
   try {
     const posts = await prisma.post.findMany({
       where: {
         id: { not: currentPostId },
-        status: 'PUBLISHED'
+        status: 'PUBLISHED',
+        // If the current post has a department, find posts from the same department
+        // If no department, find recent posts from any department
+        ...(departmentId ? { departmentId } : {})
       },
       include: {
         author: {
@@ -251,8 +284,18 @@ async function getRelatedPosts(categoryId: string, currentPostId: string) {
             name: true
           }
         },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true
+          }
+        }
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        // Prioritize recent posts if we have a department match, otherwise just by date
+        createdAt: 'desc'
+      },
       take: 3
     });
 
@@ -270,7 +313,7 @@ export default async function SinglePost({ params }: { params: Promise<{ slug: s
     notFound();
   }
 
-  const relatedPosts = await getRelatedPosts(post.category.id, post.id);
+  const relatedPosts = await getRelatedPosts(post.departmentId, post.id);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -290,7 +333,7 @@ export default async function SinglePost({ params }: { params: Promise<{ slug: s
             className="text-white font-semibold"
             style={{ backgroundColor: '#3B82F6' }}
           >
-            Layanan
+            {post.department?.name || 'Umum'}
           </Badge>
           {post.featured && (
             <Badge className="bg-yellow-500 text-black font-semibold">Featured</Badge>
@@ -440,7 +483,7 @@ export default async function SinglePost({ params }: { params: Promise<{ slug: s
                       className="text-white text-xs mb-2"
                       style={{ backgroundColor: '#3B82F6' }}
                     >
-                      Layanan
+                      {relatedPost.department?.name || 'Umum'}
                     </Badge>
                     <h4 className="font-semibold text-gray-900 group-hover:text-yellow-600 transition-colors duration-200 line-clamp-2 mb-2">
                       {relatedPost.title}

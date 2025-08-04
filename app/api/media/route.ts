@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import path from "path";
 import fs from "fs/promises";
-import moment from "moment";
+import { format } from "date-fns";
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  const dir = moment().format("/YYYY/MM/DD");
+  const now = new Date();
+  const dir = format(now, "/yyyy/MM/dd");
   await fs.mkdir(uploadsDir + dir, { recursive: true });
 
   const fileName = `${Date.now()}-${file.name}`;

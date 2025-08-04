@@ -19,12 +19,15 @@ interface Post {
     name: string;
     slug: string;
   };
+  isApp?: boolean;
 }
 
-interface Category {
+interface App {
   id: string;
   name: string;
-  slug: string;
+  iconUrl: string | null;
+  link: string;
+  description: string | null;
 }
 
 export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
@@ -34,26 +37,26 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [apps, setApps] = useState<App[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Fetch posts and categories on mount
+  // Fetch posts and apps on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [postsResponse, categoriesResponse] = await Promise.all([
+        const [postsResponse, appsResponse] = await Promise.all([
           axios.get('/api/posts?limit=50'), // Get more posts for better search results
-          axios.get('/api/categories')
+          axios.get('/api/apps')
         ]);
 
         if (postsResponse.data.success) {
           setPosts(postsResponse.data.data);
         }
 
-        if (categoriesResponse.data.success) {
-          setCategories(categoriesResponse.data.data);
+        if (appsResponse.data.success) {
+          setApps(appsResponse.data.data);
         }
       } catch (error) {
         console.error('Failed to fetch search data:', error);
@@ -65,8 +68,8 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
     fetchData();
   }, []);
 
-  // Generate trending topics from categories
-  const trendingTopics = categories.slice(0, 5).map(category => category.name);
+  // Generate trending topics from apps
+  const trendingTopics = apps.slice(0, 5).map((app: App) => app.name);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -83,11 +86,30 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
 
     if (query.length > 0) {
       // Filter posts based on search query
-      const filtered = posts.filter(post =>
+      const filteredPosts = posts.filter(post =>
         post.title.toLowerCase().includes(query.toLowerCase()) ||
         (post.category && post.category.name && post.category.name.toLowerCase().includes(query.toLowerCase()))
       );
-      setSearchResults(filtered.slice(0, 5)); // Limit to 5 results
+
+      // Filter apps based on search query
+      const filteredApps = apps.filter(app =>
+        app.name.toLowerCase().includes(query.toLowerCase()) ||
+        (app.description && app.description.toLowerCase().includes(query.toLowerCase()))
+      );
+
+      // Combine and limit results (prioritize posts, then apps)
+      const combinedResults = [
+        ...filteredPosts.slice(0, 3),
+        ...filteredApps.map(app => ({
+          id: app.id,
+          title: app.name,
+          slug: app.link,
+          category: { name: 'App', slug: 'apps' },
+          isApp: true
+        })).slice(0, 2)
+      ];
+
+      setSearchResults(combinedResults.slice(0, 5)); // Limit to 5 total results
     } else {
       setSearchResults([]);
     }
@@ -161,7 +183,7 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
         <div className="relative">
           <Input
             type="text"
-            placeholder="Search news, topics, or categories..."
+            placeholder="Search news, topics, or apps..."
             value={searchQuery}
             onChange={handleSearchChange}
             onFocus={() => setIsSearchFocused(true)}
@@ -201,7 +223,19 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                 {searchResults.map((article) => (
                   <button
                     key={article.id}
-                    onClick={() => handleSearchSubmit(article.title)}
+                    onClick={() => {
+                      if (article.isApp) {
+                        // For apps, open the link directly
+                        window.open(article.slug, '_blank');
+                        onClose();
+                        setSearchQuery('');
+                        setSearchResults([]);
+                        setIsSearchFocused(false);
+                      } else {
+                        // For posts, use the search submit
+                        handleSearchSubmit(article.title);
+                      }
+                    }}
                     className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-150"
                   >
                     <div className="font-medium text-gray-900 line-clamp-1">
@@ -249,17 +283,17 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
               </div>
             )}
 
-            {/* Trending Topics */}
+            {/* Trending Apps */}
             {searchQuery === '' && (
               <div className="p-2 border-t">
                 <div className="flex items-center space-x-2 px-3 py-2">
                   <TrendingUp className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm font-semibold text-gray-500">Trending Topics</span>
+                  <span className="text-sm font-semibold text-gray-500">Trending Apps</span>
                 </div>
                 {isLoading ? (
                   <div className="px-3 py-2 text-sm text-gray-500">Memuat...</div>
                 ) : trendingTopics.length > 0 ? (
-                  trendingTopics.map((topic, index) => (
+                  trendingTopics.map((topic: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => handleSearchSubmit(topic)}
@@ -269,7 +303,7 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                     </button>
                   ))
                 ) : (
-                  <div className="px-3 py-2 text-sm text-gray-500">Tidak ada topik</div>
+                  <div className="px-3 py-2 text-sm text-gray-500">Tidak ada aplikasi</div>
                 )}
               </div>
             )}
@@ -279,7 +313,7 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
               <div className="p-4 text-center text-gray-500">
                 <Search className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                 <p>Tidak ada hasil untuk &ldquo;{searchQuery}&rdquo;</p>
-                <p className="text-sm">Coba kata kunci lain atau jelajahi topik yang sedang trending</p>
+                <p className="text-sm">Coba kata kunci lain atau jelajahi aplikasi yang sedang trending</p>
               </div>
             )}
           </div>

@@ -33,10 +33,37 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const { name, slug, imageUrl, link } = await request.json();
+    const {
+      name,
+      slug,
+      imageUrl,
+      link,
+      phone,
+      email,
+      address,
+      facebook,
+      twitter,
+      instagram,
+      youtube,
+      linkedin,
+    } = await request.json();
+
     const department = await prisma.department.update({
       where: { id: id },
-      data: { name, slug, imageUrl, link },
+      data: {
+        name,
+        slug,
+        imageUrl,
+        link,
+        phone,
+        email,
+        address,
+        facebook,
+        twitter,
+        instagram,
+        youtube,
+        linkedin,
+      },
     });
     return NextResponse.json({ success: true, data: department });
   } catch (error) {

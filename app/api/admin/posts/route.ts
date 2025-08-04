@@ -10,7 +10,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Build where clause based on user role
+    const whereClause =
+      user.role === "MODERATOR"
+        ? { authorId: user.id } // Moderators can only see their own posts
+        : {}; // Admins can see all posts
+
     const posts = await prisma.post.findMany({
+      where: whereClause,
       include: {
         author: { select: { id: true, name: true, email: true } },
         department: { select: { id: true, name: true } },

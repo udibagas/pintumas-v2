@@ -30,8 +30,6 @@ interface Announcement {
   id: string;
   text: string;
   content: string | null;
-  type: string;
-  priority: number;
   linkUrl: string | null;
   linkText: string;
   createdAt: Date;
@@ -61,8 +59,6 @@ async function getAnnouncements(): Promise<Announcement[]> {
         id: true,
         title: true,
         summary: true,
-        announcementType: true,
-        priority: true,
         linkUrl: true,
         linkText: true,
         createdAt: true,
@@ -73,7 +69,6 @@ async function getAnnouncements(): Promise<Announcement[]> {
         },
       },
       orderBy: [
-        { priority: "desc" }, // Higher priority first
         { createdAt: "desc" }, // Latest first
       ],
       take: 5, // Limit to 5 announcements for the ticker
@@ -83,8 +78,6 @@ async function getAnnouncements(): Promise<Announcement[]> {
       id: announcement.id,
       text: announcement.title,
       content: announcement.summary,
-      type: announcement.announcementType?.toLowerCase() || "info",
-      priority: announcement.priority,
       linkUrl: announcement.linkUrl || null, // Use provided linkUrl or null
       linkText: announcement.linkText || "Selengkapnya",
       createdAt: announcement.createdAt,
@@ -179,14 +172,13 @@ export default async function AnnouncementsPage() {
           {announcements.map((announcement) => (
             <Card
               key={announcement.id}
-              className={`border-l-4 ${getAnnouncementColor(announcement.type)}`}
+              className={`border-l-4`}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div>
                       <CardTitle className="text-xl font-semibold text-gray-900">
-                        {getAnnouncementIcon(announcement.type)}
                         {announcement.text}
                       </CardTitle>
                       <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
@@ -198,16 +190,6 @@ export default async function AnnouncementsPage() {
                         <span>Oleh {announcement.author}</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getBadgeVariant(announcement.type)}>
-                      {announcement.type.toUpperCase()}
-                    </Badge>
-                    {announcement.priority > 50 && (
-                      <Badge variant="destructive">
-                        PRIORITAS TINGGI
-                      </Badge>
-                    )}
                   </div>
                 </div>
               </CardHeader>

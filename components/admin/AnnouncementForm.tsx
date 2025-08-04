@@ -24,7 +24,7 @@ import { AnnouncementPostSchema, type AnnouncementPost } from '@/lib/validations
 import { Save, AlertCircle, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 
-interface Category {
+interface Department {
   id: string
   name: string
   slug: string
@@ -53,7 +53,7 @@ const priorities = [
 export default function AnnouncementForm({ initialData, isEditing = false }: AnnouncementFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
   const [error, setError] = useState<string | null>(null)
 
   const form = useForm<AnnouncementPost>({
@@ -71,25 +71,25 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
         new Date(initialData.endDate).toISOString().slice(0, 16) : '',
       linkUrl: initialData?.linkUrl || '',
       linkText: initialData?.linkText || '',
-      categoryId: initialData?.categoryId || '',
+      departmentId: initialData?.departmentId || '',
     },
   })
 
-  // Fetch categories on component mount
+  // Fetch departments on component mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchDepartments = async () => {
       try {
-        const response = await axios.get('/api/admin/categories')
+        const response = await axios.get('/api/departments')
         if (response.data.success) {
-          setCategories(response.data.data)
+          setDepartments(response.data.data)
         }
       } catch (error) {
-        console.error('Error fetching categories:', error)
-        toast.error('Gagal memuat kategori')
+        console.error('Error fetching departments:', error)
+        toast.error('Gagal memuat departemen')
       }
     }
 
-    fetchCategories()
+    fetchDepartments()
   }, [])
 
   const onSubmit = async (data: AnnouncementPost) => {
@@ -106,7 +106,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
         linkUrl: data.linkUrl || null,
         linkText: data.linkText || null,
         summary: data.summary || null,
-        categoryId: data.categoryId || null, // Allow null category
+        departmentId: data.departmentId || null, // Allow null department
       }
 
       let response
@@ -280,24 +280,28 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="categoryId"
+                  name="departmentId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Kategori</FormLabel>
+                      <FormLabel>Departemen</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Pilih kategori" />
+                            <SelectValue placeholder="Pilih departemen (opsional)" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
+                          <SelectItem value="">Tanpa Departemen</SelectItem>
+                          {departments.map((department) => (
+                            <SelectItem key={department.id} value={department.id}>
+                              {department.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormDescription>
+                        Pilih departemen untuk mengkategorikan pengumuman (opsional)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

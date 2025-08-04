@@ -37,7 +37,6 @@ interface Department {
 interface App {
   id: string
   name: string
-  slug: string
 }
 
 interface Tag {

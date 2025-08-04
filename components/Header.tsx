@@ -5,6 +5,7 @@ import { Search, Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AuthDialog from '@/components/AuthDialog';
 import SearchBar from '@/components/SearchBar';
+import AnnouncementsModal from '@/components/AnnouncementsModal';
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
@@ -30,6 +31,7 @@ export default function Header() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
+  const [isAnnouncementsModalOpen, setIsAnnouncementsModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     id: string;
     name: string;
@@ -168,43 +170,69 @@ export default function Header() {
 
   return (
     <header className="shadow-lg border-b-2 border-yellow-500" style={{ backgroundColor: '#011629' }}>
-      {/* Breaking News Ticker */}
-      <div className="bg-red-600 text-white py-2 overflow-hidden">
-        <div className="flex items-center">
-          <span className="bg-yellow-500 text-black px-3 py-1 text-sm font-bold mr-4 shrink-0">
-            {announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'breaking' ? 'BERITA UTAMA' :
-              announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'alert' ? 'PERINGATAN' :
-                announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'event' ? 'EVENT' :
-                  announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'maintenance' ? 'MAINTENANCE' : 'INFORMASI'}
-          </span>
-          <div className="flex-1 overflow-hidden">
-            <div className="animate-marquee whitespace-nowrap">
-              <span className="text-sm">
-                {announcementsLoading ? (
-                  'Loading latest news...'
-                ) : announcements.length > 0 ? (
-                  <span>
-                    {announcements[currentAnnouncementIndex].linkUrl ? (
-                      <Link
-                        href={announcements[currentAnnouncementIndex].linkUrl!}
-                        className="hover:text-yellow-300 transition-colors cursor-pointer"
-                      >
-                        {announcements[currentAnnouncementIndex].text}
-                      </Link>
-                    ) : (
-                      announcements[currentAnnouncementIndex].text
-                    )}
-                    {announcements.length > 1 && (
-                      <span className="ml-4 text-yellow-300">
-                        ({currentAnnouncementIndex + 1}/{announcements.length})
-                      </span>
-                    )}
-                  </span>
-                ) : (
-                  'Welcome to PINTUMAS - Your trusted source for port information and news'
-                )}
+      {/* Announcements Bar */}
+      <div className="bg-red-600 text-white py-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center flex-1">
+              <span className="bg-yellow-500 text-black px-3 py-1 text-sm font-bold mr-4 shrink-0">
+                {announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'breaking' ? 'BERITA UTAMA' :
+                  announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'alert' ? 'PERINGATAN' :
+                    announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'event' ? 'EVENT' :
+                      announcements.length > 0 && announcements[currentAnnouncementIndex]?.type === 'maintenance' ? 'MAINTENANCE' : 'INFORMASI'}
               </span>
+
+              {announcementsLoading ? (
+                <span className="text-sm">Loading latest news...</span>
+              ) : announcements.length > 0 ? (
+                announcements.length === 1 ? (
+                  // Single announcement - show directly
+                  <div className="flex-1 overflow-hidden">
+                    <div className="animate-marquee whitespace-nowrap">
+                      <span className="text-sm">
+                        {announcements[0].linkUrl ? (
+                          <Link
+                            href={announcements[0].linkUrl}
+                            className="hover:text-yellow-300 transition-colors cursor-pointer"
+                          >
+                            {announcements[0].text}
+                          </Link>
+                        ) : (
+                          announcements[0].text
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  // Multiple announcements - show clickable text
+                  <div className="flex-1">
+                    <button
+                      onClick={() => setIsAnnouncementsModalOpen(true)}
+                      className="text-sm hover:text-yellow-300 transition-colors cursor-pointer text-left"
+                    >
+                      {announcements[currentAnnouncementIndex].text}
+                      <span className="ml-2 text-yellow-300">
+                        ({announcements.length} pengumuman • Klik untuk melihat semua)
+                      </span>
+                    </button>
+                  </div>
+                )
+              ) : (
+                <span className="text-sm">Welcome to PINTUMAS - Your trusted source for port information and news</span>
+              )}
             </div>
+
+            {/* View All Button for multiple announcements */}
+            {announcements.length > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAnnouncementsModalOpen(true)}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 ml-4"
+              >
+                Lihat Semua ({announcements.length})
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -415,6 +443,13 @@ export default function Header() {
         open={isAuthModalOpen}
         onOpenChange={setIsAuthModalOpen}
         onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* Announcements Modal */}
+      <AnnouncementsModal
+        announcements={announcements}
+        isOpen={isAnnouncementsModalOpen}
+        onClose={() => setIsAnnouncementsModalOpen(false)}
       />
     </header>
   );

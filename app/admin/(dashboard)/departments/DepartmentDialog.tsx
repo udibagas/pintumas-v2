@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 import {
   Dialog,
   DialogHeader,
@@ -20,6 +21,7 @@ import { generateSlug } from '@/lib/utils';
 import { UseCrudType } from '@/hooks/useCrud';
 import Image from 'next/image';
 import axios from 'axios';
+import { Textarea } from '@/components/ui/textarea';
 
 const departmentSchema = z.object({
   name: z.string()
@@ -35,6 +37,14 @@ const departmentSchema = z.object({
     .optional()
     .refine((val) => !val || z.string().url().safeParse(val).success, 'Please enter a valid URL'),
   imageUrl: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional().refine((val) => !val || z.string().email().safeParse(val).success, 'Please enter a valid email address'),
+  address: z.string().optional(),
+  facebook: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, 'Please enter a valid Facebook URL'),
+  twitter: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, 'Please enter a valid Twitter URL'),
+  instagram: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, 'Please enter a valid Instagram URL'),
+  youtube: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, 'Please enter a valid YouTube URL'),
+  linkedin: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, 'Please enter a valid LinkedIn URL'),
 });
 
 type DepartmentFormData = z.infer<typeof departmentSchema>;
@@ -66,6 +76,14 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
       slug: department?.slug || '',
       link: department?.link || '',
       imageUrl: department?.imageUrl || '',
+      phone: department?.phone || '',
+      email: department?.email || '',
+      address: department?.address || '',
+      facebook: department?.facebook || '',
+      twitter: department?.twitter || '',
+      instagram: department?.instagram || '',
+      youtube: department?.youtube || '',
+      linkedin: department?.linkedin || '',
     }
   });
 
@@ -75,6 +93,14 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
       slug: department?.slug || '',
       link: department?.link || '',
       imageUrl: department?.imageUrl || '',
+      phone: department?.phone || '',
+      email: department?.email || '',
+      address: department?.address || '',
+      facebook: department?.facebook || '',
+      twitter: department?.twitter || '',
+      instagram: department?.instagram || '',
+      youtube: department?.youtube || '',
+      linkedin: department?.linkedin || '',
     });
     setPreviewImage(department?.imageUrl || '');
   }, [department, reset]);
@@ -149,10 +175,10 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? 'Edit Department' : 'Create New Department'}
+            {isEdit ? 'Edit Instansi' : 'Tambah Instansi Baru'}
           </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update department information' : 'Add a new department'}
+            {isEdit ? 'Update informasi instansi' : 'Tambah instansi baru'}
           </DialogDescription>
         </DialogHeader>
 
@@ -238,6 +264,125 @@ export default function DepartmentDialog({ hook }: { hook: UseCrudType }) {
                   <p className="text-sm text-gray-500 mt-1">
                     Upload a logo for the department (PNG, JPG, or GIF)
                   </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-medium mb-4">Contact Information</h3>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4 mr-1 text-gray-500" /> Phone</Label>
+                <Input
+                  id="phone"
+                  {...register('phone')}
+                  placeholder="Phone number (optional)"
+                  className={errors.phone ? 'border-red-500' : ''}
+                />
+                {errors.phone && (
+                  <p className="text-sm text-red-500">{errors.phone.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="flex items-center gap-2"><Mail className="w-4 h-4 mr-1 text-gray-500" /> Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register('email')}
+                  placeholder="Email address (optional)"
+                  className={errors.email ? 'border-red-500' : ''}
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address" className="flex items-center gap-2"><MapPin className="w-4 h-4 mr-1 text-gray-500" /> Address</Label>
+                <Textarea
+                  id="address"
+                  {...register('address')}
+                  placeholder="Office address (optional)"
+                  className={errors.address ? 'border-red-500' : ''}
+                />
+                {errors.address && (
+                  <p className="text-sm text-red-500">{errors.address.message}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Social Media Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-medium mb-4">Social Media</h3>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="facebook" className="flex items-center gap-2"><Facebook className="w-4 h-4 mr-1 text-blue-600" /> Facebook</Label>
+                <Input
+                  id="facebook"
+                  {...register('facebook')}
+                  placeholder="https://facebook.com/department (optional)"
+                  className={errors.facebook ? 'border-red-500' : ''}
+                />
+                {errors.facebook && (
+                  <p className="text-sm text-red-500">{errors.facebook.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="twitter" className="flex items-center gap-2"><Twitter className="w-4 h-4 mr-1 text-sky-500" /> Twitter</Label>
+                <Input
+                  id="twitter"
+                  {...register('twitter')}
+                  placeholder="https://twitter.com/department (optional)"
+                  className={errors.twitter ? 'border-red-500' : ''}
+                />
+                {errors.twitter && (
+                  <p className="text-sm text-red-500">{errors.twitter.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="instagram" className="flex items-center gap-2"><Instagram className="w-4 h-4 mr-1 text-pink-500" /> Instagram</Label>
+                <Input
+                  id="instagram"
+                  {...register('instagram')}
+                  placeholder="https://instagram.com/department (optional)"
+                  className={errors.instagram ? 'border-red-500' : ''}
+                />
+                {errors.instagram && (
+                  <p className="text-sm text-red-500">{errors.instagram.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="youtube" className="flex items-center gap-2"><Youtube className="w-4 h-4 mr-1 text-red-600" /> YouTube</Label>
+                <Input
+                  id="youtube"
+                  {...register('youtube')}
+                  placeholder="https://youtube.com/department (optional)"
+                  className={errors.youtube ? 'border-red-500' : ''}
+                />
+                {errors.youtube && (
+                  <p className="text-sm text-red-500">{errors.youtube.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="linkedin" className="flex items-center gap-2"><Linkedin className="w-4 h-4 mr-1 text-blue-700" /> LinkedIn</Label>
+                <Input
+                  id="linkedin"
+                  {...register('linkedin')}
+                  placeholder="https://linkedin.com/company/department (optional)"
+                  className={errors.linkedin ? 'border-red-500' : ''}
+                />
+                {errors.linkedin && (
+                  <p className="text-sm text-red-500">{errors.linkedin.message}</p>
                 )}
               </div>
             </div>

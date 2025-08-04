@@ -1,8 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react'
+import { Plus, Eye } from 'lucide-react'
 import Link from 'next/link'
 import PostsTable from '@/components/admin/PostsTable'
 
@@ -30,13 +29,13 @@ export default async function PostsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Posts Management</h1>
-          <p className="text-gray-600">Manage all articles and blog posts</p>
+          <h1 className="text-3xl font-bold text-gray-900">Kelola Informasi</h1>
+          <p className="text-gray-600">Kelola semua informasi</p>
         </div>
         <Link href="/admin/posts/new">
           <Button className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            New Post
+            Buat Informasi Baru
           </Button>
         </Link>
       </div>

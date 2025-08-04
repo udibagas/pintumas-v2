@@ -24,11 +24,11 @@ import Image from 'next/image';
 import axios from 'axios';
 
 const appSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
-  iconUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  link: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  description: z.string().max(500, 'Description must be less than 500 characters').optional().or(z.literal('')),
-  departmentIds: z.array(z.string()).min(1, 'Please select at least one department'),
+  name: z.string().min(1, 'Nama layanan diperlukan').max(100, 'Nama layanan harus kurang dari 100 karakter'),
+  iconUrl: z.string().optional().or(z.literal('')),
+  link: z.string().url('Silakan masukkan URL yang valid').optional().or(z.literal('')),
+  description: z.string().max(500, 'Deskripsi harus kurang dari 500 karakter').optional().or(z.literal('')),
+  departmentIds: z.array(z.string()).min(1, 'Silakan pilih setidaknya satu departemen'),
 });
 
 type AppFormData = z.infer<typeof appSchema>;
@@ -171,10 +171,10 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? 'Edit App' : 'Create New App'}
+            {isEdit ? 'Edit Layanan' : 'Buat Layanan Baru'}
           </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update app information' : 'Add a new application'}
+            {isEdit ? 'Update informasi layanan' : 'Tambahkan layanan baru'}
           </DialogDescription>
         </DialogHeader>
 
