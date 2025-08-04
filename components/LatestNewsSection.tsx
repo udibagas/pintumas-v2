@@ -284,7 +284,7 @@ export default function LatestNewsSection() {
                 </>
               ) : (
                 <>
-                  Muat Lebih Banyak Artikel
+                  Muat Lebih Banyak Informasi
                   <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
                     {pagination.total - articles.length} lagi
                   </span>

@@ -57,26 +57,26 @@ export const PostSchema = z.object({
   id: z.string().optional(),
   title: z
     .string()
-    .min(5, "Title must be at least 5 characters")
-    .max(255, "Title must be less than 255 characters"),
+    .min(5, "Judul harus minimal 5 karakter")
+    .max(255, "Judul harus kurang dari 255 karakter"),
   slug: z
     .string()
-    .min(5, "Slug must be at least 5 characters")
-    .max(255, "Slug must be less than 255 characters"),
+    .min(5, "Slug harus minimal 5 karakter")
+    .max(255, "Slug harus kurang dari 255 karakter"),
   summary: z
     .string()
-    .max(500, "Summary must be less than 500 characters")
+    .max(500, "Ringkasan harus kurang dari 500 karakter")
     .optional()
     .or(z.literal("")),
-  content: z.string().min(50, "Content must be at least 50 characters"),
+  content: z.string().min(50, "Konten harus minimal 50 karakter"),
   imageUrl: z.string().optional().or(z.literal("")),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
   featured: z.boolean().default(false),
   readTime: z.string().optional(),
   publishedAt: z.string().datetime().optional().nullable(),
-  authorId: z.string().min(1, "Author is required"),
-  departmentId: z.string().min(1, "Department is required"),
-  appId: z.string().min(1, "App is required"),
+  authorId: z.string().min(1, "Penulis harus diisi"),
+  departmentId: z.string().min(1, "Instansi harus diisi"),
+  appId: z.string().min(1, "Layanan harus diisi"),
   tagIds: z.array(z.string()).optional(),
   mediaUrls: z.array(z.string().url()).optional(),
 });

@@ -59,10 +59,10 @@ export async function POST(request: NextRequest) {
         status: validatedData.status,
         featured: validatedData.featured,
         readTime: validatedData.readTime,
-        publishedAt: validatedData.status === "PUBLISHED" ? new Date() : null,
         authorId: validatedData.authorId,
         departmentId: validatedData.departmentId,
         appId: validatedData.appId,
+        publishedAt: validatedData.status === "PUBLISHED" ? new Date() : null,
       },
     });
 

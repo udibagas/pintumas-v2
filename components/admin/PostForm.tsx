@@ -176,11 +176,11 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
 
       if (mode === 'create') {
         await axios.post('/api/admin/posts', submitData)
-        setSuccess('Artikel berhasil dibuat!')
+        setSuccess('Informasi berhasil dibuat!')
         router.push('/admin/posts')
       } else if (mode === 'edit' && initialData?.id) {
         await axios.put(`/api/admin/posts/${initialData.id}`, submitData)
-        setSuccess('Artikel berhasil diperbarui!')
+        setSuccess('Informasi berhasil diperbarui!')
         router.push('/admin/posts')
       }
     } catch (err: any) {
@@ -222,7 +222,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
-          {mode === 'create' ? 'Buat Artikel Baru' : 'Edit Artikel'}
+          {mode === 'create' ? 'Buat Informasi Baru' : 'Edit Informasi'}
         </h1>
         <p className="text-gray-600 mt-2">
           {mode === 'create'
@@ -261,7 +261,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Judul Artikel</FormLabel>
+                        <FormLabel>Judul Informasi</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -324,7 +324,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
               {/* Content Editor */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Konten Artikel</CardTitle>
+                  <CardTitle className="text-lg">Konten Informasi</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FormField
@@ -545,7 +545,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Artikel Unggulan</FormLabel>
+                          <FormLabel className="text-base">Informasi Unggulan</FormLabel>
                           <FormDescription className="text-sm">
                             Tampilkan di beranda
                           </FormDescription>
