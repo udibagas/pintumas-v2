@@ -8,6 +8,7 @@ import PostInteractions from './PostInteractions';
 import ViewCounter from '@/components/ViewCounter';
 import { formatTimeAgo } from '@/lib/utils';
 import { Metadata } from 'next';
+import Comments from './Comments';
 
 // Use ISR instead of force-dynamic for better performance
 export const revalidate = 300; // Revalidate every 5 minutes
@@ -21,6 +22,7 @@ interface Post {
   imageUrl: string | null;
   status: string;
   featured: boolean;
+  allowComment?: boolean;
   views: number;
   readTime: string | null;
   publishedAt: Date | null;
@@ -450,14 +452,20 @@ export default async function SinglePost({ params }: { params: Promise<{ slug: s
 
       {/* Post Interactions */}
       <PostInteractions
-        postId={post.id}
         initialLikes={0}
         initialDislikes={0}
-        comments={post.comments}
         articleUrl={typeof window !== 'undefined' ? window.location.href : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/post/${post.slug}`}
         articleTitle={post.title}
         articleSummary={post.summary || ''}
       />
+
+      {/* Comments Section */}
+      {post.allowComment !== false && (
+        <Comments
+          postId={post.id}
+          initialComments={post.comments}
+        />
+      )}
 
       {/* Related Articles */}
       {relatedPosts.length > 0 && (

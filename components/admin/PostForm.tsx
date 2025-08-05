@@ -81,6 +81,7 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
       content: initialData?.content || '',
       status: initialData?.status || 'DRAFT',
       featured: initialData?.featured || false,
+      allowComment: initialData?.allowComment ?? true,
       departmentId: initialData?.departmentId || '',
       appId: initialData?.appId || '',
       tagIds: initialData?.tagIds || [],
@@ -548,6 +549,28 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
                           <FormLabel className="text-base">Informasi Unggulan</FormLabel>
                           <FormDescription className="text-sm">
                             Tampilkan di beranda
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Allow Comments */}
+                  <FormField
+                    control={form.control}
+                    name="allowComment"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Izinkan Komentar</FormLabel>
+                          <FormDescription className="text-sm">
+                            Pembaca dapat memberikan komentar
                           </FormDescription>
                         </div>
                         <FormControl>

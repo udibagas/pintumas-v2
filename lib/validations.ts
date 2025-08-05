@@ -98,6 +98,7 @@ export const PostFormSchema = z.object({
   content: z.string().min(50, "Content must be at least 50 characters"),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
   featured: z.boolean().default(false),
+  allowComment: z.boolean().default(true),
   departmentId: z.string().min(1, "Please select a department"),
   appId: z.string().min(1, "Please select an app"),
   tagIds: z.array(z.string()).optional(),

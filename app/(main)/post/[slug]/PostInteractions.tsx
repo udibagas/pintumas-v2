@@ -2,7 +2,6 @@
 
 import ArticleActions from './ArticleActions';
 import SocialShare from './SocialShare';
-import Comments from './Comments';
 import { toast } from 'sonner';
 
 interface Comment {
@@ -18,20 +17,16 @@ interface Comment {
 }
 
 interface PostInteractionsProps {
-  postId: string;
   initialLikes: number;
   initialDislikes: number;
-  comments: Comment[];
   articleUrl?: string;
   articleTitle?: string;
   articleSummary?: string;
 }
 
 export default function PostInteractions({
-  postId,
   initialLikes,
   initialDislikes,
-  comments,
   articleUrl = typeof window !== 'undefined' ? window.location.href : '',
   articleTitle = 'Check out this article',
   articleSummary = 'An interesting article worth reading'
@@ -71,11 +66,6 @@ export default function PostInteractions({
         articleUrl={articleUrl}
         articleTitle={articleTitle}
         articleSummary={articleSummary}
-      />
-
-      <Comments
-        postId={postId}
-        initialComments={comments}
       />
     </>
   );

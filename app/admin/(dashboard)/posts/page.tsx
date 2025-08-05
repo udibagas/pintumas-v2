@@ -46,7 +46,7 @@ export default async function PostsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Posts</p>
+                <p className="text-sm text-gray-600">Total Informasi</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -102,9 +102,9 @@ export default async function PostsPage() {
       {/* Posts Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Posts</CardTitle>
+          <CardTitle>Semua Informasi</CardTitle>
           <CardDescription>
-            Manage your articles, edit content, and control publication status
+            Kelola informasi Anda, edit konten, dan kontrol status publikasi
           </CardDescription>
         </CardHeader>
         <CardContent>

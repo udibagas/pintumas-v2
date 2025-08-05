@@ -41,6 +41,7 @@ model Post {
   imageUrl     String?
   status       Status    @default(DRAFT)
   featured     Boolean   @default(false)
+  allowComment Boolean   @default(true)
   views        Int       @default(0)
   readTime     String?
   publishedAt  DateTime?

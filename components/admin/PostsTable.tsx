@@ -85,12 +85,12 @@ export default function PostsTable({ posts }: PostsTableProps) {
       },
       {
         accessorKey: 'author.name',
-        header: 'Author',
+        header: 'Penulis',
         cell: ({ row }) => row.original.author.name,
       },
       {
         accessorKey: 'department',
-        header: 'Department',
+        header: 'Instansi',
         cell: ({ row }) => {
           const post = row.original;
           return post.department ? (
@@ -105,7 +105,7 @@ export default function PostsTable({ posts }: PostsTableProps) {
       },
       {
         accessorKey: 'app',
-        header: 'App',
+        header: 'Layanan',
         cell: ({ row }) => {
           const post = row.original;
           return post.app ? (
@@ -127,8 +127,20 @@ export default function PostsTable({ posts }: PostsTableProps) {
         },
       },
       {
+        accessorKey: 'allowComment',
+        header: 'Komentar',
+        cell: ({ row }) => {
+          const allowComment = row.getValue('allowComment') as boolean;
+          return (
+            <Badge variant={allowComment ? "default" : "secondary"} className={allowComment ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}>
+              {allowComment ? "Diizinkan" : "Dinonaktifkan"}
+            </Badge>
+          );
+        },
+      },
+      {
         accessorKey: '_count.comments',
-        header: 'Comments',
+        header: 'Jumlah Komentar',
         cell: ({ row }) => row.original._count.comments,
       },
       {
@@ -225,7 +237,7 @@ export default function PostsTable({ posts }: PostsTableProps) {
         columns={columns}
         data={posts}
         searchKey="title"
-        searchPlaceholder="Search posts..."
+        searchPlaceholder="Cari informasi..."
         filterableColumns={[
           {
             id: 'status',
@@ -234,12 +246,12 @@ export default function PostsTable({ posts }: PostsTableProps) {
           },
           {
             id: 'department',
-            title: 'Department',
+            title: 'Instansi',
             options: departments.map(dept => ({ label: dept.name, value: dept.id })),
           },
           {
             id: 'app',
-            title: 'App',
+            title: 'Layanan',
             options: apps.map(app => ({ label: app.name, value: app.id })),
           },
         ]}

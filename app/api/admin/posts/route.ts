@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
         imageUrl: validatedData.imageUrl,
         status: validatedData.status,
         featured: validatedData.featured,
+        allowComment: validatedData.allowComment ?? true,
         readTime: validatedData.readTime,
         authorId: validatedData.authorId,
         departmentId: validatedData.departmentId,
