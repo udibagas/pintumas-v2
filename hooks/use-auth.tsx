@@ -38,9 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get('/api/auth/me');
-      if (response.data.success) {
-        setUser(response.data.user);
+      const { data } = await axios.get('/api/auth/me');
+      if (data.success) {
+        setUser(data.user);
         setIsAuthenticated(true);
       }
     } catch (error) {

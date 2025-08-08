@@ -262,6 +262,7 @@ async function getPost(slug: string): Promise<Post | null> {
     // Don't increment view count on server-side to allow static generation
     // View counting will be handled on client-side instead
 
+    console.log('Fetched post:', post);
     return post;
   } catch (error) {
     console.error('Error fetching post:', error);
@@ -452,8 +453,6 @@ export default async function SinglePost({ params }: { params: Promise<{ slug: s
 
       {/* Post Interactions */}
       <PostInteractions
-        initialLikes={0}
-        initialDislikes={0}
         articleUrl={typeof window !== 'undefined' ? window.location.href : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/post/${post.slug}`}
         articleTitle={post.title}
         articleSummary={post.summary || ''}

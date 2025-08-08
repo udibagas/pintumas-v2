@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, MessageSquare, Users, Eye, TrendingUp, Calendar } from 'lucide-react'
+import { FileText, MessageSquare, Users, Eye, Calendar } from 'lucide-react'
 
 export default async function AdminDashboard() {
   // Fetch dashboard statistics

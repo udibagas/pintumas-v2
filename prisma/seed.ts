@@ -210,8 +210,6 @@ async function main() {
       content:
         "Pelabuhan Tanjung Mas kembali membuktikan keunggulannya dengan meraih penghargaan sebagai pelabuhan terbaik kategori efisiensi operasional tahun 2024. Penghargaan ini diberikan berdasarkan penilaian terhadap kinerja operasional, inovasi teknologi, dan pelayanan kepada pengguna jasa pelabuhan.",
       status: "PUBLISHED" as const,
-      announcementType: "BREAKING" as const,
-      priority: 4,
       linkUrl: null,
       linkText: "Baca Selengkapnya",
       authorId: admin.id,
@@ -223,8 +221,6 @@ async function main() {
       content:
         "Pelabuhan Tanjung Mas meluncurkan sistem tracking container online yang memungkinkan pengguna untuk memantau posisi dan status container secara real-time. Sistem ini menggunakan teknologi GPS dan IoT untuk memberikan informasi yang akurat dan up-to-date.",
       status: "PUBLISHED" as const,
-      announcementType: "INFO" as const,
-      priority: 3,
       linkUrl: "/tracking",
       linkText: "Coba Sekarang",
       authorId: admin.id,
@@ -236,8 +232,6 @@ async function main() {
       content:
         "Dalam upaya meningkatkan keamanan data dan operasional, Pelabuhan Tanjung Mas mengimplementasikan sistem keamanan siber terbaru. Sistem ini meliputi firewall canggih, sistem deteksi intrusi, dan enkripsi data end-to-end.",
       status: "PUBLISHED" as const,
-      announcementType: "ALERT" as const,
-      priority: 3,
       authorId: moderator.id,
     },
     {
@@ -247,8 +241,6 @@ async function main() {
       content:
         "Pelabuhan Tanjung Mas mengundang masyarakat untuk mengikuti acara pelabuhan terbuka pada tanggal 15 Juli 2024. Acara ini akan menampilkan teknologi terbaru, tur fasilitas pelabuhan, dan presentasi mengenai peran pelabuhan dalam ekonomi nasional.",
       status: "PUBLISHED" as const,
-      announcementType: "EVENT" as const,
-      priority: 2,
       startDate: new Date("2024-07-01"),
       endDate: new Date("2024-07-15"),
       linkUrl: "/events/pelabuhan-terbuka-2024",
@@ -262,8 +254,6 @@ async function main() {
       content:
         "Untuk meningkatkan kinerja dan keamanan sistem, kami akan melakukan maintenance rutin pada sistem informasi pelabuhan. Selama periode maintenance, beberapa layanan online mungkin tidak dapat diakses.",
       status: "PUBLISHED" as const,
-      announcementType: "MAINTENANCE" as const,
-      priority: 2,
       startDate: new Date("2024-06-29"),
       endDate: new Date("2024-06-30"),
       authorId: admin.id,

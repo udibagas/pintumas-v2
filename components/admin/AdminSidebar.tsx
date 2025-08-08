@@ -95,7 +95,7 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
   const router = useRouter();
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 min-h-screen">
+    <div className="w-[240px] bg-white border-r border-gray-200 min-h-screen">
       <nav className="p-4 space-y-2">
         <Button className="w-full" onClick={() => router.push('/admin/posts/new')}>
           <PlusCircle className="mr-2 h-4 w-4" />

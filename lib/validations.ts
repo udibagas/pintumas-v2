@@ -79,6 +79,7 @@ export const PostSchema = z.object({
   appId: z.string().min(1, "Layanan harus diisi"),
   tagIds: z.array(z.string()).optional(),
   mediaUrls: z.array(z.string().url()).optional(),
+  allowComment: z.boolean().default(true),
 });
 
 // Form schema for creating/editing posts (without server-only fields)

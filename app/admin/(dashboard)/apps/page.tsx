@@ -17,13 +17,13 @@ export default function AppsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Apps</CardTitle>
+              <CardTitle>Layanan</CardTitle>
               <CardDescription>
-                Manage your applications here. You can create, edit, or delete apps.
+                Kelola layanan Anda di sini. Anda dapat membuat, mengedit, atau menghapus layanan.
               </CardDescription>
             </div>
             <Button variant="default" onClick={() => setModalOpen(true)}>
-              Tambah App
+              Tambah Layanan
             </Button>
           </div>
         </CardHeader>
