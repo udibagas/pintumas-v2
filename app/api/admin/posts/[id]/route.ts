@@ -90,7 +90,7 @@ export async function PUT(
         status: validatedData.status,
         featured: validatedData.featured,
         readTime: validatedData.readTime,
-        departmentId: validatedData.departmentId,
+        departmentId: user.departmentId,
         appId: validatedData.appId,
         publishedAt: validatedData.status === "PUBLISHED" ? new Date() : null,
       },
