@@ -235,13 +235,16 @@ model DepartmentApps {
 }
 
 model Regulations {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
+  number        String
   title         String
-  content       String
+  description   String? // Optional description of the regulation
+  effectiveDate DateTime? // Effective date of the regulation
   departmentId  String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   attachmentUrl String? // Optional URL for a related document or file
+  status        Status    @default(DRAFT)
 
   // Relations
   department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)

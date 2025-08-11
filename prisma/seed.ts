@@ -141,6 +141,7 @@ async function main() {
         "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=600",
       status: "PUBLISHED" as const,
       featured: true,
+      allowComment: true,
       readTime: "5 min read",
       publishedAt: new Date(),
       authorId: admin.id,
@@ -157,6 +158,7 @@ async function main() {
         "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600",
       status: "PUBLISHED" as const,
       featured: false,
+      allowComment: true,
       readTime: "4 min read",
       publishedAt: new Date(),
       authorId: moderator.id,
@@ -173,6 +175,7 @@ async function main() {
         "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=600",
       status: "DRAFT" as const,
       featured: false,
+      allowComment: false, // Comments disabled for draft posts
       readTime: "6 min read",
       authorId: admin.id,
       departmentId: createdDepartments[2].id, // Finance & Administration
@@ -212,6 +215,9 @@ async function main() {
       status: "PUBLISHED" as const,
       linkUrl: null,
       linkText: "Baca Selengkapnya",
+      imageUrl:
+        "https://images.pexels.com/photos/906982/pexels-photo-906982.jpeg?auto=compress&cs=tinysrgb&w=600",
+      departmentId: createdDepartments[1].id, // Operations & Logistics
       authorId: admin.id,
     },
     {
@@ -223,6 +229,9 @@ async function main() {
       status: "PUBLISHED" as const,
       linkUrl: "/tracking",
       linkText: "Coba Sekarang",
+      imageUrl:
+        "https://images.pexels.com/photos/163726/belgium-antwerp-port-163726.jpeg?auto=compress&cs=tinysrgb&w=600",
+      departmentId: createdDepartments[0].id, // IT & Digital Innovation
       authorId: admin.id,
     },
     {
@@ -232,6 +241,9 @@ async function main() {
       content:
         "Dalam upaya meningkatkan keamanan data dan operasional, Pelabuhan Tanjung Mas mengimplementasikan sistem keamanan siber terbaru. Sistem ini meliputi firewall canggih, sistem deteksi intrusi, dan enkripsi data end-to-end.",
       status: "PUBLISHED" as const,
+      imageUrl:
+        "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&w=600",
+      departmentId: createdDepartments[0].id, // IT & Digital Innovation
       authorId: moderator.id,
     },
     {
@@ -245,6 +257,9 @@ async function main() {
       endDate: new Date("2024-07-15"),
       linkUrl: "/events/pelabuhan-terbuka-2024",
       linkText: "Daftar Sekarang",
+      imageUrl:
+        "https://images.pexels.com/photos/1427541/pexels-photo-1427541.jpeg?auto=compress&cs=tinysrgb&w=600",
+      departmentId: createdDepartments[3].id, // Customer Service
       authorId: admin.id,
     },
     {
@@ -256,6 +271,9 @@ async function main() {
       status: "PUBLISHED" as const,
       startDate: new Date("2024-06-29"),
       endDate: new Date("2024-06-30"),
+      imageUrl:
+        "https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg?auto=compress&cs=tinysrgb&w=600",
+      departmentId: createdDepartments[0].id, // IT & Digital Innovation
       authorId: admin.id,
     },
   ];
@@ -316,42 +334,114 @@ async function main() {
 
   console.log("Created sample comments");
 
+  // Create sample apps
+  const sampleApps = [
+    {
+      name: "Container Tracking System",
+      description:
+        "Sistem pelacakan container secara real-time dengan teknologi GPS dan IoT.",
+      iconUrl:
+        "https://images.pexels.com/photos/163726/belgium-antwerp-port-163726.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://tracking.pintumas.id",
+    },
+    {
+      name: "Port Management System",
+      description:
+        "Sistem manajemen pelabuhan terintegrasi untuk operasional yang lebih efisien.",
+      iconUrl:
+        "https://images.pexels.com/photos/906982/pexels-photo-906982.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://pms.pintumas.id",
+    },
+    {
+      name: "Digital Document Portal",
+      description:
+        "Portal digital untuk pengelolaan dan akses dokumen pelabuhan.",
+      iconUrl:
+        "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://docs.pintumas.id",
+    },
+    {
+      name: "Customer Service App",
+      description:
+        "Aplikasi layanan pelanggan untuk komunikasi dan support yang lebih baik.",
+      iconUrl:
+        "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://cs.pintumas.id",
+    },
+  ];
+
+  for (const appData of sampleApps) {
+    const app = await prisma.apps.upsert({
+      where: { name: appData.name },
+      update: {},
+      create: appData,
+    });
+    console.log("Created app:", app.name);
+  }
+
+  console.log("Created sample apps");
+
   // Create sample regulations
   const regulations = [
     {
+      number: "REG-001/2024",
       title: "Peraturan Kehadiran Pegawai",
-      content:
+      description:
         "Setiap pegawai wajib hadir tepat waktu sesuai dengan jam kerja yang telah ditetapkan. Keterlambatan akan dikenakan sanksi sesuai dengan peraturan yang berlaku. Pegawai yang tidak dapat hadir karena sakit atau keperluan mendadak wajib memberikan pemberitahuan kepada atasan langsung.",
-      departmentId: createdDepartments[0].id, // IT Department
+      effectiveDate: new Date("2024-01-01"),
+      status: "PUBLISHED" as const,
+      departmentId: createdDepartments[4].id, // Human Resources
       attachmentUrl: "https://example.com/peraturan-kehadiran.pdf",
     },
     {
+      number: "SOP-002/2024",
       title: "Standar Operasional Prosedur Layanan Publik",
-      content:
+      description:
         "SOP ini mengatur tentang tata cara pelayanan publik yang harus dilaksanakan oleh setiap unit kerja. Pelayanan harus dilakukan dengan prinsip cepat, tepat, transparan, dan akuntabel. Setiap pegawai wajib mengikuti prosedur yang telah ditetapkan dalam memberikan layanan kepada masyarakat.",
-      departmentId: createdDepartments[1].id, // HR Department
+      effectiveDate: new Date("2024-02-01"),
+      status: "PUBLISHED" as const,
+      departmentId: createdDepartments[3].id, // Customer Service
       attachmentUrl: null,
     },
     {
+      number: "IT-003/2024",
       title: "Kebijakan Penggunaan Teknologi Informasi",
-      content:
+      description:
         "Kebijakan ini mengatur penggunaan teknologi informasi di lingkungan kerja. Setiap pegawai bertanggung jawab untuk menggunakan fasilitas IT dengan bijak dan sesuai dengan ketentuan yang berlaku. Dilarang menggunakan fasilitas IT untuk kepentingan pribadi yang tidak berkaitan dengan pekerjaan.",
-      departmentId: createdDepartments[0].id, // IT Department
+      effectiveDate: new Date("2024-03-01"),
+      status: "PUBLISHED" as const,
+      departmentId: createdDepartments[0].id, // IT & Digital Innovation
       attachmentUrl: "https://example.com/kebijakan-it.pdf",
     },
     {
+      number: "GEN-004/2024",
       title: "Peraturan Umum Organisasi",
-      content:
+      description:
         "Peraturan ini berlaku untuk seluruh pegawai tanpa terkecuali. Mencakup norma-norma dasar, etika kerja, dan aturan umum yang harus dipatuhi oleh setiap anggota organisasi. Pelanggaran terhadap peraturan ini akan dikenakan sanksi sesuai dengan tingkat kesalahan yang dilakukan.",
+      effectiveDate: new Date("2024-01-15"),
+      status: "PUBLISHED" as const,
       departmentId: null, // Applies to all departments
       attachmentUrl: null,
     },
     {
+      number: "DOC-005/2024",
       title: "Prosedur Pengelolaan Dokumen",
-      content:
+      description:
         "SOP ini mengatur tentang tata cara pengelolaan dokumen resmi organisasi. Termasuk di dalamnya adalah prosedur pembuatan, distribusi, penyimpanan, dan pemusnahan dokumen. Setiap dokumen harus diberi kode klasifikasi dan disimpan sesuai dengan sistem kearsipan yang berlaku.",
-      departmentId: createdDepartments[2].id, // Public Relations
+      effectiveDate: new Date("2024-04-01"),
+      status: "DRAFT" as const,
+      departmentId: createdDepartments[2].id, // Finance & Administration
       attachmentUrl: "https://example.com/prosedur-dokumen.pdf",
+    },
+    {
+      number: "OPS-006/2024",
+      title: "Prosedur Keamanan dan Keselamatan Kerja",
+      description:
+        "Peraturan ini mengatur tentang prosedur keamanan dan keselamatan kerja yang wajib dipatuhi oleh seluruh pegawai. Mencakup penggunaan alat pelindung diri, prosedur evakuasi darurat, dan pelaporan insiden keselamatan kerja.",
+      effectiveDate: new Date("2024-05-01"),
+      status: "PUBLISHED" as const,
+      departmentId: createdDepartments[1].id, // Operations & Logistics
+      attachmentUrl: "https://example.com/keamanan-kerja.pdf",
     },
   ];
 
