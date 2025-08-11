@@ -7,11 +7,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser();
-    if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id } = await params;
     const regulation = await prisma.regulations.findUnique({
       where: { id },
@@ -48,20 +43,24 @@ export async function PUT(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+    if (!user || user.role !== "MODERATOR") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { title, content, departmentId, attachmentUrl } = body;
+    const { number, title, description, effectiveDate, status, attachmentUrl } =
+      body;
 
     const { id } = await params;
     const regulation = await prisma.regulations.update({
       where: { id },
       data: {
+        number,
         title,
-        content,
-        departmentId: departmentId || null,
+        description: description || null,
+        effectiveDate: effectiveDate ? new Date(effectiveDate) : null,
+        departmentId: user.departmentId,
+        status: status || "DRAFT",
         attachmentUrl: attachmentUrl || null,
       },
       include: {
@@ -94,13 +93,14 @@ export async function DELETE(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+    if (!user || user.role !== "MODERATOR") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
+
     await prisma.regulations.delete({
-      where: { id },
+      where: { id, departmentId: user.departmentId },
     });
 
     return NextResponse.json({
