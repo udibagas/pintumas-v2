@@ -78,11 +78,11 @@ export default function DepartmentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading departments...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto"></div>
+            <p className="mt-4 text-slate-600">Loading departments...</p>
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function DepartmentsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <p className="text-red-600">{error}</p>
@@ -105,15 +105,15 @@ export default function DepartmentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Hero Section */}
-      <div style={{ backgroundColor: '#011629' }} className="text-white">
+      <div className="bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Unit Kerja PINTUMAS
             </h1>
-            <p className="text-xl text-yellow-100 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-200 max-w-3xl mx-auto">
               Mengenal lebih dekat dengan berbagai instansi dan unit kerja di PINTUMAS dan
               mengakses informasi terkini dari setiap unit kerja.
             </p>
@@ -125,14 +125,14 @@ export default function DepartmentsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {departments.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600">No departments available at the moment.</p>
+            <p className="text-slate-600">No departments available at the moment.</p>
           </div>
         ) : (
           <div className="space-y-12">
             {departments.map((department) => (
-              <div key={department.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div key={department.id} id={department.slug} className="bg-white rounded-lg shadow-lg overflow-hidden">
                 {/* Department Header */}
-                <div style={{ backgroundColor: '#011629' }} className="p-6 text-white">
+                <div className="bg-gradient-to-r from-slate-700 to-slate-600 p-6 text-white">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       {department.imageUrl && (
@@ -149,17 +149,17 @@ export default function DepartmentsPage() {
                       <div>
                         <h2 className="text-2xl font-bold">{department.name}</h2>
                         <div className="flex items-center space-x-4 mt-2">
-                          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-100 border-yellow-500/30">
+                          <Badge variant="secondary" className="bg-amber-400/20 text-amber-100 border-amber-400/30">
                             {department.postsCount} artikel
                           </Badge>
-                          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-100 border-yellow-500/30">
+                          <Badge variant="secondary" className="bg-amber-400/20 text-amber-100 border-amber-400/30">
                             <Users className="h-3 w-3 mr-1" />
                             {department.usersCount} pegawai
                           </Badge>
                         </div>
 
                         {/* Contact Info */}
-                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-yellow-100">
+                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-slate-200">
                           {department.phone && (
                             <div className="flex items-center space-x-1">
                               <Phone className="h-4 w-4" />
@@ -179,7 +179,7 @@ export default function DepartmentsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="bg-yellow-500/20 border-yellow-500/30 text-yellow-100 hover:bg-yellow-500/30"
+                        className="bg-amber-400/20 border-amber-400/30 text-amber-100 hover:bg-amber-400/30"
                         onClick={() => window.open(department.link!, '_blank')}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
@@ -202,7 +202,7 @@ export default function DepartmentsPage() {
                   ) : (
                     <div className="space-y-4">
                       {department.latestPosts.map((post) => (
-                        <div key={post.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div key={post.id} className="flex items-start space-x-4 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200 border border-slate-200">
                           {/* Post Image */}
                           {post.imageUrl && (
                             <div className="flex-shrink-0">
@@ -221,22 +221,22 @@ export default function DepartmentsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <h4 className="text-lg font-semibold text-gray-900 line-clamp-2 mb-1">
+                                <h4 className="text-lg font-semibold text-slate-900 line-clamp-2 mb-1">
                                   <Link
                                     href={`/post/${post.slug}`}
-                                    className="hover:text-yellow-600 transition-colors"
+                                    className="hover:text-amber-600 transition-colors"
                                   >
                                     {post.title}
                                   </Link>
                                 </h4>
                                 {post.summary && (
-                                  <p className="text-gray-600 text-sm line-clamp-2 mb-2">
+                                  <p className="text-slate-600 text-sm line-clamp-2 mb-2">
                                     {post.summary}
                                   </p>
                                 )}
 
                                 {/* Post Meta */}
-                                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                <div className="flex items-center space-x-4 text-xs text-slate-500">
                                   <div className="flex items-center space-x-1">
                                     <Image
                                       src={post.author.avatar || '/images/default-avatar.png'}
@@ -292,7 +292,7 @@ export default function DepartmentsPage() {
                     <div className="mt-6 text-center">
                       <Link
                         href={`/news?department=${department.id}`}
-                        className="inline-flex items-center text-yellow-600 hover:text-yellow-700 font-medium"
+                        className="inline-flex items-center text-amber-600 hover:text-amber-700 font-medium"
                       >
                         Lihat semua artikel ({department.postsCount})
                         <ExternalLink className="h-4 w-4 ml-1" />

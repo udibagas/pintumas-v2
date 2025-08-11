@@ -183,11 +183,11 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
           <input type="hidden" {...register('iconUrl')} />
 
           <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
+            <Label htmlFor="name">Nama Layanan *</Label>
             <Input
               id="name"
               {...register('name')}
-              placeholder="App Name"
+              placeholder="Nama Layanan"
               className={errors.name ? 'border-red-500' : ''}
             />
             {errors.name && (
@@ -196,7 +196,7 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="icon">Icon *</Label>
+            <Label htmlFor="icon">Logo *</Label>
             <div className="flex items-center space-x-4">
               {previewImage && (
                 <Image
@@ -220,11 +220,11 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
                 )}
                 {uploading ? (
                   <p className="text-sm text-blue-600 mt-1">
-                    Uploading icon...
+                    Mengunggah logo...
                   </p>
                 ) : (
                   <p className="text-sm text-gray-500 mt-1">
-                    Upload an icon for the app (PNG, JPG, or GIF)
+                    Unggah logo untuk layanan (PNG, JPG, atau GIF)
                   </p>
                 )}
               </div>
@@ -245,7 +245,7 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Keterangan</Label>
             <Textarea
               id="description"
               {...register('description')}
@@ -259,7 +259,7 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Departments *</Label>
+            <Label>Instansi Terkait *</Label>
             <div className="max-h-40 overflow-y-auto border rounded-md p-3 space-y-2">
               {departments.map((department) => (
                 <div key={department.id} className="flex items-center space-x-2">
@@ -279,7 +279,7 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
                 </div>
               ))}
               {departments.length === 0 && (
-                <p className="text-sm text-gray-500">No departments available</p>
+                <p className="text-sm text-gray-500">Tidak ada instansi tersedia</p>
               )}
             </div>
             {errors.departmentIds && (
@@ -290,10 +290,10 @@ export default function AppDialog({ hook }: { hook: UseCrudType }) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" onClick={() => handleModalClose()}>Cancel</Button>
+            <Button variant="outline" onClick={() => handleModalClose()}>Batal</Button>
           </DialogClose>
           <Button type="submit" form='app-form' disabled={isSubmitting || uploading}>
-            {isSubmitting ? 'Saving...' : uploading ? 'Uploading...' : 'Save App'}
+            {isSubmitting ? 'Menyimpan...' : uploading ? 'Mengunggah...' : 'Simpan Layanan'}
           </Button>
         </DialogFooter>
       </DialogContent >

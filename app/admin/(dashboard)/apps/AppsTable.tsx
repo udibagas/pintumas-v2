@@ -24,7 +24,7 @@ export default function AppsTable({ hook }: { hook: UseCrudType }) {
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Name
+          Nama Layanan
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -67,7 +67,7 @@ export default function AppsTable({ hook }: { hook: UseCrudType }) {
     },
     {
       accessorKey: 'DepartmentApps',
-      header: 'Departments',
+      header: 'Nama Instansi',
       cell: ({ row }) => {
         const app = row.original;
         const departments = app.DepartmentApps || [];
@@ -95,7 +95,7 @@ export default function AppsTable({ hook }: { hook: UseCrudType }) {
     },
     {
       accessorKey: 'description',
-      header: 'Description',
+      header: 'Keterangan',
       cell: ({ row }) => {
         const description = row.getValue('description') as string;
         return description ? (
@@ -150,7 +150,7 @@ export default function AppsTable({ hook }: { hook: UseCrudType }) {
         columns={columns}
         data={data}
         searchKey="name"
-        searchPlaceholder="Search apps..."
+        searchPlaceholder="Cari layanan..."
       />
 
       <ConfirmDialog

@@ -75,7 +75,6 @@ export const PostSchema = z.object({
   readTime: z.string().optional(),
   publishedAt: z.string().datetime().optional().nullable(),
   authorId: z.string().min(1, "Penulis harus diisi"),
-  departmentId: z.string().min(1, "Instansi harus diisi"),
   appId: z.string().min(1, "Layanan harus diisi"),
   tagIds: z.array(z.string()).optional(),
   mediaUrls: z.array(z.string().url()).optional(),

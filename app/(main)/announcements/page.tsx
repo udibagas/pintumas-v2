@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { Clock, ExternalLink, AlertCircle, Info, CheckCircle, AlertTriangle, ArrowLeft } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatTimeAgo } from '@/lib/utils';
@@ -86,51 +85,6 @@ async function getAnnouncements(): Promise<Announcement[]> {
   } catch (error) {
     console.error('Error fetching announcements:', error);
     return [];
-  }
-}
-
-function getAnnouncementIcon(type: string) {
-  switch (type.toLowerCase()) {
-    case 'info':
-      return <Info className="h-5 w-5 inline-block mr-2" />;
-    case 'warning':
-      return <AlertTriangle className="h-5 w-5 inline-block mr-2" />;
-    case 'success':
-      return <CheckCircle className="h-5 w-5 inline-block mr-2" />;
-    case 'urgent':
-      return <AlertCircle className="h-5 w-5 inline-block mr-2" />;
-    default:
-      return <Info className="h-5 w-5 inline-block mr-2" />;
-  }
-}
-
-function getAnnouncementColor(type: string) {
-  switch (type.toLowerCase()) {
-    case 'info':
-      return 'bg-blue-50 border-blue-200 text-blue-700';
-    case 'warning':
-      return 'bg-yellow-50 border-yellow-200 text-yellow-700';
-    case 'success':
-      return 'bg-green-50 border-green-200 text-green-700';
-    case 'urgent':
-      return 'bg-red-50 border-red-200 text-red-700';
-    default:
-      return 'bg-gray-50 border-gray-200 text-gray-700';
-  }
-}
-
-function getBadgeVariant(type: string) {
-  switch (type.toLowerCase()) {
-    case 'info':
-      return 'default';
-    case 'warning':
-      return 'secondary';
-    case 'success':
-      return 'outline';
-    case 'urgent':
-      return 'destructive';
-    default:
-      return 'default';
   }
 }
 

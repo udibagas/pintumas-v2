@@ -49,7 +49,6 @@ interface Tag {
 }
 
 interface PostFormProps {
-  departments: Department[]
   apps: App[]
   tags: Tag[]
   mode: 'create' | 'edit'
@@ -63,7 +62,7 @@ function calculateReadTime(content: string): string {
   return `${readTime} min read`
 }
 
-export default function PostForm({ departments, apps, tags, mode, initialData }: PostFormProps) {
+export default function PostForm({ apps, tags, mode, initialData }: PostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -82,7 +81,6 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
       status: initialData?.status || 'DRAFT',
       featured: initialData?.featured || false,
       allowComment: initialData?.allowComment ?? true,
-      departmentId: initialData?.departmentId || '',
       appId: initialData?.appId || '',
       tagIds: initialData?.tagIds || [],
       imageUrl: initialData?.imageUrl || '',
@@ -358,32 +356,6 @@ export default function PostForm({ departments, apps, tags, mode, initialData }:
                   <CardTitle className="text-lg">Kategorisasi</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Department */}
-                  <FormField
-                    control={form.control}
-                    name="departmentId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Instansi</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Pilih Instansi" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {departments.map((department) => (
-                              <SelectItem key={department.id} value={department.id}>
-                                {department.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   {/* App */}
                   <FormField
                     control={form.control}

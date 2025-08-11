@@ -10,10 +10,6 @@ export default async function NewPostPage() {
     orderBy: { name: 'asc' }
   })
 
-  const departments = await prisma.department.findMany({
-    orderBy: { name: 'asc' }
-  })
-
   const apps = await prisma.apps.findMany({
     orderBy: { name: 'asc' }
   })
@@ -21,7 +17,6 @@ export default async function NewPostPage() {
   return (
     <PostForm
       tags={tags}
-      departments={departments}
       apps={apps}
       mode="create"
     />

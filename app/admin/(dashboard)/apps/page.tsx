@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import AppDialog from './AppDialog';
 import { useCrud } from '@/hooks/useCrud';
 import { AppsData } from './types';
+import { PlusCircle } from 'lucide-react';
 
 export default function AppsPage() {
   const hook = useCrud<AppsData>('/api/admin/apps');
@@ -23,6 +24,7 @@ export default function AppsPage() {
               </CardDescription>
             </div>
             <Button variant="default" onClick={() => setModalOpen(true)}>
+              <PlusCircle />
               Tambah Layanan
             </Button>
           </div>

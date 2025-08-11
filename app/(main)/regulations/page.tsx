@@ -138,11 +138,10 @@ export default function RegulationsPage() {
             <div className="w-full md:w-64">
               <Select value={selectedDepartment} onValueChange={handleDepartmentChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Pilih Departemen" />
+                  <SelectValue placeholder="Pilih Instansi" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Semua Departemen</SelectItem>
-                  <SelectItem value="null">Tanpa Departemen</SelectItem>
+                  <SelectItem value="all">Semua Instansi</SelectItem>
                   {departments.map((dept) => (
                     <SelectItem key={dept.id} value={dept.id}>
                       {dept.name}

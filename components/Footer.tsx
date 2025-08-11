@@ -3,22 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Globe,
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-  Linkedin,
   ArrowUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import axios from 'axios';
 import Image from 'next/image';
-import { Settings } from '@/lib/validations';
 
 interface Department {
   id: string;
@@ -27,21 +17,26 @@ interface Department {
   posts: number;
 }
 
+interface Service {
+  id: string;
+  name: string;
+  slug: string;
+  posts: number;
+}
+
 export default function Footer() {
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [departmentsLoading, setDepartmentsLoading] = useState(true);
-  const [settings, setSettings] = useState<Settings | null>(null);
+  const [servicesLoading, setServicesLoading] = useState(true);
 
   // Fetch departments from backend
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         setDepartmentsLoading(true);
-        const response = await axios.get('/api/departments');
-        if (response.data.success) {
-          // Take only first 6 departments for footer
-          setDepartments(response.data.data);
-        }
+        const { data } = await axios.get('/api/departments');
+        setDepartments(data);
       } catch (error) {
         console.error('Failed to fetch departments:', error);
         // Fallback to default departments if API fails
@@ -51,64 +46,27 @@ export default function Footer() {
       }
     };
 
-    fetchDepartments();
-  }, []);
-
-  // Fetch settings from backend
-  useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchServices = async () => {
       try {
-        const response = await axios.get('/api/settings');
-        if (response.data.success) {
-          setSettings(response.data.data);
-        }
+        setServicesLoading(true);
+        const { data } = await axios.get('/api/services');
+        setServices(data);
       } catch (error) {
-        console.error('Failed to fetch settings:', error);
+        console.error('Failed to fetch departments:', error);
+        // Fallback to default departments if API fails
+        setServices([]);
+      } finally {
+        setServicesLoading(false);
       }
     };
 
-    fetchSettings();
+    fetchDepartments();
+    fetchServices();
   }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  // Generate social links from settings
-  const getSocialLinks = () => {
-    if (!settings?.socialMedia) {
-      // Fallback social links if no settings
-      return [
-        { name: 'Facebook', icon: Facebook, href: '#' },
-        { name: 'Twitter', icon: Twitter, href: '#' },
-        { name: 'Instagram', icon: Instagram, href: '#' },
-        { name: 'YouTube', icon: Youtube, href: '#' },
-        { name: 'LinkedIn', icon: Linkedin, href: '#' }
-      ];
-    }
-
-    const socialLinks = [];
-
-    if (settings.socialMedia.facebook) {
-      socialLinks.push({ name: 'Facebook', icon: Facebook, href: settings.socialMedia.facebook });
-    }
-    if (settings.socialMedia.twitter) {
-      socialLinks.push({ name: 'Twitter', icon: Twitter, href: settings.socialMedia.twitter });
-    }
-    if (settings.socialMedia.instagram) {
-      socialLinks.push({ name: 'Instagram', icon: Instagram, href: settings.socialMedia.instagram });
-    }
-    if (settings.socialMedia.youtube) {
-      socialLinks.push({ name: 'YouTube', icon: Youtube, href: settings.socialMedia.youtube });
-    }
-    if (settings.socialMedia.linkedin) {
-      socialLinks.push({ name: 'LinkedIn', icon: Linkedin, href: settings.socialMedia.linkedin });
-    }
-
-    return socialLinks;
-  };
-
-  const socialLinks = getSocialLinks();
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -131,7 +89,7 @@ export default function Footer() {
 
           {/* Departments List */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">Departemen</h3>
+            <h3 className="text-lg font-semibold mb-6">Instansi</h3>
             <ul className="space-y-3">
               {departmentsLoading ? (
                 // Loading skeleton
@@ -147,7 +105,7 @@ export default function Footer() {
                 departments.map((department) => (
                   <li key={department.id}>
                     <Link
-                      href={`/department/${department.slug}`}
+                      href={`/departments#${department.slug}`}
                       className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm flex items-center justify-between"
                     >
                       <span>{department.name}</span>
@@ -161,74 +119,42 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Services List */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">Hubungi Kami</h3>
-            <div className="space-y-3">
-              {settings?.contactInfo?.phone && (
-                <div className="flex items-center text-sm text-gray-300">
-                  <Phone className="h-4 w-4 mr-3 text-yellow-500" />
-                  <span>{settings.contactInfo.phone}</span>
-                </div>
-              )}
-              {settings?.contactInfo?.email && (
-                <div className="flex items-center text-sm text-gray-300">
-                  <Mail className="h-4 w-4 mr-3 text-yellow-500" />
-                  <span>{settings.contactInfo.email}</span>
-                </div>
-              )}
-              {settings?.contactInfo?.address && (
-                <div className="flex items-start text-sm text-gray-300">
-                  <MapPin className="h-4 w-4 mr-3 text-yellow-500 mt-0.5 shrink-0" />
-                  <span>{settings.contactInfo.address}</span>
-                </div>
-              )}
-              {!settings && (
-                // Fallback content while loading or if no settings
+            <h3 className="text-lg font-semibold mb-6">Layanan</h3>
+            <ul className="space-y-3">
+              {servicesLoading ? (
+                // Loading skeleton
                 <>
-                  <div className="flex items-center text-sm text-gray-300">
-                    <Phone className="h-4 w-4 mr-3 text-yellow-500" />
-                    <span>+62 (24) xxx-xxx</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-300">
-                    <Mail className="h-4 w-4 mr-3 text-yellow-500" />
-                    <span>contact@pintumas.id</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-300">
-                    <MapPin className="h-4 w-4 mr-3 text-yellow-500" />
-                    <span>Semarang, Jawa Tengah</span>
-                  </div>
+                  <li><Skeleton className="h-4 w-20" /></li>
+                  <li><Skeleton className="h-4 w-24" /></li>
+                  <li><Skeleton className="h-4 w-18" /></li>
+                  <li><Skeleton className="h-4 w-22" /></li>
+                  <li><Skeleton className="h-4 w-16" /></li>
+                  <li><Skeleton className="h-4 w-20" /></li>
                 </>
+              ) : (
+                services.map((service) => (
+                  <li key={service.id}>
+                    <Link
+                      href={`/services#${service.slug}`}
+                      className="text-gray-300 hover:text-yellow-400 transition-colors duration-200 text-sm flex items-center justify-between"
+                    >
+                      <span>{service.name}</span>
+                      {service.posts > 0 && (
+                        <span className="text-xs text-gray-500">({service.posts})</span>
+                      )}
+                    </Link>
+                  </li>
+                ))
               )}
-            </div>
+            </ul>
           </div>
         </div>
 
         {/* Social Media & Bottom Section */}
         <div className="border-t border-gray-800 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
-            {/* Social Media Links */}
-            {socialLinks.length > 0 && (
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-400 text-sm mr-4">Ikuti kami:</span>
-                {socialLinks.map((social) => {
-                  const IconComponent = social.icon;
-                  return (
-                    <a
-                      key={social.name}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-gray-800 hover:bg-yellow-600 p-2 rounded-full transition-colors duration-200"
-                      aria-label={social.name}
-                    >
-                      <IconComponent className="h-4 w-4" />
-                    </a>
-                  );
-                })}
-              </div>
-            )}
-
             {/* Back to Top Button */}
             <Button
               onClick={scrollToTop}
