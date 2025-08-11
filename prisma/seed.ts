@@ -128,6 +128,55 @@ async function main() {
     console.log("Created tag:", tag.name);
   }
 
+  // Create sample apps first (before posts so we can reference them)
+  const sampleApps = [
+    {
+      name: "Container Tracking System",
+      description:
+        "Sistem pelacakan container secara real-time dengan teknologi GPS dan IoT.",
+      iconUrl:
+        "https://images.pexels.com/photos/163726/belgium-antwerp-port-163726.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://tracking.pintumas.id",
+    },
+    {
+      name: "Port Management System",
+      description:
+        "Sistem manajemen pelabuhan terintegrasi untuk operasional yang lebih efisien.",
+      iconUrl:
+        "https://images.pexels.com/photos/906982/pexels-photo-906982.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://pms.pintumas.id",
+    },
+    {
+      name: "Digital Document Portal",
+      description:
+        "Portal digital untuk pengelolaan dan akses dokumen pelabuhan.",
+      iconUrl:
+        "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://docs.pintumas.id",
+    },
+    {
+      name: "Customer Service App",
+      description:
+        "Aplikasi layanan pelanggan untuk komunikasi dan support yang lebih baik.",
+      iconUrl:
+        "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=100",
+      link: "https://cs.pintumas.id",
+    },
+  ];
+
+  const createdApps = [];
+  for (const appData of sampleApps) {
+    const app = await prisma.apps.upsert({
+      where: { name: appData.name },
+      update: {},
+      create: appData,
+    });
+    createdApps.push(app);
+    console.log("Created app:", app.name);
+  }
+
+  console.log("Created sample apps");
+
   // Create sample posts
   const samplePosts = [
     {
@@ -146,6 +195,7 @@ async function main() {
       publishedAt: new Date(),
       authorId: admin.id,
       departmentId: createdDepartments[0].id, // IT & Digital Innovation
+      appId: createdApps[1].id, // Port Management System
     },
     {
       title: "Indonesian Startups Securing Record Funding in 2024",
@@ -163,6 +213,7 @@ async function main() {
       publishedAt: new Date(),
       authorId: moderator.id,
       departmentId: createdDepartments[0].id, // IT & Digital Innovation
+      appId: createdApps[2].id, // Digital Document Portal
     },
     {
       title: "Digital Banking Revolution in Southeast Asia",
@@ -179,6 +230,61 @@ async function main() {
       readTime: "6 min read",
       authorId: admin.id,
       departmentId: createdDepartments[2].id, // Finance & Administration
+      appId: createdApps[2].id, // Digital Document Portal
+    },
+    {
+      title: "Container Tracking Made Simple",
+      slug: "container-tracking-made-simple",
+      summary:
+        "New tracking system revolutionizes how businesses monitor their shipments in real-time.",
+      content:
+        "Our latest container tracking system provides real-time visibility into your shipments with GPS and IoT technology. This revolutionary platform allows businesses to track their containers throughout the entire supply chain, from port to destination. With automated notifications and detailed analytics, companies can optimize their logistics operations and improve customer satisfaction.",
+      imageUrl:
+        "https://images.pexels.com/photos/163726/belgium-antwerp-port-163726.jpeg?auto=compress&cs=tinysrgb&w=600",
+      status: "PUBLISHED" as const,
+      featured: false,
+      allowComment: true,
+      readTime: "3 min read",
+      publishedAt: new Date(),
+      authorId: admin.id,
+      departmentId: createdDepartments[1].id, // Operations & Logistics
+      appId: createdApps[0].id, // Container Tracking System
+    },
+    {
+      title: "Enhanced Customer Service Experience",
+      slug: "enhanced-customer-service-experience",
+      summary:
+        "Our new customer service app delivers faster response times and better support quality.",
+      content:
+        "The new customer service application transforms how we interact with our clients. With integrated chat, ticket management, and knowledge base features, our support team can provide faster and more effective assistance. The app includes automated routing, real-time notifications, and comprehensive reporting to ensure every customer inquiry is handled professionally and efficiently.",
+      imageUrl:
+        "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600",
+      status: "PUBLISHED" as const,
+      featured: false,
+      allowComment: true,
+      readTime: "4 min read",
+      publishedAt: new Date(),
+      authorId: moderator.id,
+      departmentId: createdDepartments[3].id, // Customer Service
+      appId: createdApps[3].id, // Customer Service App
+    },
+    {
+      title: "Digital Document Management Revolution",
+      slug: "digital-document-management-revolution",
+      summary:
+        "Streamline your document workflow with our advanced digital portal system.",
+      content:
+        "Our digital document portal represents a significant leap forward in document management efficiency. The system features automated classification, version control, secure sharing, and advanced search capabilities. Users can access documents from anywhere, collaborate in real-time, and maintain complete audit trails for compliance purposes.",
+      imageUrl:
+        "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=600",
+      status: "PUBLISHED" as const,
+      featured: false,
+      allowComment: true,
+      readTime: "5 min read",
+      publishedAt: new Date(),
+      authorId: admin.id,
+      departmentId: createdDepartments[0].id, // IT & Digital Innovation
+      appId: createdApps[2].id, // Digital Document Portal
     },
   ];
 
@@ -333,53 +439,6 @@ async function main() {
   }
 
   console.log("Created sample comments");
-
-  // Create sample apps
-  const sampleApps = [
-    {
-      name: "Container Tracking System",
-      description:
-        "Sistem pelacakan container secara real-time dengan teknologi GPS dan IoT.",
-      iconUrl:
-        "https://images.pexels.com/photos/163726/belgium-antwerp-port-163726.jpeg?auto=compress&cs=tinysrgb&w=100",
-      link: "https://tracking.pintumas.id",
-    },
-    {
-      name: "Port Management System",
-      description:
-        "Sistem manajemen pelabuhan terintegrasi untuk operasional yang lebih efisien.",
-      iconUrl:
-        "https://images.pexels.com/photos/906982/pexels-photo-906982.jpeg?auto=compress&cs=tinysrgb&w=100",
-      link: "https://pms.pintumas.id",
-    },
-    {
-      name: "Digital Document Portal",
-      description:
-        "Portal digital untuk pengelolaan dan akses dokumen pelabuhan.",
-      iconUrl:
-        "https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=100",
-      link: "https://docs.pintumas.id",
-    },
-    {
-      name: "Customer Service App",
-      description:
-        "Aplikasi layanan pelanggan untuk komunikasi dan support yang lebih baik.",
-      iconUrl:
-        "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=100",
-      link: "https://cs.pintumas.id",
-    },
-  ];
-
-  for (const appData of sampleApps) {
-    const app = await prisma.apps.upsert({
-      where: { name: appData.name },
-      update: {},
-      create: appData,
-    });
-    console.log("Created app:", app.name);
-  }
-
-  console.log("Created sample apps");
 
   // Create sample regulations
   const regulations = [
