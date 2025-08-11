@@ -221,62 +221,16 @@ export const SettingsSchema = z.object({
   socialMedia: SocialMediaSchema,
 });
 
-// Regulation schemas
-export const RegulationSchema = z.object({
-  id: z.string().optional(),
-  title: z
-    .string()
-    .min(5, "Title must be at least 5 characters")
-    .max(255, "Title must be less than 255 characters"),
-  content: z.string().min(50, "Content must be at least 50 characters"),
-  departmentId: z.string().optional().nullable(),
-  attachmentUrl: z
-    .string()
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal(""))
-    .nullable(),
-});
-
 export const RegulationFormSchema = z.object({
+  number: z.string().min(1, "Number is required"),
   title: z
     .string()
     .min(5, "Title must be at least 5 characters")
     .max(255, "Title must be less than 255 characters"),
-  content: z.string().min(50, "Content must be at least 50 characters"),
-  departmentId: z.string().optional(),
-  attachmentUrl: z
-    .string()
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
-});
-
-export const UpdateRegulationSchema = RegulationSchema.partial().extend({
-  id: z.string(),
-});
-
-// App schemas
-export const AppSchema = z.object({
-  id: z.string().optional(),
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .max(100, "Name must be less than 100 characters"),
-  iconUrl: z
-    .string()
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
-  link: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
-  description: z
-    .string()
-    .max(500, "Description must be less than 500 characters")
-    .optional()
-    .or(z.literal("")),
-  departmentIds: z
-    .array(z.string())
-    .min(1, "Please select at least one department"),
+  description: z.string().optional().nullable(),
+  effectiveDate: z.string().optional().nullable(),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
+  attachmentUrl: z.string().optional().nullable(),
 });
 
 export const AppFormSchema = z.object({
@@ -300,10 +254,6 @@ export const AppFormSchema = z.object({
     .min(1, "Please select at least one department"),
 });
 
-export const UpdateAppSchema = AppSchema.partial().extend({
-  id: z.string(),
-});
-
 export type User = z.infer<typeof UserSchema>;
 export type LoginData = z.infer<typeof LoginSchema>;
 export type RegisterData = z.infer<typeof RegisterSchema>;
@@ -322,10 +272,6 @@ export type UpdateAnnouncementPost = z.infer<typeof UpdateAnnouncementSchema>; /
 export type ContactInfo = z.infer<typeof ContactInfoSchema>;
 export type SocialMedia = z.infer<typeof SocialMediaSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
-export type Regulation = z.infer<typeof RegulationSchema>;
 export type RegulationForm = z.infer<typeof RegulationFormSchema>;
-export type UpdateRegulation = z.infer<typeof UpdateRegulationSchema>;
-export type App = z.infer<typeof AppSchema>;
 export type AppForm = z.infer<typeof AppFormSchema>;
-export type UpdateApp = z.infer<typeof UpdateAppSchema>;
 export type ApiResponse = z.infer<typeof ApiResponseSchema>;
