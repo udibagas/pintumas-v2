@@ -13,13 +13,16 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build where clause for filtering
-    const where: any = {};
+    const where: any = {
+      status: "PUBLISHED", // Only fetch published regulations
+    };
 
     // Add search filter
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
-        { content: { contains: search, mode: "insensitive" } },
+        { number: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
       ];
     }
 

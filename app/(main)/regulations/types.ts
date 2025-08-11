@@ -1,16 +1,15 @@
 export interface RegulationData {
   id: string;
+  number: string;
   title: string;
-  content: string;
+  description?: string | null;
+  effectiveDate?: string | null;
   departmentId?: string | null;
   attachmentUrl?: string | null;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   createdAt: string;
   updatedAt: string;
-  department?: {
-    id: string;
-    name: string;
-    slug: string;
-  } | null;
+  department?: DepartmentData | null;
 }
 
 export interface DepartmentData {
