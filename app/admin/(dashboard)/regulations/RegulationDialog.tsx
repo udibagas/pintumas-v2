@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/select';
 import { UseCrudType } from '@/hooks/useCrud';
 import { RegulationFormSchema, type RegulationForm } from '@/lib/validations';
-import { DepartmentData } from './types';
 import axios from 'axios';
 
 export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
@@ -38,7 +37,6 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
     handleModalClose
   } = hook;
 
-  const [departments, setDepartments] = useState<DepartmentData[]>([]);
   const [uploading, setUploading] = useState(false);
 
   const {
@@ -51,31 +49,22 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
   } = useForm<RegulationForm>({
     resolver: zodResolver(RegulationFormSchema),
     defaultValues: {
+      number: regulation?.number || '',
       title: regulation?.title || '',
-      content: regulation?.content || '',
-      departmentId: regulation?.departmentId || '',
+      description: regulation?.description || '',
+      effectiveDate: regulation?.effectiveDate ? new Date(regulation.effectiveDate).toISOString().split('T')[0] : '',
+      status: regulation?.status || 'DRAFT',
       attachmentUrl: regulation?.attachmentUrl || '',
     }
   });
 
-  // Fetch departments on component mount
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const response = await axios.get('/api/admin/departments');
-        setDepartments(response.data);
-      } catch (error) {
-        console.error('Error fetching departments:', error);
-      }
-    };
-    fetchDepartments();
-  }, []);
-
   useEffect(() => {
     reset({
+      number: regulation?.number || '',
       title: regulation?.title || '',
-      content: regulation?.content || '',
-      departmentId: regulation?.departmentId || '',
+      description: regulation?.description || '',
+      effectiveDate: regulation?.effectiveDate ? new Date(regulation.effectiveDate).toISOString().split('T')[0] : '',
+      status: regulation?.status || 'DRAFT',
       attachmentUrl: regulation?.attachmentUrl || '',
     });
   }, [regulation, reset]);
@@ -87,15 +76,10 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
     if (!file) return;
 
     // Validate file type (documents)
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain',
-    ];
+    const allowedTypes = ['application/pdf'];
 
     if (!allowedTypes.includes(file.type)) {
-      alert('Please select a valid document file (PDF, Word, or Text)');
+      alert('Please select a valid document file (PDF)');
       return;
     }
 
@@ -145,20 +129,33 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? 'Edit Regulation' : 'Add New Regulation'}
+            {isEdit ? 'Edit Peraturan' : 'Tambah Peraturan Baru'}
           </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the regulation information.' : 'Create a new regulation for your organization.'}
+            {isEdit ? 'Perbarui informasi peraturan.' : 'Buat peraturan baru untuk organisasi Anda.'}
           </DialogDescription>
         </DialogHeader>
 
         <form id="regulation-form" onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
+            <Label htmlFor="number">Nomor Peraturan *</Label>
+            <Input
+              id="number"
+              {...register('number')}
+              placeholder="Nomor Peraturan (e.g., 001/2024)"
+              className={errors.number ? 'border-red-500' : ''}
+            />
+            {errors.number && (
+              <p className="text-sm text-red-500">{errors.number.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="title">Judul Peraturan *</Label>
             <Input
               id="title"
               {...register('title')}
-              placeholder="Regulation Title"
+              placeholder="Judul Peraturan"
               className={errors.title ? 'border-red-500' : ''}
             />
             {errors.title && (
@@ -167,44 +164,54 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="department">Department</Label>
+            <Label htmlFor="description">Deskripsi</Label>
+            <Textarea
+              id="description"
+              {...register('description')}
+              placeholder="Deskripsi dan detail peraturan..."
+              className={`min-h-[150px] ${errors.description ? 'border-red-500' : ''}`}
+              rows={6}
+            />
+            {errors.description && (
+              <p className="text-sm text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="effectiveDate">Tanggal Berlaku</Label>
+            <Input
+              id="effectiveDate"
+              type="date"
+              {...register('effectiveDate')}
+              className={errors.effectiveDate ? 'border-red-500' : ''}
+            />
+            {errors.effectiveDate && (
+              <p className="text-sm text-red-500">{errors.effectiveDate.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status *</Label>
             <Select
-              onValueChange={(value) => setValue('departmentId', value)}
-              defaultValue={regulation?.departmentId || ''}
+              onValueChange={(value) => setValue('status', value as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED')}
+              defaultValue={regulation?.status || 'DRAFT'}
             >
-              <SelectTrigger className={errors.departmentId ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select a department (optional)" />
+              <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Pilih status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No department</SelectItem>
-                {departments.map((department) => (
-                  <SelectItem key={department.id} value={department.id}>
-                    {department.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="DRAFT">Draft</SelectItem>
+                <SelectItem value="PUBLISHED">Dipublikasikan</SelectItem>
+                <SelectItem value="ARCHIVED">Diarsipkan</SelectItem>
               </SelectContent>
             </Select>
-            {errors.departmentId && (
-              <p className="text-sm text-red-500">{errors.departmentId.message}</p>
+            {errors.status && (
+              <p className="text-sm text-red-500">{errors.status.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">Content *</Label>
-            <Textarea
-              id="content"
-              {...register('content')}
-              placeholder="Regulation content and details..."
-              className={`min-h-[200px] ${errors.content ? 'border-red-500' : ''}`}
-              rows={10}
-            />
-            {errors.content && (
-              <p className="text-sm text-red-500">{errors.content.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="attachment">Document Attachment</Label>
+            <Label htmlFor="attachment">Dokumen Lampiran</Label>
             <div className="space-y-2">
               <Input
                 type="file"
@@ -214,11 +221,11 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
                 className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
               {uploading && (
-                <p className="text-sm text-blue-600">Uploading document...</p>
+                <p className="text-sm text-blue-600">Mengunggah dokumen...</p>
               )}
               {attachmentUrl && (
                 <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded">
-                  <p className="text-sm text-green-700">Document uploaded successfully</p>
+                  <p className="text-sm text-green-700">Dokumen berhasil diunggah</p>
                   <Button
                     type="button"
                     variant="outline"
@@ -229,16 +236,11 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
                   </Button>
                 </div>
               )}
-              <Input
-                {...register('attachmentUrl')}
-                placeholder="Or paste document URL"
-                className={errors.attachmentUrl ? 'border-red-500' : ''}
-              />
               {errors.attachmentUrl && (
                 <p className="text-sm text-red-500">{errors.attachmentUrl.message}</p>
               )}
               <p className="text-sm text-gray-500">
-                Upload a document file (PDF, Word, Text) or provide a URL to an external document.
+                Unggah file dokumen (PDF, Word, Teks) atau berikan URL ke dokumen eksternal.
               </p>
             </div>
           </div>
@@ -246,10 +248,10 @@ export default function RegulationDialog({ hook }: { hook: UseCrudType }) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" onClick={() => handleModalClose()}>Cancel</Button>
+            <Button variant="outline" onClick={() => handleModalClose()}>Batal</Button>
           </DialogClose>
           <Button type="submit" form="regulation-form" disabled={isSubmitting || uploading}>
-            {isSubmitting ? 'Saving...' : uploading ? 'Uploading...' : 'Save Regulation'}
+            {isSubmitting ? 'Menyimpan...' : uploading ? 'Mengunggah...' : 'Simpan Peraturan'}
           </Button>
         </DialogFooter>
       </DialogContent>

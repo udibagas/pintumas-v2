@@ -9,14 +9,38 @@ import { Edit, Trash2, ArrowUpDown, Building, FileText, ExternalLink } from 'luc
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { RegulationData } from './types'
 import { UseCrudType } from '@/hooks/useCrud'
+import { useAuth } from '@/hooks/use-auth'
 import { formatDistanceToNow } from 'date-fns'
 
 export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
+  const { user } = useAuth()
   const [deleteRegulationId, setDeleteRegulationId] = useState<string | null>(null)
   const { setModalOpen, setEditingData, useFetch, isDeleteConfirmOpen, setDeleteConfirmOpen, handleDelete } = hook
-  const { data = [] } = useFetch<RegulationData[]>()
+  const { data: fetchedData = [] } = useFetch<RegulationData[]>()
+
+  // Ensure data is always an array
+  const data = Array.isArray(fetchedData) ? fetchedData : []
 
   const columns: ColumnDef<RegulationData>[] = [
+    {
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Nomor
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const regulation = row.original;
+        return (
+          <div className="font-mono text-sm">{regulation.number}</div>
+        );
+      },
+      size: 120,
+    },
     {
       accessorKey: 'title',
       header: ({ column }) => (
@@ -24,7 +48,7 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Title
+          Judul Peraturan
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -33,20 +57,41 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
         return (
           <div className="space-y-1">
             <div className="font-medium text-sm">{regulation.title}</div>
-            <div className="text-xs text-gray-500">
-              {regulation.content.length > 100
-                ? `${regulation.content.substring(0, 100)}...`
-                : regulation.content
-              }
-            </div>
+            {regulation.description && (
+              <div className="text-xs text-gray-500">
+                {regulation.description.length > 100
+                  ? `${regulation.description.substring(0, 100)}...`
+                  : regulation.description
+                }
+              </div>
+            )}
           </div>
         );
       },
       size: 300,
     },
     {
-      accessorKey: 'department',
-      header: 'Department',
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const regulation = row.original;
+        const statusConfig = {
+          PUBLISHED: { label: 'Dipublikasikan', variant: 'default' as const },
+          DRAFT: { label: 'Draft', variant: 'secondary' as const },
+          ARCHIVED: { label: 'Diarsipkan', variant: 'outline' as const },
+        };
+        const config = statusConfig[regulation.status];
+        return (
+          <Badge variant={config.variant}>
+            {config.label}
+          </Badge>
+        );
+      },
+      size: 100,
+    },
+    {
+      accessorKey: 'departmentId',
+      header: 'Instansi',
       cell: ({ row }) => {
         const regulation = row.original;
         return regulation.department ? (
@@ -55,14 +100,41 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
             {regulation.department.name}
           </Badge>
         ) : (
-          <span className="text-gray-500 text-sm">All departments</span>
+          <span className="text-gray-500 text-sm">Semua Instansi</span>
         );
       },
       size: 150,
     },
     {
+      accessorKey: 'effectiveDate',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Berlaku
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const regulation = row.original;
+        return regulation.effectiveDate ? (
+          <div className="text-sm">
+            {new Date(regulation.effectiveDate).toLocaleDateString('id-ID', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })}
+          </div>
+        ) : (
+          <span className="text-gray-500 text-sm">Belum ditetapkan</span>
+        );
+      },
+      size: 120,
+    },
+    {
       accessorKey: 'attachmentUrl',
-      header: 'Attachment',
+      header: 'Lampiran',
       cell: ({ row }) => {
         const regulation = row.original;
         return regulation.attachmentUrl ? (
@@ -73,11 +145,11 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
             className="h-7"
           >
             <FileText className="w-3 h-3 mr-1" />
-            View
+            Lihat
             <ExternalLink className="w-3 h-3 ml-1" />
           </Button>
         ) : (
-          <span className="text-gray-500 text-sm">No attachment</span>
+          <span className="text-gray-500 text-sm">Tidak ada lampiran</span>
         );
       },
       size: 120,
@@ -89,7 +161,7 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Created
+          Dibuat
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -103,13 +175,16 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
       },
       size: 100,
     },
-    {
+
+  ]
+
+  if (user?.role == 'MODERATOR') {
+    columns.push({
       id: 'actions',
       enableHiding: false,
-      header: 'Actions',
+      header: 'Aksi',
       cell: ({ row }) => {
         const regulation = row.original
-
         return (
           <div className="flex items-center gap-2">
             <Button
@@ -138,8 +213,8 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
         )
       },
       size: 100,
-    },
-  ]
+    })
+  }
 
   return (
     <>
@@ -147,28 +222,35 @@ export default function RegulationsTable({ hook }: { hook: UseCrudType }) {
         columns={columns}
         data={data}
         searchKey="title"
-        searchPlaceholder="Search regulations..."
+        searchPlaceholder="Cari peraturan..."
         filterableColumns={[
           {
-            id: 'department',
-            title: 'Department',
+            id: 'departmentId',
+            title: 'Instansi',
             options: [
-              ...Array.from(new Set(data.filter(r => r.department).map(r => r.department!.id)))
-                .map(id => {
-                  const dept = data.find(r => r.department?.id === id)?.department!;
-                  return { label: dept.name, value: dept.id };
-                }),
-              { label: 'All departments', value: 'null' }
+              { label: 'Semua Instansi', value: '' },
+              ...Array.from(
+                new Set(
+                  data
+                    .filter(r => r.department && r.department.id)
+                    .map(r => r.department!.id)
+                )
+              ).map(id => {
+                const dept = data.find(r => r.departmentId === id)?.department;
+                return dept ? { label: dept.name, value: id } : null;
+              }).filter(Boolean) as Array<{ label: string; value: string }>,
             ],
           },
         ]}
       />
 
-      <ConfirmDialog
-        isOpen={isDeleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
-        onConfirm={() => handleDelete(deleteRegulationId as string)}
-      />
+      {user?.role === 'MODERATOR' && (
+        <ConfirmDialog
+          isOpen={isDeleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          onConfirm={() => handleDelete(deleteRegulationId as string)}
+        />
+      )}
     </>
   )
 }
