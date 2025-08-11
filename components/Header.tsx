@@ -165,7 +165,7 @@ export default function Header() {
     { name: 'Informasi', href: '/news' },
     { name: 'Layanan', href: '/services' },
     { name: 'Peraturan', href: '/regulations' },
-    { name: 'Pengumuman', href: '/announcements' },
+    { name: 'Kontak', href: '/contact' },
   ];
 
   return (
