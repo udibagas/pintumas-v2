@@ -29,10 +29,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     notFound();
   }
 
-  // Fetch departments and apps data here
-  const departments = await prisma.department.findMany({
-    orderBy: { name: 'asc' }
-  });
   const apps = await prisma.apps.findMany({
     orderBy: { name: 'asc' },
     select: {
@@ -56,7 +52,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         tagIds: post.tags.map(tag => tag.id),
         imageUrl: post.imageUrl || ''
       }}
-      departments={departments}
       apps={apps}
     />
   );
