@@ -33,6 +33,7 @@ interface AnnouncementPost {
   endDate: string | null;
   linkUrl: string | null;
   linkText: string | null;
+  posterImage: string | null;
   createdAt: string;
   author: {
     id: string;

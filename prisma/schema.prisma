@@ -75,6 +75,7 @@ model Announcement {
   linkText     String? // Text for the link
   views        Int         @default(0)
   imageUrl     String? // Optional image URL
+  posterImage  String? // Poster image URL
   departmentId String? // Optional department association
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 

@@ -170,6 +170,11 @@ export const AnnouncementSchema = z.object({
     .max(50, "Link text must be less than 50 characters")
     .optional(),
   departmentId: z.string().optional(), // Optional department association
+  posterImage: z
+    .string()
+    .url("Invalid poster image URL")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const UpdateAnnouncementSchema = AnnouncementSchema.partial();

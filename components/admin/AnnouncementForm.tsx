@@ -3,8 +3,9 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -55,6 +56,9 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
   const [isLoading, setIsLoading] = useState(false)
   const [departments, setDepartments] = useState<Department[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [posterImage, setPosterImage] = useState<string>(initialData?.posterImage || '')
+  const [posterFile, setPosterFile] = useState<File | null>(null)
+  const posterInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<AnnouncementPost>({
     resolver: zodResolver(AnnouncementPostSchema),
@@ -95,10 +99,30 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
   const onSubmit = async (data: AnnouncementPost) => {
     setIsLoading(true)
     setError(null)
+    let posterImageUrl = posterImage
+
+    // Handle poster image upload if a new file is selected
+    if (posterFile) {
+      const formData = new FormData()
+      formData.append('file', posterFile)
+
+      try {
+        const uploadRes = await axios.post('/api/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        posterImageUrl = uploadRes.data.url
+      } catch (uploadError) {
+        console.error('Error uploading poster image:', uploadError)
+        setError('Gagal mengunggah gambar poster')
+        setIsLoading(false)
+        return
+      }
+    }
 
     try {
       const payload = {
         ...data,
+        posterImage: posterImageUrl || null,
         // Convert date strings to proper format if provided
         startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
@@ -291,7 +315,6 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Tanpa Departemen</SelectItem>
                           {departments.map((department) => (
                             <SelectItem key={department.id} value={department.id}>
                               {department.name}
@@ -300,7 +323,7 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        Pilih departemen untuk mengkategorikan pengumuman (opsional)
+                        Pilih instansi untuk mengkategorikan pengumuman
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -438,6 +461,67 @@ export default function AnnouncementForm({ initialData, isEditing = false }: Ann
                   )}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Poster Image Upload */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Poster Pengumuman</CardTitle>
+              <CardDescription>Unggah gambar poster untuk pengumuman ini</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {posterImage && (
+                <div className="mb-4">
+                  <Image
+                    src={posterImage}
+                    alt="Poster Preview"
+                    width={300}
+                    height={200}
+                    className="max-h-64 rounded-lg border object-cover"
+                  />
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                ref={posterInputRef}
+                className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    setPosterFile(file)
+                    const reader = new FileReader()
+                    reader.onload = ev => {
+                      setPosterImage(ev.target?.result as string)
+                    }
+                    reader.readAsDataURL(file)
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => posterInputRef.current?.click()}
+                disabled={isLoading}
+              >
+                {posterImage ? 'Ganti Poster' : 'Unggah Poster'}
+              </Button>
+              {posterImage && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setPosterImage('')
+                    setPosterFile(null)
+                    if (posterInputRef.current) posterInputRef.current.value = ''
+                  }}
+                  disabled={isLoading}
+                  className="ml-2"
+                >
+                  Hapus Poster
+                </Button>
+              )}
             </CardContent>
           </Card>
 

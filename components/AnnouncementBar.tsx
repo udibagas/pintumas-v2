@@ -7,14 +7,23 @@ import axios from 'axios';
 
 interface Announcement {
   id: string;
-  text: string;
-  content: string | null;
-  type: string;
+  title: string;
+  summary: string | null;
+  content: string;
+  announcementType: string;
   priority: number;
+  status: string;
+  startDate: string | null;
+  endDate: string | null;
   linkUrl: string | null;
   linkText: string | null;
+  views: number;
+  imageUrl: string | null;
+  posterImage: string | null;
+  departmentId: string | null;
   createdAt: string;
-  author: string;
+  updatedAt: string;
+  authorId: string;
 }
 
 interface AnnouncementBarProps {
@@ -42,14 +51,23 @@ export default function AnnouncementBar({ onOpenAnnouncementsModal, onAnnounceme
       const fallbackAnnouncements = [
         {
           id: '1',
-          text: 'Welcome to PINTUMAS - Your trusted source for port information',
+          title: 'Welcome to PINTUMAS - Your trusted source for port information',
+          summary: null,
           content: 'Stay updated with the latest news',
-          type: 'info',
+          announcementType: 'INFO',
           priority: 1,
+          status: 'PUBLISHED',
+          startDate: null,
+          endDate: null,
           linkUrl: null,
           linkText: null,
+          views: 0,
+          imageUrl: null,
+          posterImage: null,
+          departmentId: null,
           createdAt: new Date().toISOString(),
-          author: 'System'
+          updatedAt: new Date().toISOString(),
+          authorId: 'system'
         }
       ];
       setAnnouncements(fallbackAnnouncements);
@@ -81,22 +99,20 @@ export default function AnnouncementBar({ onOpenAnnouncementsModal, onAnnounceme
   const getAnnouncementTypeLabel = () => {
     if (announcements.length === 0) return 'INFORMASI';
 
-    const currentType = announcements[currentAnnouncementIndex]?.type;
+    const currentType = announcements[currentAnnouncementIndex]?.announcementType;
     switch (currentType) {
-      case 'breaking':
+      case 'BREAKING':
         return 'BERITA UTAMA';
-      case 'alert':
+      case 'ALERT':
         return 'PERINGATAN';
-      case 'event':
+      case 'EVENT':
         return 'EVENT';
-      case 'maintenance':
+      case 'MAINTENANCE':
         return 'MAINTENANCE';
       default:
         return 'INFORMASI';
     }
-  };
-
-  return (
+  }; return (
     <div className="bg-red-600 text-white py-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
@@ -118,10 +134,10 @@ export default function AnnouncementBar({ onOpenAnnouncementsModal, onAnnounceme
                           href={announcements[0].linkUrl}
                           className="hover:text-yellow-300 transition-colors cursor-pointer"
                         >
-                          {announcements[0].text}
+                          {announcements[0].title}
                         </Link>
                       ) : (
-                        announcements[0].text
+                        announcements[0].title
                       )}
                     </span>
                   </div>
@@ -133,7 +149,7 @@ export default function AnnouncementBar({ onOpenAnnouncementsModal, onAnnounceme
                     onClick={onOpenAnnouncementsModal}
                     className="text-sm hover:text-yellow-300 transition-colors cursor-pointer text-left"
                   >
-                    {announcements[currentAnnouncementIndex].text}
+                    {announcements[currentAnnouncementIndex].title}
                     <span className="ml-2 text-yellow-300">
                       ({announcements.length} pengumuman • Klik untuk melihat semua)
                     </span>
